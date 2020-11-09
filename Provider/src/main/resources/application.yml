@@ -1,0 +1,39 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: codeSharingCommunityProvider
+  datasource:
+    username: root
+    password: pyb***20000112
+    url: jdbc:mysql://localhost:3306/pdsu_csc?useSSL=false&serverTimezone=UTC
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    type: com.alibaba.druid.pool.DruidDataSource
+    initialSize: 30
+    minIdle: 30
+    maxActive: 200
+    maxWait: 60000
+    timeBetweenEvictionRunsMillis: 60000
+    minEvictableIdleTimeMillis: 30000
+
+mybatis:
+  mapper-locations:
+    - classpath:mybatis/mapper/**/*.xml
+  type-aliases-package: com.pdsu.csc.bean
+  configuration:
+    map-underscore-to-camel-case: true
+    cache-enabled: true
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka/
+  instance:
+    instance-id: CodeSharingCommumity_服务端
+    prefer-ip-address: true
+info:
+  app.name: CodeSharingCommumity_服务端_01
+  company.name: www.halfdream.cn/半梦的个人网址
+  build.artifactId: ${project.artifactId}
+  build.version: ${project.version}

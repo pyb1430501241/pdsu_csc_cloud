@@ -1,0 +1,18 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: CodeSharingCommumity_客户端
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka/
+    register-with-eureka: false
+  instance:
+    instance-id: CodeSharingCommumity_客户端_01
+    prefer-ip-address: true
+feign:
+  hystrix:
+    enabled: true
