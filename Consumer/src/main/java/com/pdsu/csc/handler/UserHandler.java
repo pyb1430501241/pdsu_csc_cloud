@@ -21,6 +21,7 @@ public class UserHandler {
     private ProviderService providerService;
 
     @PostMapping("/login")
+    @CrossOrigin
     public Result login(@RequestParam String uid, @RequestParam String password,
                         @RequestParam String hit, @RequestParam String code,
                         @RequestParam(value = "flag", defaultValue = "0")Integer flag) {
@@ -28,6 +29,7 @@ public class UserHandler {
     }
 
     @GetMapping("/getcodeforlogin")
+    @CrossOrigin
     public Result getCodeForLogin() {
         return providerService.getCodeForLogin();
     }

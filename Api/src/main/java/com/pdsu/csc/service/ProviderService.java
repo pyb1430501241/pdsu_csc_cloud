@@ -3,7 +3,9 @@ package com.pdsu.csc.service;
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.bean.WebInformation;
+import com.pdsu.csc.service.fallback.ProviderServiceFallBack;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -22,7 +24,7 @@ import java.util.List;
  * @create 2020-11-09 19:06
  * 使用 Feign 做负载均衡和容错
  */
-@FeignClient(value = "CODESHARINGCOMMUNITYPROVIDER")
+@FeignClient(value = "CODESHARINGCOMMUNITYPROVIDER", fallbackFactory = ProviderServiceFallBack.class)
 @Service
 public interface ProviderService {
 
@@ -35,7 +37,7 @@ public interface ProviderService {
     /**
      * 登录
      */
-    @GetMapping(value = USER_API_PREFIX + "login")
+    @PostMapping(value = USER_API_PREFIX + "login")
     public Result login(@RequestParam("uid") String uid, @RequestParam("password") String password,
                         @RequestParam("hit") String hit, @RequestParam("code") String code,
                         @RequestParam(value = "flag", defaultValue = "0")Integer flag);
@@ -267,7 +269,7 @@ public interface ProviderService {
      * 获取作者信息
      */
     @GetMapping(BLOB_API_PREFIX + "getauthor")
-    public Result getAuthorByUid(@RequestParam("uid") Integer uid, HttpServletRequest request);
+    public Result getAuthorByUid(@RequestParam("uid") Integer uid);
 
     /**
      * 获取收藏
@@ -314,16 +316,15 @@ public interface ProviderService {
     /**
      * 上传文件
      */
-    @PostMapping(FILE_API_PREFIX + "upload")
+    @PostMapping(value = FILE_API_PREFIX + "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result upload(@RequestParam("file") MultipartFile file, @RequestParam("title") String title,
                          @RequestParam("description") String description);
-
 
     /**
      * 下载文件
      */
     @GetMapping(FILE_API_PREFIX + "download")
-    public void download(@RequestParam("uid") Integer uid, @RequestParam("title") String title, HttpServletResponse response);
+    public Result download(@RequestParam("uid") Integer uid, @RequestParam("title") String title);
 
     /**
      *  获取文件首页

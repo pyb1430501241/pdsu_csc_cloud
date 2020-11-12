@@ -14,11 +14,14 @@ import com.pdsu.csc.utils.HashUtils;
 import com.pdsu.csc.utils.ShiroUtils;
 import com.pdsu.csc.utils.SimpleUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.input.ReaderInputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+
+import feign.Response;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -94,7 +97,7 @@ public class FileHandler extends ParentHandler {
 	 */
 	@RequestMapping(value = "/download", method = RequestMethod.GET)
 	@CrossOrigin
-	public void download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response) throws Exception{
+	public Result download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response) throws Exception{
 		OutputStream out = null;
 		InputStream in = null;
 		UserInformation user = ShiroUtils.getUserInformation();
@@ -109,8 +112,10 @@ public class FileHandler extends ParentHandler {
 			response.setContentType("multipart/form-data");
 			String filename = title + "_" + uid + SimpleUtils.getSuffixName(filePath);
 			response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
-			out = response.getOutputStream(); 
-			out.write(in.readAllBytes()); 
+			out = response.getOutputStream();
+			byte [] bytes = new byte[in.available()];
+			in.read(bytes);
+			out.write(bytes);
 			out.flush();
 			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, user.getUid()));
 			log.info("下载成功");
@@ -130,6 +135,7 @@ public class FileHandler extends ParentHandler {
 				}
 			}
 		}
+		return Result.success();
 	}
 
 	/**

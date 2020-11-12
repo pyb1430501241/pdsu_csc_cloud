@@ -31,7 +31,7 @@ import java.util.List;
  *  	歌曲名：桜咲く (樱花开)，歌手名：ClariS (クラリス)，专辑名：STEP
  *  by 庞亚彬 2020-10-30
  */
-@Controller
+@RestController
 public class SearchHandler extends ParentHandler {
 	
 	@Resource(name = "esUserService")
@@ -51,7 +51,6 @@ public class SearchHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
-	@ResponseBody
 	@CrossOrigin
 	public Result searchByText(@RequestParam(value = "p")String text) throws Exception{
 		log.info("用户查询: " + text + " 开始");

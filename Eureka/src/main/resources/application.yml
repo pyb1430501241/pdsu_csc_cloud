@@ -1,6 +1,7 @@
 server:
   port: 7001
-
+  servlet:
+    context-path: /
 eureka:
   instance:
     # 单机版, 切换集群需改 hosts 文件

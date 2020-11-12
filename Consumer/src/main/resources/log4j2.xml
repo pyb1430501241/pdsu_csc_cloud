@@ -5,7 +5,7 @@
 <Configuration status="WARN" monitorInterval="500">
     <!--定义日志储存文件目录-->
     <properties>
-        <property name="LOG_HOME">ProviderLogs</property>
+        <property name="LOG_HOME">ConsumerLogs</property>
     </properties>
     <Appenders>
         <!--控制台输出所有日志-->
@@ -75,9 +75,6 @@
         <logger name="org.quartz" level="WARN"></logger>
         <logger name="org.hibernate.validator" level="WARN"></logger>
         <logger name="org.jboss.logging" level="WARN"></logger>
-        <logger name="org.springframework.boot" level="WARN"></logger>
-        <logger name="org.springframework.data" level="WARN"></logger>
-        <logger name=" com.netflix" level="WARN"></logger>
         <Root level="Info">
             <AppenderRef ref="Console" />
             <AppenderRef ref="InfoFile" />

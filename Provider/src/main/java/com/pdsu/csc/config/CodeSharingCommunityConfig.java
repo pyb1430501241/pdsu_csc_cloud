@@ -3,8 +3,11 @@ package com.pdsu.csc.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
+import com.pdsu.csc.es.RestHighLevelClientFactory;
 import com.pdsu.csc.shiro.LoginRealm;
 import com.pdsu.csc.shiro.WebSessionManager;
+import com.pdsu.csc.web.WebStartInterceptor;
+import com.thetransactioncompany.cors.CORSFilter;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.AllSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -14,6 +17,11 @@ import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
+import org.aspectj.lang.annotation.Aspect;
+import org.elasticsearch.client.RestHighLevelClient;
+import org.springframework.aop.Advisor;
+import org.springframework.aop.aspectj.AspectJExpressionPointcut;
+import org.springframework.aop.support.DefaultPointcutAdvisor;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -23,12 +31,17 @@ import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.datasource.DataSourceTransactionManager;
+import org.springframework.transaction.TransactionDefinition;
+import org.springframework.transaction.TransactionManager;
+import org.springframework.transaction.interceptor.*;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
+import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * @author 半梦
@@ -133,6 +146,46 @@ public class CodeSharingCommunityConfig {
         AuthorizationAttributeSourceAdvisor advisor = new AuthorizationAttributeSourceAdvisor();
         advisor.setSecurityManager(securityManager);
         return advisor;
+    }
+
+
+    /**
+     *  es
+     */
+    @Bean
+    public RestHighLevelClientFactory restHighLevel() {
+        return new RestHighLevelClientFactory();
+    }
+
+    @Bean
+    public RestHighLevelClient restHighLevelClient(RestHighLevelClientFactory highLevelClientFactory) {
+        return highLevelClientFactory.getRestHighLevelClient();
+    }
+
+    @Bean
+    public ServletContextListener webStartInterceptor() {
+        return new WebStartInterceptor();
+    }
+
+    /**
+     *  跨域
+     */
+    @Bean
+    public CorsConfiguration buildConfig() {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.addAllowedOrigin("localhost, 121.199.27.93, 129.204.206.237");
+        corsConfiguration.addAllowedHeader("Authorization, Accept, Origin, X-Requested-With, Content-Type, Last-Modified");
+        corsConfiguration.addAllowedMethod("POST, GET");
+        corsConfiguration.addExposedHeader("Set-Cookie");
+        corsConfiguration.setAllowCredentials(true);
+        return corsConfiguration;
+    }
+
+    @Bean
+    public CorsFilter corsFilter(CorsConfiguration configuration) {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); //注册
+        return new CorsFilter(source);
     }
 
 }

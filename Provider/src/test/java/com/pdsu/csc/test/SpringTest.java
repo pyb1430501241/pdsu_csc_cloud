@@ -4,9 +4,12 @@ import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.utils.SimpleUtils;
 import org.apache.shiro.SecurityUtils;
+import org.checkerframework.checker.units.qual.A;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
@@ -16,6 +19,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
@@ -682,5 +686,10 @@ public class SpringTest {
         System.out.println(response.getContentAsString());
     }
 
+    @Test
+    public void tsts() {
+        Logger log = LoggerFactory.getLogger("TTTT");
+        System.out.println(log.getClass().getName());
+    }
 
 }

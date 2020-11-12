@@ -35,5 +35,8 @@ eureka:
 info:
   app.name: CodeSharingCommumity_服务端_01
   company.name: www.halfdream.cn/半梦的个人网址
-  build.artifactId: ${project.artifactId}
-  build.version: ${project.version}
+  build.artifactId: ${project.artifactId}$
+  build.version: ${project.version}$
+
+logging:
+  config: classpath:log4j2/log4j2.xml
