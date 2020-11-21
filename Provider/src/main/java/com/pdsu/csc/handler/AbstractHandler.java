@@ -68,4 +68,19 @@ public interface AbstractHandler {
      */
     String SYSTEM_NAME = "平顶山学院——信息工程学院";
 
+    /**
+     * 广告预留
+     * @return
+     */
+    public default Result advertising() {
+        return Result.bedRequest();
+    }
+
+    /**
+     *  通知预留
+     */
+    public default Result globalNotification() {
+        return Result.bedRequest();
+    }
+
 }

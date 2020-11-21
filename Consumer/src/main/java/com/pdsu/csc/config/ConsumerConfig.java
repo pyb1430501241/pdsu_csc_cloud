@@ -1,5 +1,6 @@
 package com.pdsu.csc.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
@@ -17,9 +18,12 @@ public class ConsumerConfig {
      *  跨域
      */
     @Bean
-    public CorsConfiguration buildConfig() {
+    public CorsConfiguration buildConfig(@Value("${csc.cors.allow-ip}")String allowIp) {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("*");
+        if(allowIp.equals("all")) {
+            allowIp = "*";
+        }
+        corsConfiguration.addAllowedOrigin(allowIp);
         corsConfiguration.addAllowedHeader("Authorization, Accept, Origin, X-Requested-With, Content-Type, Last-Modified");
         corsConfiguration.addAllowedMethod("POST, GET");
         corsConfiguration.addExposedHeader("Set-Cookie");

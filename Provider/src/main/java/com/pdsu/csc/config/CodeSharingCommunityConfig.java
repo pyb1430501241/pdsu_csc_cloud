@@ -3,6 +3,7 @@ package com.pdsu.csc.config;
 import com.alibaba.druid.pool.DruidDataSource;
 import com.alibaba.druid.support.http.StatViewServlet;
 import com.alibaba.druid.support.http.WebStatFilter;
+import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import com.pdsu.csc.es.RestHighLevelClientFactory;
 import com.pdsu.csc.shiro.LoginRealm;
 import com.pdsu.csc.shiro.WebSessionManager;
@@ -22,6 +23,7 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.springframework.aop.Advisor;
 import org.springframework.aop.aspectj.AspectJExpressionPointcut;
 import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
@@ -53,8 +55,7 @@ public class CodeSharingCommunityConfig {
     @ConfigurationProperties(prefix = "spring.datasource")
     @Bean
     public DataSource druid() {
-        DruidDataSource druidDataSource = new DruidDataSource();
-        return druidDataSource;
+        return new DruidDataSource();
     }
 
     /**
@@ -62,6 +63,7 @@ public class CodeSharingCommunityConfig {
      * 1. 配置一个管理后台的 Servlet
      */
     @Bean
+    @SuppressWarnings("unchecked")
     public ServletRegistrationBean statViewServlet() {
         ServletRegistrationBean bean = new ServletRegistrationBean(new StatViewServlet(), "/druid/*");
         Map<String, String> map = new HashMap<>();
@@ -74,6 +76,7 @@ public class CodeSharingCommunityConfig {
      * 2. 配置一个监控的 Filter
      */
     @Bean
+    @SuppressWarnings("unchecked")
     public FilterRegistrationBean webStatFilter() {
         FilterRegistrationBean bean = new FilterRegistrationBean();
         bean.setFilter(new WebStatFilter());
@@ -128,6 +131,7 @@ public class CodeSharingCommunityConfig {
         webSecurityManager.setSessionManager(new WebSessionManager());
         EhCacheManager ehCacheManager = new EhCacheManager();
         ehCacheManager.setCacheManager(cacheManager);
+        webSecurityManager.setCacheManager(ehCacheManager);
         return webSecurityManager;
     }
 
@@ -171,9 +175,9 @@ public class CodeSharingCommunityConfig {
      *  跨域
      */
     @Bean
-    public CorsConfiguration buildConfig() {
+    public CorsConfiguration buildConfig(@Value("${csc.cors.allow-ip}")String allowIp) {
         CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin("localhost, 121.199.27.93, 129.204.206.237");
+        corsConfiguration.addAllowedOrigin(allowIp);
         corsConfiguration.addAllowedHeader("Authorization, Accept, Origin, X-Requested-With, Content-Type, Last-Modified");
         corsConfiguration.addAllowedMethod("POST, GET");
         corsConfiguration.addExposedHeader("Set-Cookie");
@@ -187,5 +191,19 @@ public class CodeSharingCommunityConfig {
         source.registerCorsConfiguration("/**", configuration); //注册
         return new CorsFilter(source);
     }
+
+    /**
+     * Hystrix
+     */
+    @Bean
+    @SuppressWarnings("unchecked")
+    public ServletRegistrationBean hystrixMetricsStreamServlet() {
+        HystrixMetricsStreamServlet streamServlet = new HystrixMetricsStreamServlet();
+        ServletRegistrationBean registrationBean = new ServletRegistrationBean(streamServlet, "/hystrix.stream");
+        registrationBean.setLoadOnStartup(1);
+        registrationBean.setName("HystrixMetricsStreamServlet");
+        return registrationBean;
+    }
+
 
 }

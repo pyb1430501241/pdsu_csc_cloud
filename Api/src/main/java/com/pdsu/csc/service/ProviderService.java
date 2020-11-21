@@ -13,9 +13,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.Valid;
 import java.util.List;
 
 
@@ -23,10 +20,25 @@ import java.util.List;
  * @author 半梦
  * @create 2020-11-09 19:06
  * 使用 Feign 做负载均衡和容错
+ * 请求方法, 代表的是需要请求的 API 的请求方法
+ * 问题：
+ *  1. 当前参数上有许多 @RequestParam 注解, 且POST只允许一个 @RequestBody
+ * 分析：
+ *  1. 当前问题为 Feign 内置的请求转发包引起
+ * 解决方案：
+ *  1. 替换 Feign 内置包
+ *  2. 无需修改, 遵守 Feign 的约定
+ *
+ * @FeignClient 注解为开启服务端映射
+ *  value 需要映射的微服务名称
+ *  fallbackFactory 服务降级所用的工厂
  */
-@FeignClient(value = "CODESHARINGCOMMUNITYPROVIDER", fallbackFactory = ProviderServiceFallBack.class)
+@FeignClient(value = ProviderService.PROVIDER_NAME, fallbackFactory = ProviderServiceFallBack.class)
 @Service
 public interface ProviderService {
+
+    @SuppressWarnings("all")
+    String PROVIDER_NAME = "CODESHARINGCOMMUNITYPROVIDER";
 
     String USER_API_PREFIX = "/user/";
 

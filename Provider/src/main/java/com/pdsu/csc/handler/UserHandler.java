@@ -16,6 +16,7 @@ import com.github.pagehelper.PageInfo;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.*;
 import com.pdsu.csc.utils.*;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
@@ -46,6 +47,7 @@ import java.util.Objects;
  */
 @Controller
 @RequestMapping("/user")
+@Log4j2
 @SuppressWarnings("unchecked")
 public class UserHandler extends ParentHandler {
 
@@ -123,11 +125,6 @@ public class UserHandler extends ParentHandler {
 	 * 管理
 	 */
 	private UserRoleService userRoleService;
-	
-	/**
-	 * 日志
-	 */
-	private static final Logger log = LoggerFactory.getLogger(UserHandler.class);
 	
 	/**
 	 * 缓存管理器
@@ -1076,12 +1073,6 @@ public class UserHandler extends ParentHandler {
 		}
 		PageInfo<SystemNotification> pageInfo = new PageInfo<>(systemNotifications);
 		return Result.success().add("notificationList", list).add(HAS_NEXT_PAGE, pageInfo.isHasNextPage());
-	}
-
-
-	@Override
-	public Result advertising() {
-		return null;
 	}
 
 	/**

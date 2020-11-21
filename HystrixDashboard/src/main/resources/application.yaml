@@ -1,0 +1,8 @@
+server:
+  port: 9001
+# 由于我 Provider 使用 SpringException 进行了处理, 所以并未有熔断方法
+# 此服务暂无用途
+hystrix:
+  dashboard:
+    # 设定 Dashboard 监控的熔断服务
+    proxy-stream-allow-list: "*"

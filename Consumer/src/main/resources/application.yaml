@@ -1,0 +1,36 @@
+server:
+  port: 80
+  servlet:
+    context-path: /
+spring:
+  application:
+    # 本名称并无实际意义, 因为本服务不注册进 Eureka
+    name: CodeSharingCommumity_客户端
+eureka:
+  client:
+    service-url:
+      # Eureka 管理, 如为集群模式, 则应注册到所有 eureka
+      defaultZone: http://localhost:7001/eureka/
+      # 不注册自己进 Eureka
+    register-with-eureka: false
+  instance:
+    # 自己的唯一名称
+    instance-id: CodeSharingCommumity_客户端
+    prefer-ip-address: true
+feign:
+  hystrix:
+    # 开启 hystrix 降级机制
+    # 降级即为服务端宕机时, 一个备用的响应返回
+    enabled: true
+  httpclient:
+    # 当请求等待时间大于设定值时, 直接熔断返回备用相应
+    # 单位：ms
+    connection-timeout: 60000
+
+logging:
+  config: classpath:log4j2.xml
+
+csc:
+  cors:
+    # 该配置代表本服务允许访问的域名
+    allow-ip: all

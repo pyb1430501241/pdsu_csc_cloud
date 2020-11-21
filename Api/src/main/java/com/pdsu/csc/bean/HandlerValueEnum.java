@@ -1,9 +1,15 @@
 package com.pdsu.csc.bean;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+
 /**
  * @author 半梦
  * @create 2020-08-30 21:37
  */
+@AllArgsConstructor
+@Getter
 public enum HandlerValueEnum {
 
     /**
@@ -31,14 +37,6 @@ public enum HandlerValueEnum {
      */
     OTHER("default");
     private String key;
-
-    HandlerValueEnum(String key) {
-        this.key = key;
-    }
-
-    public String getKey() {
-        return key;
-    }
 
     public static HandlerValueEnum getByKey(String key){
         for (HandlerValueEnum constants : values()) {

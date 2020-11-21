@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,11 @@ import java.io.Serializable;
  * @author 半梦
  *
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class EsBlobInformation implements Serializable {
 	
 	private Integer webid;
@@ -15,47 +22,4 @@ public class EsBlobInformation implements Serializable {
 	
 	private String description;
 
-	public Integer getWebid() {
-		return webid;
-	}
-
-	public void setWebid(Integer webid) {
-		this.webid = webid;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description.replace("\"", "\\\"");
-	}
-
-	@Override
-	public String toString() {
-		return "{\n" + 
-				"  \"webid\" : " + webid + ",\r\n" + 
-				"  \"title\" : \"" + title + "\",\r\n" + 
-				"  \"description\" : \"" + description + "\"\n" + 
-				"}";
-	}
-
-	public EsBlobInformation(Integer webid, String description, String title) {
-		super();
-		this.webid = webid;
-		this.title = title;
-		this.description = description.replace("\"", "\\\"");
-	}
-	
-	public EsBlobInformation() {
-	}
-	
 }

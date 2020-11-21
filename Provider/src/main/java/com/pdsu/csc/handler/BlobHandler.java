@@ -2,10 +2,12 @@ package com.pdsu.csc.handler;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
+import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.*;
 import com.pdsu.csc.shiro.WebSessionManager;
 import com.pdsu.csc.utils.*;
+import lombok.extern.log4j.Log4j2;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
@@ -32,6 +34,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/blob")
 @SuppressWarnings("unchecked")
+@Log4j2
 public class BlobHandler extends ParentHandler {
 
 	/**
@@ -115,11 +118,6 @@ public class BlobHandler extends ParentHandler {
 	private SystemNotificationService systemNotificationService;
 
 	/**
-	 * 日志
-	 */
-	private static final Logger log = LoggerFactory.getLogger(BlobHandler.class);
-	
-	/**
 	 * 获取首页的数据
 	 * @return
 	 */
@@ -151,11 +149,11 @@ public class BlobHandler extends ParentHandler {
 		log.info("获取博客作者信息");
 		List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
 		log.info("获取博客作者头像");
-		List<MyImage> imgpaths = myImageService.selectImagePathByUids(uids);
+		List<MyImage> imgPaths = myImageService.selectImagePathByUids(uids);
 		for(UserInformation user : userList) {
 			UserInformation t  = user;
 			t.setPassword(null);
-			for(MyImage m : imgpaths) {
+			for(MyImage m : imgPaths) {
 				if(user.getUid().equals(m.getUid())) {
 					t.setImgpath(m.getImagePath());
 				}
@@ -726,11 +724,6 @@ public class BlobHandler extends ParentHandler {
 		return Result.success().add("contypeList", contypes);
 	}
 
-	@Override
-	public Result advertising() {
-		return null;
-	}
-
 	@Autowired
 	public BlobHandler(WebInformationService webInformationService,
 					   UserInformationService userInformationService,
@@ -765,4 +758,5 @@ public class BlobHandler extends ParentHandler {
 		this.userBrowsingRecordService = userBrowsingRecordService;
 		this.systemNotificationService = systemNotificationService;
 	}
+
 }

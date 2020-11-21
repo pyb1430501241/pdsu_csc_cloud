@@ -17,6 +17,7 @@ import com.pdsu.csc.service.UserClazzInformationService;
 import com.pdsu.csc.service.UserInformationService;
 import com.pdsu.csc.service.UserRoleService;
 import com.pdsu.csc.utils.ShiroUtils;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,6 +37,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("/admin")
+@Log4j2
 public class AdminHandler extends ParentHandler{
 
 	/**
@@ -59,9 +61,6 @@ public class AdminHandler extends ParentHandler{
 	 */
 	@Deprecated
 	private UserClazzInformationService userClazzInformationService;
-
-
-	private static final Logger log = LoggerFactory.getLogger(AdminHandler.class);
 
 	/**
 	 * 获取所有用户信息
@@ -130,10 +129,4 @@ public class AdminHandler extends ParentHandler{
 		this.userClazzInformationService = userClazzInformationService;
 	}
 
-
-	@Override
-	@RequestMapping("/advertising")
-	public Result advertising() {
-		return null;
-	}
 }

@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,11 @@ import java.io.Serializable;
  * @author 半梦
  *
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FileDownload implements Serializable {
     private Integer id;
 
@@ -16,42 +23,6 @@ public class FileDownload implements Serializable {
 
     private Integer uid;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getFileid() {
-        return fileid;
-    }
-
-    public void setFileid(Integer fileid) {
-        this.fileid = fileid;
-    }
-
-    public Integer getBid() {
-        return bid;
-    }
-
-    public void setBid(Integer bid) {
-        this.bid = bid;
-    }
-
-    public Integer getUid() {
-        return uid;
-    }
-
-    public void setUid(Integer uid) {
-        this.uid = uid;
-    }
-
-	@Override
-	public String toString() {
-		return "FileDownload [id=" + id + ", fileid=" + fileid + ", bid=" + bid + ", uid=" + uid + "]";
-	}
 
 	public FileDownload(Integer fileid, Integer bid, Integer uid) {
 		super();
@@ -59,7 +30,5 @@ public class FileDownload implements Serializable {
 		this.bid = bid;
 		this.uid = uid;
 	}
-    
-	public FileDownload() {
-	}
+
 }

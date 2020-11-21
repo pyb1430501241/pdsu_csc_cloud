@@ -12,6 +12,7 @@ import java.util.List;
 /**
  * @author 半梦
  * @create 2020-11-10 15:52
+ * 服务降级
  */
 @Service
 public class ProviderServiceError implements ProviderService {

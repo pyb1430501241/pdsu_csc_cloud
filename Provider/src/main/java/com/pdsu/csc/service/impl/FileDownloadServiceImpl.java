@@ -22,7 +22,7 @@ public class FileDownloadServiceImpl implements FileDownloadService {
 	
 	@Override
 	public boolean insert(@NonNull FileDownload fileDownload) {
-		return fileDownloadMapper.insertSelective(fileDownload) > 0 ? true : false;
+		return fileDownloadMapper.insertSelective(fileDownload) > 0;
 	}
 
 	@Override

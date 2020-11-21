@@ -90,7 +90,7 @@ public abstract class ParentHandler implements AbstractHandler {
     /**
      * 日志
      */
-    private static final Logger log = LoggerFactory.getLogger("异常处理日志");
+    private static final Logger log = LoggerFactory.getLogger("初始化日志");
 
     /**
      * 博客页面图片储存地址
@@ -140,6 +140,7 @@ public abstract class ParentHandler implements AbstractHandler {
         InitSystem.init();
     }
 
+    @SuppressWarnings("all")
     private static class InitSystem {
         /**
          * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
@@ -207,11 +208,5 @@ public abstract class ParentHandler implements AbstractHandler {
             mkdirs();
         }
     }
-
-    /**
-     * 广告预留
-     * @return
-     */
-    public abstract  Result advertising();
 
 }

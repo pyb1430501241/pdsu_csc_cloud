@@ -1,10 +1,17 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
  * @author 半梦
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FileInformation implements Serializable {
 
 	private UserInformation user;
@@ -13,43 +20,4 @@ public class FileInformation implements Serializable {
 	
 	private Integer downloads;
 
-	public UserInformation getUser() {
-		return user;
-	}
-
-	public void setUser(UserInformation user) {
-		this.user = user;
-	}
-
-	public WebFile getWebfile() {
-		return webfile;
-	}
-
-	public void setWebfile(WebFile webfile) {
-		this.webfile = webfile;
-	}
-
-	public Integer getDownloads() {
-		return downloads;
-	}
-
-	public void setDownloads(Integer downloads) {
-		this.downloads = downloads;
-	}
-
-	public FileInformation(UserInformation user, WebFile webfile, Integer downloads) {
-		super();
-		this.user = user;
-		this.webfile = webfile;
-		this.downloads = downloads;
-	}
-
-	public FileInformation() {
-	}
-
-	@Override
-	public String toString() {
-		return "FileInformation [user=" + user + ", webfile=" + webfile + ", downloads=" + downloads + "]";
-	}
-	
 }

@@ -1,11 +1,22 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
  * @author 半梦
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Role implements Serializable {
+
+    private Integer id;
+
+    private String role;
 
     public static final Integer ROLE_USER = 1;
 
@@ -19,54 +30,25 @@ public class Role implements Serializable {
 
     public static final String SYSTEM_ADMIN = "管理员";
 
-    public Role getUser() {
-        return new Role(ROLE_USER, SYSTEM_USER);
+    @AllArgsConstructor
+    @Getter
+    private enum RoleFactory {
+        USER(new Role(ROLE_USER, SYSTEM_USER)),
+        TEACHER(new Role(ROLE_TEACHER, SYSTEM_TEACHER)),
+        ADMIN(new Role(ROLE_ADMIN, SYSTEM_ADMIN));
+        Role role;
     }
+
+    public Role getUser() {
+        return RoleFactory.USER.getRole();
+    }
+
     public Role getTeacher() {
-        return new Role(ROLE_TEACHER, SYSTEM_TEACHER);
+        return RoleFactory.TEACHER.getRole();
     }
 
     public Role getAdmin() {
-        return new Role(ROLE_ADMIN, SYSTEM_ADMIN);
+        return RoleFactory.ADMIN.getRole();
     }
 
-    private Integer id;
-
-    private String role;
-
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getRole() {
-        return role;
-    }
-
-    public void setRole(String role) {
-        this.role = role == null ? null : role.trim();
-    }
-
-    public Role(String role) {
-        this.role = role;
-    }
-
-    public Role() {
-    }
-
-    public Role(Integer id, String role) {
-        this.id = id;
-        this.role = role;
-    }
-
-    @Override
-    public String toString() {
-        return "Role{" +
-                "id=" + id +
-                ", role='" + role + '\'' +
-                '}';
-    }
 }

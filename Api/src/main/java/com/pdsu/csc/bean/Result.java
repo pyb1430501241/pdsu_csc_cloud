@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.ToString;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -8,6 +10,7 @@ import java.util.Map;
  * @author Admin
  *
  */
+@ToString
 public class Result{
 	/**
 	 * 
@@ -72,8 +75,4 @@ public class Result{
 		return this;
 	}
 	
-	@Override
-	public String toString() {
-		return "Result [json=" + json + "]";
-	}
 }

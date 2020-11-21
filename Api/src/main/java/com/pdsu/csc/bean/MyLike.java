@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,11 @@ import java.io.Serializable;
  * @author Admin
  *
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class MyLike implements Serializable{
     /**
 	 * 
@@ -25,42 +32,4 @@ public class MyLike implements Serializable{
      */
     private Integer likeId;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getUid() {
-        return uid;
-    }
-
-    public void setUid(Integer uid) {
-        this.uid = uid;
-    }
-
-    public Integer getLikeId() {
-        return likeId;
-    }
-
-    public void setLikeId(Integer likeId) {
-        this.likeId = likeId;
-    }
-
-	@Override
-	public String toString() {
-		return "MyLike [id=" + id + ", uid=" + uid + ", likeId=" + likeId + "]";
-	}
-
-	public MyLike(Integer id, Integer uid, Integer likeId) {
-		super();
-		this.id = id;
-		this.uid = uid;
-		this.likeId = likeId;
-	}
-    
-    public MyLike() {
-	}
 }

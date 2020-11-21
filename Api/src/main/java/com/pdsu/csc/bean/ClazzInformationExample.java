@@ -3,6 +3,7 @@ package com.pdsu.csc.bean;
 import java.util.ArrayList;
 import java.util.List;
 
+@Deprecated
 public class ClazzInformationExample {
     protected String orderByClause;
 

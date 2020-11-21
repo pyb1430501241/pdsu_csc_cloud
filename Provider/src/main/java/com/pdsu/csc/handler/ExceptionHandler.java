@@ -10,6 +10,7 @@ import com.pdsu.csc.exception.web.es.QueryException;
 import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
 import com.pdsu.csc.exception.web.user.*;
 import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.mail.EmailException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -299,8 +300,4 @@ public class ExceptionHandler extends ParentHandler {
         return Result.bedRequest().add(EXCEPTION, "无效的请求地址或参数错误");
     }
 
-    @Override
-    public Result advertising() {
-        return null;
-    }
 }

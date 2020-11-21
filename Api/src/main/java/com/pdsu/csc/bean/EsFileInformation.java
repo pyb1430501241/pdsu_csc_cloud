@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,11 @@ import java.io.Serializable;
  * @author 半梦
  *
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class EsFileInformation implements Serializable {
 
 	private Integer fileid;
@@ -15,33 +22,6 @@ public class EsFileInformation implements Serializable {
 	
 	private String description;
 
-	public Integer getFileid() {
-		return fileid;
-	}
-
-	public void setFileid(Integer fileid) {
-		this.fileid = fileid;
-	}
-
-	public String getTitle() {
-		return title;
-	}
-
-	public void setTitle(String title) {
-		this.title = title;
-	}
-
-	public String getDescription() {
-		return description;
-	}
-
-	public void setDescription(String description) {
-		this.description = description;
-	}
-	
-	public EsFileInformation() {
-	}
-
 	public EsFileInformation(String description, String title, Integer fileid) {
 		super();
 		this.fileid = fileid;
@@ -49,13 +29,4 @@ public class EsFileInformation implements Serializable {
 		this.description = description;
 	}
 
-	@Override
-	public String toString() {
-		return "{\r\n" + 
-				"  \"fileid\" : " + fileid + ",\r\n" + 
-				"  \"title\" : \"" + title + "\",\r\n" + 
-				"  \"description\" : \"" + description + "\"\r\n" + 
-				"}";
-	}
-	
 }

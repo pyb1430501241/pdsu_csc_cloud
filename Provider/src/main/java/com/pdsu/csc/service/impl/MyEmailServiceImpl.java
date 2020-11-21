@@ -35,7 +35,7 @@ public class MyEmailServiceImpl implements MyEmailService {
 		MyEmailExample example = new MyEmailExample();
 		MyEmailExample.Criteria criteria = example.createCriteria();
 		criteria.andEmailEqualTo(email);
-		return myEmailMapper.countByExample(example) == 0 ? false : true;
+		return myEmailMapper.countByExample(example) != 0;
 	}
 
 	@Override

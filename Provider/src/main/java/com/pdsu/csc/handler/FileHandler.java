@@ -13,6 +13,7 @@ import com.pdsu.csc.service.WebFileService;
 import com.pdsu.csc.utils.HashUtils;
 import com.pdsu.csc.utils.ShiroUtils;
 import com.pdsu.csc.utils.SimpleUtils;
+import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.ReaderInputStream;
 import org.slf4j.Logger;
@@ -36,6 +37,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("/file")
+@Log4j2
 @SuppressWarnings("unchecked")
 public class FileHandler extends ParentHandler {
 	
@@ -53,11 +55,6 @@ public class FileHandler extends ParentHandler {
 	 * 用户相关
 	 */
 	private UserInformationService userInformationService;
-	
-	/**
-	 * 日志
-	 */
-	private static final Logger log = LoggerFactory.getLogger(FileHandler.class);
 	
 	/**
 	 * 
@@ -176,12 +173,6 @@ public class FileHandler extends ParentHandler {
 		}
 		PageInfo<WebFile> fileList = new PageInfo<>(list);
 		return Result.success().add("fileList", files).add(HAS_NEXT_PAGE, fileList.isHasNextPage());
-	}
-
-
-	@Override
-	public Result advertising() {
-		return null;
 	}
 
 	@Autowired

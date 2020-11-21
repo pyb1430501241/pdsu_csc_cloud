@@ -1,10 +1,17 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
  * @author 半梦
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class FansInformation implements Serializable{
 
 	/**
@@ -16,34 +23,4 @@ public class FansInformation implements Serializable{
 	
 	private boolean islike;
 
-	public UserInformation getUser() {
-		return user;
-	}
-
-	public void setUser(UserInformation user) {
-		this.user = user;
-	}
-
-	public boolean isIslike() {
-		return islike;
-	}
-
-	public void setIslike(boolean islike) {
-		this.islike = islike;
-	}
-
-	public FansInformation(UserInformation user, boolean islike) {
-		super();
-		this.user = user;
-		this.islike = islike;
-	}
-
-	@Override
-	public String toString() {
-		return "FansInformation [user=" + user + ", islike=" + islike + "]";
-	}
-	
-	public FansInformation() {
-	}
-	
 }

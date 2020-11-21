@@ -1,10 +1,17 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
  * @author 半梦
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserClazzInformation implements Serializable {
     private Integer id;
 
@@ -12,44 +19,9 @@ public class UserClazzInformation implements Serializable {
 
     private Integer cid;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public Integer getUid() {
-        return uid;
-    }
-
-    public void setUid(Integer uid) {
-        this.uid = uid;
-    }
-
-    public Integer getCid() {
-        return cid;
-    }
-
-    public void setCid(Integer cid) {
-        this.cid = cid;
-    }
-
     public UserClazzInformation(Integer uid, Integer cid) {
         this.uid = uid;
         this.cid = cid;
     }
 
-    @Override
-    public String toString() {
-        return "UserClazzInformation{" +
-                "id=" + id +
-                ", uid=" + uid +
-                ", cid=" + cid +
-                '}';
-    }
-
-    public UserClazzInformation() {
-    }
 }

@@ -70,7 +70,7 @@ public class SimpleUtils {
 	 * @return
 	 */
 	public static String getSuffixName(@NonNull String name) {
-		return name.substring(name.lastIndexOf("."), name.length());
+		return name.substring(name.lastIndexOf("."));
 	}
 
 	/**
@@ -79,7 +79,7 @@ public class SimpleUtils {
 	 * @return
 	 */
 	public static String getSuffixNameExceptPoint(@NonNull String name) {
-		return name.substring(name.lastIndexOf(".") + 1, name.length());
+		return name.substring(name.lastIndexOf(".") + 1);
 	}
 	
 	/**
@@ -118,6 +118,7 @@ public class SimpleUtils {
 	 * @throws IllegalAccessException 
 	 * @throws InstantiationException 
 	 */
+	@NonNull
 	public static List<?> getObjectBySearchHit(@NonNull SearchHit [] searchHits, @NonNull Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		if(getConstructorByClass(clazz) == null) {
 			throw new NoSuchMethodException("无此构造方法");
@@ -252,6 +253,7 @@ public class SimpleUtils {
 	 * 	当时间差值大于一月时返回: startDate, 
 	 *  当时间差值位于两者之间时返回: xxx前.
 	 */
+	@NonNull
 	public static String getSimpleDateDifferenceFormat(@NonNull final String startDate) {
 		long t = getSimpleDateDifference(startDate, getSimpleDateSecond());
 		StringBuilder builder = new StringBuilder();

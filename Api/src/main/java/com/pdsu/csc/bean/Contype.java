@@ -1,5 +1,7 @@
 package com.pdsu.csc.bean;
 
+import lombok.*;
+
 import java.io.Serializable;
 
 /**
@@ -7,6 +9,11 @@ import java.io.Serializable;
  * @author Admin
  *
  */
+@ToString
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class Contype  implements Serializable{
     /**
 	 * 
@@ -17,33 +24,4 @@ public class Contype  implements Serializable{
 
     private String contype;
 
-    public Integer getId() {
-        return id;
-    }
-
-    public void setId(Integer id) {
-        this.id = id;
-    }
-
-    public String getContype() {
-        return contype;
-    }
-
-    public void setContype(String contype) {
-        this.contype = contype == null ? null : contype.trim();
-    }
-
-	@Override
-	public String toString() {
-		return "Contype [id=" + id + ", contype=" + contype + "]";
-	}
-
-	public Contype(Integer id, String contype) {
-		super();
-		this.id = id;
-		this.contype = contype;
-	}
-    
-    public Contype() {
-	}
 }

@@ -5,6 +5,7 @@ import com.pdsu.csc.bean.EsFileInformation;
 import com.pdsu.csc.bean.EsUserInformation;
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.es.service.EsService;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -32,6 +33,7 @@ import java.util.List;
  *  by 庞亚彬 2020-10-30
  */
 @RestController
+@Log4j2
 public class SearchHandler extends ParentHandler {
 	
 	@Resource(name = "esUserService")
@@ -42,8 +44,6 @@ public class SearchHandler extends ParentHandler {
 	
 	@Resource(name = "esFileService")
 	private EsService<EsFileInformation> esFileService;
-
-	private static final Logger log = LoggerFactory.getLogger(SearchHandler.class);
 
 	/**
 	 * 根据关键字在 es 中搜索 用户, 博客, 文件
@@ -62,8 +62,4 @@ public class SearchHandler extends ParentHandler {
 				.add("fileList", files);
 	}
 
-	@Override
-	public Result advertising() {
-		return null;
-	}
 }

@@ -1,0 +1,23 @@
+server:
+  # 本端口可以修改为自己想要的端口
+  port: 7001
+  servlet:
+    # 该配置代表该服务的访问路径
+    # 如当前配置下, 此服务的访问地址即为：localhost:7001/
+    context-path: /
+# Eureka 如需搭联机, 只需要修改部分本文件, 然后启动在想要联机的服务器上启动本 jar 包, 无需重新打包
+eureka:
+  instance:
+    # localhost 即代表本机, 如需再一个服务器上使用多端口模拟联机, 则需要修改本名为端口对应的映射名称
+    hostname: localhost
+  client:
+    # 表示自己就是注册中心，职责是维护服务实例，并不需要检索服务
+    fetch-registry: false
+    # 表示不向注册中心注册自己
+    register-with-eureka: false
+    service-url:
+      # 如单机版则无需修改本配置
+      # 如需联机则只需在此配置中加入其余服务器的公网IP
+      # 每一台均需要配置其余机器的公网IP以保证可以联机
+      # 例：http://${eureka.instance.hostname}:${server.port}/eureka/, http://129.204.206.237:${server.port}/eureka/
+      defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/

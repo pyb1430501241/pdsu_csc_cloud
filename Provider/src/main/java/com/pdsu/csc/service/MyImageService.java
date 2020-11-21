@@ -12,11 +12,17 @@ import org.springframework.lang.NonNull;
  *
  */
 public interface MyImageService {
-	
-	//根据一组学号来获取一组头像地址
+
+	/**
+	 * 根据一组 UID 获取对应头像
+	 * @param uids 一组 学号
+	 */
 	public List<MyImage> selectImagePathByUids(@NonNull List<Integer> uids);
 
-	//根据学号来获取头像地址
+	/**
+	 * 根据学号来获取头像地址
+	 * @param uid 学号
+	 */
 	public MyImage selectImagePathByUid(@NonNull Integer uid) throws NotFoundUidException;
 	
 	public boolean countByUid(@NonNull Integer uid);
