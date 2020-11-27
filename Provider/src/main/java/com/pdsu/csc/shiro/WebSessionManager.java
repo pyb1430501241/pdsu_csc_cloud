@@ -1,6 +1,7 @@
 package com.pdsu.csc.shiro;
 
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.DateUtils;
+import com.pdsu.csc.utils.HttpUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.shiro.web.servlet.Cookie;
 import org.apache.shiro.web.servlet.ShiroHttpServletRequest;
@@ -19,23 +20,20 @@ import java.io.Serializable;
  */
 public class WebSessionManager extends DefaultWebSessionManager{
 	
-	public static final String AUTHORIZATION = "Authorization";
-	
 	private static final String REFERENCED_SESSION_ID_SOURCE  = "Stateless request";
 
 	public WebSessionManager() {
-		Cookie cookie = new SimpleCookie(AUTHORIZATION);
+		Cookie cookie = new SimpleCookie(HttpUtils.AUTHORIZATION);
 		cookie.setHttpOnly(false);
 		setSessionIdCookieEnabled(true);
 		setSessionIdUrlRewritingEnabled(true);
 		setSessionIdCookie(cookie);
-		// 本系统默认单位是秒, 而 Shiro 框架默认以毫秒为单位, 故乘以 1000
-		setGlobalSessionTimeout(SimpleUtils.CSC_WEEK * 1000);
+		setGlobalSessionTimeout(DateUtils.getSessionTimeout());
 	}
 	
 	@Override
 	protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
-		String sessionId = WebUtils.toHttp(request).getHeader(AUTHORIZATION);
+		String sessionId = HttpUtils.getSessionId(WebUtils.toHttp(request));
 		if(!StringUtils.isEmpty(sessionId)) {
 			request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_SOURCE, REFERENCED_SESSION_ID_SOURCE);
 			request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID, sessionId);

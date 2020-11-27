@@ -7,11 +7,12 @@ import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.service.WebInformationService;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -85,7 +86,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 					try {
 						UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
 						Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-						EsUserInformation esUser = (EsUserInformation) SimpleUtils.
+						EsUserInformation esUser = (EsUserInformation) ElasticsearchUtils.
 								getObjectByMapAndClass(map, EsUserInformation.class);
 						esUser.setBlobnum(esUser.getBlobnum() + 1);
 						esDao.update(esUser, user.getId());
@@ -176,7 +177,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
 					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setBlobnum(esuser.getBlobnum()-1);
 					esDao.update(esuser, user.getId());
@@ -232,7 +233,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 			new Thread(()->{
 				try {
 					Map<String, Object> map = esDao.queryByTableNameAndId("blob", web.getId());
-					EsBlobInformation blob = (EsBlobInformation) SimpleUtils
+					EsBlobInformation blob = (EsBlobInformation) ElasticsearchUtils
 							.getObjectByMapAndClass(map, EsBlobInformation.class);
 					blob.setDescription(getDescriptionByWebData(web.getWebDataString()));
 					System.out.println(blob);

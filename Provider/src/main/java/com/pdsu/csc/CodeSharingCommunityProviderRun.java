@@ -7,6 +7,7 @@ import org.springframework.cloud.client.circuitbreaker.EnableCircuitBreaker;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.cloud.netflix.eureka.EnableEurekaClient;
 import org.springframework.cloud.netflix.hystrix.EnableHystrix;
+import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 /**
  * @author 半梦
@@ -16,6 +17,7 @@ import org.springframework.cloud.netflix.hystrix.EnableHystrix;
 @SpringCloudApplication
 @EnableEurekaClient
 @MapperScan({"com.pdsu.csc.dao"})
+@EnableTransactionManagement
 public class CodeSharingCommunityProviderRun {
 
     public static void main(String[] args) {

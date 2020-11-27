@@ -9,7 +9,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  *
  */
-public class EmailUtils {
+public final class EmailUtils {
 
 	private String text;
 	

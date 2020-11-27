@@ -1,0 +1,33 @@
+# 此工程为服务的动态配置
+server:
+  port: 3344
+spring:
+  application:
+    name: CodeSharingCommunityConfig
+  cloud:
+    config:
+      server:
+        git:
+          # 配置文件 github 地址
+          # 配置文件单独挂载到一个 github 储存库
+          # 如需修改则需要更换后的配置文件维持对应格式。
+          uri: https://github.com/pyb1430501241/pdsu_csc_config.git
+          force-pull: true
+          username: 1430501241@qq.com
+          password: pyb***20000112
+eureka:
+  client:
+    service-url:
+      # 将自己注册到哪一个 Eureka 管理里, 如 Eureka 集群, 则需要注册到所有 Eureka 集群里
+      defaultZone: http://localhost:7001/eureka/
+  instance:
+    # 自己在 Eureka 里的名称, 不可重复
+    instance-id: CodeSharingCommunity_配置端
+    # 显示自己的 IP
+    prefer-ip-address: true
+
+info:
+  app.name: CodeSharingCommunity_配置端_01
+  company.name: www.halfdream.cn/半梦的个人网址
+  build.artifactId: ${project.artifactId}
+  build.version: ${project.version}

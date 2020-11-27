@@ -9,7 +9,7 @@ import java.util.UUID;
  * @author 半梦
  *
  */
-public class RandomUtils {
+public final class RandomUtils {
 
 	/**
 	 * 返回邮箱验证码

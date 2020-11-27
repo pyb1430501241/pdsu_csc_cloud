@@ -13,11 +13,12 @@ import java.util.*;
 /**
  * @author 半梦
  */
-public class CodeUtils{
-	 
+@SuppressWarnings("all")
+public final class CodeUtils{
+
     private static final String VERIFY_CODES = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
-    
-    private static Random random = new Random();
+
+    private static final Random random = new Random();
     
     /**
      * @param verifySize    验证码长度
@@ -33,7 +34,7 @@ public class CodeUtils{
      * @return
      */
     public static String generateVerifyCode(int verifySize, String sources){
-        if(sources == null || sources.length() == 0){
+        if(StringUtils.isBlank(sources)){
             sources = VERIFY_CODES;
         }
         int codesLen = sources.length();

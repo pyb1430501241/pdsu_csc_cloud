@@ -1,0 +1,10 @@
+spring:
+  cloud:
+    config:
+      name: application
+      # 根据 profile 读取不同的属性
+      profile: dev
+      # 读取 Git 的那个枝干
+      label: master
+      # 配置服务地址
+      uri: http://localhost:3344

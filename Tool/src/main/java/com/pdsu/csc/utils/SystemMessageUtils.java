@@ -6,7 +6,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  * @create 2020-11-02 17:27
  */
-public class StringFactory {
+public final class SystemMessageUtils {
 
     /**
      *  获取用户的文章被评论时的系统提示信息

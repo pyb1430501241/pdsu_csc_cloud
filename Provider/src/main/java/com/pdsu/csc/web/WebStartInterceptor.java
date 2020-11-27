@@ -1,7 +1,7 @@
 package com.pdsu.csc.web;
 
 
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.DateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,16 +21,16 @@ public class WebStartInterceptor implements ServletContextListener{
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		date = SimpleUtils.getSimpleDateSecond();
+		date = DateUtils.getSimpleDateSecond();
 		log.info("Web应用: CodeSharingCommunity 启动, " + "当前时间: " + date);
 
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		log.info("Web应用: CodeSharingCommunity 关闭, " + "当前时间: " + SimpleUtils.getSimpleDateSecond());
-		log.info("启动总时间为: " + SimpleUtils.getSimpleDateDifference(date,
-				SimpleUtils.getSimpleDateSecond()) + " S");
+		log.info("Web应用: CodeSharingCommunity 关闭, " + "当前时间: " + DateUtils.getSimpleDateSecond());
+		log.info("启动总时间为: " + DateUtils.getSimpleDateDifference(date,
+				DateUtils.getSimpleDateSecond()) + " S");
 	}
 
 

@@ -9,7 +9,7 @@ import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidRepetitionException;
 import com.pdsu.csc.service.UserInformationService;
 import com.pdsu.csc.utils.HashUtils;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -358,7 +358,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 				try {
 					UserInformation userinfor = userInformationMapper.selectUserByUid(uid);
 					Map<String, Object> map = esDao.queryByTableNameAndId("user", userinfor.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setUsername(user.getUsername() == null ? userinfor.getUsername() : user.getUsername());
 					esDao.update(esuser, user.getId());

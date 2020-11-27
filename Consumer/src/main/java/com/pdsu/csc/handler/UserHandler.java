@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 
 /**
@@ -24,19 +25,20 @@ public class UserHandler {
     @CrossOrigin
     public Result login(@RequestParam String uid, @RequestParam String password,
                         @RequestParam String hit, @RequestParam String code,
-                        @RequestParam(value = "flag", defaultValue = "0")Integer flag) {
+                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
+                        HttpServletRequest request) {
         return providerService.login(uid, password, hit, code, flag);
     }
 
     @GetMapping("/getcodeforlogin")
     @CrossOrigin
-    public Result getCodeForLogin() {
+    public Result getCodeForLogin(HttpServletRequest request) {
         return providerService.getCodeForLogin();
     }
 
     @RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getLoginStatus(){
+    public Result getLoginStatus(HttpServletRequest request){
         return providerService.loginStatus();
     }
 
@@ -49,7 +51,9 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
     @CrossOrigin
-    public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception {
+    public Result sendEmailforApply(@RequestParam("email")String email,
+                                    @RequestParam("name")String name,
+                                    HttpServletRequest request) throws Exception {
         return providerService.getCodeFoyApply(email, name);
     }
 
@@ -64,13 +68,14 @@ public class UserHandler {
     @CrossOrigin
     public Result applyforAccountNumber(@Valid UserInformation user,
                                         @RequestParam String token,
-                                        @RequestParam String code){
+                                        @RequestParam String code,
+                                        HttpServletRequest request){
         return providerService.applyUser(user, token, code);
     }
 
     @RequestMapping(value = "/isexist", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getEmail(@RequestParam Integer uid) {
+    public Result getEmail(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.getEmailByUid(uid);
     }
 
@@ -82,7 +87,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
     @CrossOrigin
-    public Result sendEmailForRetrieve(@RequestParam String token) {
+    public Result sendEmailForRetrieve(@RequestParam String token, HttpServletRequest request) {
         return providerService.getCodeForRetrieve(token);
     }
 
@@ -100,7 +105,8 @@ public class UserHandler {
     public Result retrieveThePassword(@RequestParam Integer uid,
                                       @RequestParam String password,
                                       @RequestParam String token,
-                                      @RequestParam String code) {
+                                      @RequestParam String code,
+                                      HttpServletRequest request) {
         return providerService.retrieveThePassword(uid, password, token, code);
     }
 
@@ -111,7 +117,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getmodify", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getModify() {
+    public Result getModify(HttpServletRequest request) {
         return providerService.getModify();
     }
 
@@ -123,7 +129,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
     @CrossOrigin
-    public Result sendEmailForModify(@RequestParam String email) {
+    public Result sendEmailForModify(@RequestParam String email, HttpServletRequest request) {
         return providerService.getCodeForModify(email);
     }
 
@@ -136,7 +142,9 @@ public class UserHandler {
      */
     @RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
     @CrossOrigin
-    public Result modifyBefore(@RequestParam String token, @RequestParam String code) {
+    public Result modifyBefore(@RequestParam String token,
+                               @RequestParam String code,
+                               HttpServletRequest request) {
         return providerService.modifyBefore(token, code);
     }
 
@@ -148,7 +156,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/modify", method = RequestMethod.POST)
     @CrossOrigin
-    public Result modifyForPassword(@RequestParam String password) {
+    public Result modifyForPassword(@RequestParam String password, HttpServletRequest request) {
         return providerService.modifyForPassword(password);
     }
 
@@ -161,7 +169,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/like", method = RequestMethod.POST)
     @CrossOrigin
-    public Result like(@RequestParam Integer uid) {
+    public Result like(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.like(uid);
     }
 
@@ -173,7 +181,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/dislike", method = RequestMethod.POST)
     @CrossOrigin
-    public Result disLike(@RequestParam Integer uid) {
+    public Result disLike(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.disLike(uid);
     }
 
@@ -185,7 +193,7 @@ public class UserHandler {
      */
     @GetMapping("/likestatus")
     @CrossOrigin
-    public Result getLikeStatus(@RequestParam Integer uid) {
+    public Result getLikeStatus(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.getLikeStatus(uid);
     }
 
@@ -198,7 +206,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
     @CrossOrigin
-    public Result updateImage(@RequestParam("img") MultipartFile img) {
+    public Result updateImage(@RequestParam("img") MultipartFile img, HttpServletRequest request) {
         return providerService.updateImage(img);
     }
 
@@ -210,7 +218,7 @@ public class UserHandler {
      */
     @RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
     @CrossOrigin
-    public Result updateUserInformation(UserInformation user) {
+    public Result updateUserInformation(UserInformation user, HttpServletRequest request) {
         return providerService.updateUserInformation(user);
     }
 
@@ -222,7 +230,8 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p) {
+    public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p,
+                                       HttpServletRequest request) {
         return providerService.getOneselfBlobsByUid(p);
     }
 
@@ -234,7 +243,8 @@ public class UserHandler {
      */
     @CrossOrigin
     @GetMapping("/getoneselffans")
-    public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+    public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p,
+                                 HttpServletRequest request) {
         return providerService.getOneselfFans(p);
     }
 
@@ -246,7 +256,8 @@ public class UserHandler {
      */
     @CrossOrigin
     @GetMapping("/getoneselficons")
-    public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p) {
+    public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p,
+                                  HttpServletRequest request) {
         return providerService.getOneselfIcons(p);
     }
 
@@ -259,7 +270,9 @@ public class UserHandler {
      */
     @RequestMapping(value = "/getblobs", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, @RequestParam Integer uid) {
+    public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p,
+                                @RequestParam Integer uid,
+                                HttpServletRequest request) {
         return providerService.getBlobsByUid(p, uid);
     }
 
@@ -272,7 +285,9 @@ public class UserHandler {
      */
     @CrossOrigin
     @GetMapping("/getfans")
-    public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) {
+    public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p,
+                          @RequestParam Integer uid,
+                          HttpServletRequest request) {
         return providerService.getFans(p, uid);
     }
 
@@ -285,7 +300,9 @@ public class UserHandler {
      */
     @CrossOrigin
     @GetMapping("/geticons")
-    public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) {
+    public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p,
+                           @RequestParam Integer uid,
+                           HttpServletRequest request) {
         return providerService.getIcons(p, uid);
     }
 
@@ -296,7 +313,7 @@ public class UserHandler {
      */
     @RequestMapping("/loginemail")
     @CrossOrigin
-    public Result getEmailByUid() {
+    public Result getEmailByUid(HttpServletRequest request) {
         return providerService.getEmailByUid();
     }
 
@@ -315,7 +332,9 @@ public class UserHandler {
     @ResponseBody
     @GetMapping("/datacheck")
     @CrossOrigin
-    public Result dataCheck(@RequestParam String data, @RequestParam String type) {
+    public Result dataCheck(@RequestParam("data") String data,
+                            @RequestParam("type") String type,
+                            HttpServletRequest request) {
         return providerService.dataCheck(data, type);
     }
 
@@ -328,7 +347,8 @@ public class UserHandler {
     @ResponseBody
     @GetMapping("/getoneselfbrowsingrecord")
     @CrossOrigin
-    public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p) {
+    public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p,
+                                    HttpServletRequest request) {
         return providerService.getBrowsingRecord(p);
     }
 
@@ -341,7 +361,8 @@ public class UserHandler {
     @GetMapping("/getnotification")
     @ResponseBody
     @CrossOrigin
-    public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p) {
+    public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p,
+                                         HttpServletRequest request) {
         return providerService.getOneselfNotification(p);
     }
 

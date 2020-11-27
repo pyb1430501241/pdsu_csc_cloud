@@ -10,7 +10,6 @@ import com.pdsu.csc.exception.web.es.QueryException;
 import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
 import com.pdsu.csc.exception.web.user.*;
 import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
-import lombok.extern.log4j.Log4j2;
 import org.apache.commons.mail.EmailException;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -35,6 +34,7 @@ import java.io.UnsupportedEncodingException;
  */
 @ControllerAdvice
 @ResponseBody
+@SuppressWarnings("all")
 public class ExceptionHandler extends ParentHandler {
 
     private static final Logger log = LoggerFactory.getLogger("异常处理日志");
@@ -261,11 +261,11 @@ public class ExceptionHandler extends ParentHandler {
     }
 
     /**
-     * 处理 MethodArgumentTypeMismatchException 异常
+     * 处理 BindException 异常
      * @param e
      * @return
      */
-    @org.springframework.web.bind.annotation.ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    @org.springframework.web.bind.annotation.ExceptionHandler(BindException.class)
     public Result processBindException(BindException e) {
         BindingResult bindingResult = e.getBindingResult();
         String errorMessage = "";
@@ -278,12 +278,12 @@ public class ExceptionHandler extends ParentHandler {
     }
 
     /**
-     * 处理 BindException 异常
+     * 处理 MethodArgumentTypeMismatchException 异常
      * @ResponseStatus(HttpStatus.BAD_REQUEST)
      * @param e
      * @return
      */
-    @org.springframework.web.bind.annotation.ExceptionHandler(BindException.class)
+    @org.springframework.web.bind.annotation.ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public Result processMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException e) {
         log.info("请求API时发生未知错误, 原因: " + e.getMessage());
         return Result.bedRequest().add(EXCEPTION, "参数类型错误");

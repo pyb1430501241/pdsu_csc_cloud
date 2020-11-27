@@ -3,12 +3,14 @@ package com.pdsu.csc.handler;
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.WebInformation;
 import com.pdsu.csc.service.ProviderService;
+import com.pdsu.csc.utils.HttpUtils;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -17,6 +19,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("/blob")
+@Log4j2
 public class BlobHandler {
 
     @Autowired
@@ -28,8 +31,8 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
-            , @RequestParam(defaultValue = "0") Integer lid) {
+    public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p,
+                              @RequestParam(defaultValue = "0") Integer lid, HttpServletRequest request) {
         return providerService.getWebIndex(p, lid);
     }
 
@@ -40,7 +43,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/{webid}", method = RequestMethod.GET)
     @CrossOrigin
-    public Result toBlob(@PathVariable("webid")Integer id) {
+    public Result toBlob(@PathVariable("webid")Integer id, HttpServletRequest request) {
         return providerService.getBlobInformation(id);
     }
 
@@ -52,7 +55,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/collection", method = RequestMethod.POST)
     @CrossOrigin
-    public Result collection(@RequestParam Integer bid, @RequestParam Integer webid) {
+    public Result collection(@RequestParam Integer bid, @RequestParam Integer webid, HttpServletRequest request) {
         return providerService.collection(bid, webid);
     }
 
@@ -63,7 +66,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/decollection", method = RequestMethod.POST)
     @CrossOrigin
-    public Result deCollection(@RequestParam Integer webid) {
+    public Result deCollection(@RequestParam Integer webid, HttpServletRequest request) {
         return providerService.deCollection(webid);
     }
 
@@ -74,7 +77,7 @@ public class BlobHandler {
      */
     @GetMapping("/collectionstatuts")
     @ResponseBody
-    public Result collectionStatus(@RequestParam Integer webid) {
+    public Result collectionStatus(@RequestParam Integer webid, HttpServletRequest request) {
         return providerService.collectionStatus(webid);
     }
 
@@ -85,7 +88,8 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/contribution", method = RequestMethod.POST)
     @CrossOrigin
-    public Result insert(@Valid WebInformation web, @RequestParam(required = false) List<Integer> labelList) {
+    public Result insert(@Valid WebInformation web, @RequestParam(required = false) List<Integer> labelList,
+                         HttpServletRequest request) {
         return providerService.insert(web, labelList);
     }
 
@@ -96,7 +100,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
     @CrossOrigin
-    public Result delete(@RequestParam Integer webid) {
+    public Result delete(@RequestParam Integer webid, HttpServletRequest request) {
         return providerService.delete(webid);
     }
 
@@ -107,7 +111,8 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
     @CrossOrigin
-    public Result update(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList) {
+    public Result update(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList,
+                         HttpServletRequest request) {
         return providerService.update(web, labelList);
     }
 
@@ -119,7 +124,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/comment", method = RequestMethod.POST)
     @CrossOrigin
-    public Result postComment(@RequestParam Integer webid, @RequestParam String content) {
+    public Result postComment(@RequestParam Integer webid, @RequestParam String content, HttpServletRequest request) {
         return providerService.postComment(webid, content);
     }
 
@@ -135,7 +140,8 @@ public class BlobHandler {
     public Result postCommentReply(@RequestParam Integer webid,
                                    @RequestParam Integer cid,
                                    @RequestParam Integer bid,
-                                   @RequestParam String content) {
+                                   @RequestParam String content,
+                                   HttpServletRequest request) {
         return providerService.postCommentReply(webid, cid, bid, content);
     }
 
@@ -146,7 +152,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/getauthor", method = RequestMethod.GET)
     @CrossOrigin
-    public Result getAuthorByUid(@RequestParam Integer uid) {
+    public Result getAuthorByUid(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.getAuthorByUid(uid);
     }
 
@@ -157,7 +163,9 @@ public class BlobHandler {
      */
     @GetMapping("/getcollection")
     @CrossOrigin
-    public Result getCollectionByUid(@RequestParam Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p) {
+    public Result getCollectionByUid(@RequestParam Integer uid,
+                                     @RequestParam(value = "p", defaultValue = "1")Integer p,
+                                     HttpServletRequest request) {
         return providerService.getCollectionByUid(uid, p);
     }
 
@@ -166,7 +174,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/thumbs", method = RequestMethod.POST)
     @CrossOrigin
-    public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid) {
+    public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid, HttpServletRequest request) {
         return providerService.thumbs(webid, bid);
     }
 
@@ -175,7 +183,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
     @CrossOrigin
-    public Result dethumbs(@RequestParam Integer webid) {
+    public Result dethumbs(@RequestParam Integer webid, HttpServletRequest request) {
         return providerService.dethumbs(webid);
     }
 
@@ -186,7 +194,7 @@ public class BlobHandler {
      */
     @RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
     @CrossOrigin
-    public Result thumbsStatus(@RequestParam Integer webid) {
+    public Result thumbsStatus(@RequestParam Integer webid, HttpServletRequest request) {
         return providerService.thumbsStatus(webid);
     }
 
@@ -197,7 +205,7 @@ public class BlobHandler {
      */
     @PostMapping(value = "/blobimg")
     @CrossOrigin
-    public Result postBlobImg(@RequestParam MultipartFile img) {
+    public Result postBlobImg(@RequestParam MultipartFile img, HttpServletRequest request) {
         return providerService.postBlobImg(img);
     }
 
@@ -207,7 +215,7 @@ public class BlobHandler {
      */
     @ResponseBody
     @GetMapping("/getlabel")
-    public Result getLabel(@RequestParam(defaultValue = "1") Integer p) {
+    public Result getLabel(@RequestParam(defaultValue = "1") Integer p, HttpServletRequest request) {
         return providerService.getLabel(p);
     }
 
@@ -217,7 +225,7 @@ public class BlobHandler {
      */
     @GetMapping("/getcontype")
     @CrossOrigin
-    public Result getContype() {
+    public Result getContype(HttpServletRequest request) {
         return providerService.getContype();
     }
 

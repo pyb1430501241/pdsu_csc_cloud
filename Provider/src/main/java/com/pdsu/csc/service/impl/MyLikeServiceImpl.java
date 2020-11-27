@@ -8,7 +8,7 @@ import com.pdsu.csc.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.csc.service.MyLikeService;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -66,7 +66,7 @@ public class MyLikeServiceImpl implements MyLikeService {
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(myLike.getLikeId());
 					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setLikenum(esuser.getLikenum()+1);
 					esDao.update(esuser, user.getId());
@@ -127,7 +127,7 @@ public class MyLikeServiceImpl implements MyLikeService {
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(uid);
 					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setLikenum(esuser.getLikenum()-1);
 					esDao.update(esuser, user.getId());

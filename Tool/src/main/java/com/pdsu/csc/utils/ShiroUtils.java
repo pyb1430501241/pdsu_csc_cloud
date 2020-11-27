@@ -19,7 +19,8 @@ import java.util.Objects;
  * @author 半梦
  *
  */
-public class ShiroUtils {
+@SuppressWarnings("all")
+public final class ShiroUtils {
 
     @Nullable
 	public static UserInformation getUserInformation() {
@@ -45,7 +46,7 @@ public class ShiroUtils {
      * @param response
      * @return
      */
-    public static UserInformation getUserInformation(String sessionID,HttpServletRequest request,HttpServletResponse response) throws Exception{
+    public static UserInformation getUserInformation(String sessionID, HttpServletRequest request, HttpServletResponse response) throws Exception{
         SessionKey key = new WebSessionKey(sessionID,request,response);
         Session se = SecurityUtils.getSecurityManager().getSession(key);
         Object obj = se.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
@@ -57,7 +58,7 @@ public class ShiroUtils {
                 se.setAttribute("user", userInformation);
             }
             return userInformation;
-        }else{
+        } else {
             return null;
         }
     }

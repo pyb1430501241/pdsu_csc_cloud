@@ -10,10 +10,10 @@ import org.springframework.cloud.netflix.hystrix.dashboard.EnableHystrixDashboar
  */
 @SpringBootApplication
 @EnableHystrixDashboard
-public class CodeSharingCommunityHystrixDashBoard {
+public class CodeSharingCommunityHystrixDashBoardRun {
 
     public static void main(String[] args) {
-        SpringApplication.run(CodeSharingCommunityHystrixDashBoard.class, args);
+        SpringApplication.run(CodeSharingCommunityHystrixDashBoardRun.class, args);
     }
 
 }

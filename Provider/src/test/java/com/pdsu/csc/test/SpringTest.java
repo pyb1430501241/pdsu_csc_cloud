@@ -2,9 +2,9 @@ package com.pdsu.csc.test;
 
 import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.service.SystemNotificationService;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.DateUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.apache.shiro.SecurityUtils;
-import org.checkerframework.checker.units.qual.A;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,13 +19,11 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.FileInputStream;
-import java.io.InputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
@@ -45,6 +43,7 @@ public class SpringTest {
 
     MockMvc mvc;
 
+    @SuppressWarnings("all")
     @Autowired
     org.apache.shiro.mgt.SecurityManager securityManager;
 
@@ -491,7 +490,7 @@ public class SpringTest {
     @Test
     public void testTime() {
         Instant start = Instant.now();
-        System.out.println(SimpleUtils.getSimpleDateDifferenceFormat("2019-08-12 13:56:28"));
+        System.out.println(DateUtils.getSimpleDateDifferenceFormat("2019-08-12 13:56:28"));
         Instant end = Instant.now();
         System.out.println("??: " + Duration.between(start, end).toMillis());
     }
@@ -528,6 +527,7 @@ public class SpringTest {
     }
 
 
+    @SuppressWarnings("all")
     @Autowired
     private SystemNotificationService systemNotificationService;
 
@@ -565,7 +565,7 @@ public class SpringTest {
         new Thread(() -> {
             for(Integer i = 0; i < 20; i++) {
                 systemNotificationService.insert(Arrays.asList(
-                        new SystemNotification(181360226, "????", 181360241, 1, SimpleUtils.getSimpleDateSecond())
+                        new SystemNotification(181360226, "????", 181360241, 1, DateUtils.getSimpleDateSecond())
                 ));
                 try {
                     Thread.sleep(20000);

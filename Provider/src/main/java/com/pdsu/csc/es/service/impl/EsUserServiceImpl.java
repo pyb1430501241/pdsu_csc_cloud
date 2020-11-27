@@ -4,7 +4,7 @@ import com.pdsu.csc.bean.EsUserInformation;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.exception.web.es.QueryException;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -57,7 +57,7 @@ public class EsUserServiceImpl implements EsService<EsUserInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsUserInformation>) SimpleUtils.getObjectBySearchHit(searchHits, EsUserInformation.class);
+			return (List<EsUserInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsUserInformation.class);
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			throw new QueryException("解析用户失败");

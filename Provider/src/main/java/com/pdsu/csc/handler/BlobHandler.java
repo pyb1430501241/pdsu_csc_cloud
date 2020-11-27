@@ -2,7 +2,6 @@ package com.pdsu.csc.handler;
 
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
-import com.netflix.hystrix.contrib.javanica.annotation.HystrixCommand;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.*;
 import com.pdsu.csc.shiro.WebSessionManager;
@@ -10,9 +9,8 @@ import com.pdsu.csc.utils.*;
 import lombok.extern.log4j.Log4j2;
 import net.coobird.thumbnailator.Thumbnails;
 import org.apache.shiro.web.util.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.ObjectUtils;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -209,7 +207,7 @@ public class BlobHandler extends ParentHandler {
 		log.info("添加用户浏览记录");
 		if(!Objects.isNull(user.getUsername())) {
 			userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), 1
-				, SimpleUtils.getSimpleDateSecond()));
+				, DateUtils.getSimpleDateSecond()));
 		}
 		log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
 		log.info("获取网页访问量");
@@ -242,7 +240,7 @@ public class BlobHandler extends ParentHandler {
 		}
 		for(WebComment webComment : commentList) {
 			WebComment webc = webComment;
-			webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
+			webc.setCreatetime(DateUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
 			for(UserInformation us : userList) {
 				if(webc.getUid().equals(us.getUid())) {
 					webc.setUsername(us.getUsername());
@@ -253,7 +251,7 @@ public class BlobHandler extends ParentHandler {
 		}
 		for(WebCommentReply reply : commentReplyList) {
 			WebCommentReply webc = reply;
-			webc.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
+			webc.setCreatetime(DateUtils.getSimpleDateDifferenceFormat(webc.getCreatetime()));
 			for(UserInformation us : userList) {
 				if(webc.getUid().equals(us.getUid())) {
 					webc.setUsername(us.getUsername());
@@ -300,8 +298,8 @@ public class BlobHandler extends ParentHandler {
 			log.info("用户: " + user.getUid() + ", 收藏 " + webid + " 成功");
 			WebInformation w = webInformationService.selectById(webid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
-					bid, StringFactory.getCollectionString(user.getUsername(), w.getTitle()), user.getUid(),
-					SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+					bid, SystemMessageUtils.getCollectionString(user.getUsername(), w.getTitle()), user.getUid(),
+					SYSTEM_NOTIFICATION_UNREAD, DateUtils.getSimpleDateSecond()
 			)));
 			return Result.success();
 		}
@@ -369,7 +367,7 @@ public class BlobHandler extends ParentHandler {
 		//把网页主体内容转化为byte字节
 		web.setWebData(web.getWebDataString().getBytes("UTF-8"));
 		//设置文章投稿时间
-		web.setSubTime(SimpleUtils.getSimpleDateSecond());
+		web.setSubTime(DateUtils.getSimpleDateSecond());
 		//发布文章
 		int flag = webInformationService.insert(web);
 		if(flag > 0) {
@@ -455,16 +453,16 @@ public class BlobHandler extends ParentHandler {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
 		boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(),
-				content, 0, SimpleUtils.getSimpleDateSecond(), 0));
+				content, 0, DateUtils.getSimpleDateSecond(), 0));
 		if(b) {
 			log.info("用户发布评论成功");
 			WebInformation u = webInformationService.selectById(webid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
-					u.getUid(), StringFactory.getCommentString(user.getUsername(), u.getTitle(), content),
-					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+					u.getUid(), SystemMessageUtils.getCommentString(user.getUsername(), u.getTitle(), content),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, DateUtils.getSimpleDateSecond()
 			)));
 			return Result.success().add("username", user.getUsername())
-					.add("createtime", SimpleUtils.getSimpleDateSecond())
+					.add("createtime", DateUtils.getSimpleDateSecond())
 					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 		}
 		log.warn("用户发布评论失败, 原因: 插入数据库失败");
@@ -488,16 +486,16 @@ public class BlobHandler extends ParentHandler {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
 		boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content,
-					0, SimpleUtils.getSimpleDateSecond()));
+					0, DateUtils.getSimpleDateSecond()));
 		if(b) {
 			log.info("用户回复评论成功");
 			WebComment c = webCommentService.selectCommentById(cid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
-					bid, StringFactory.getCommentReplyString(user.getUsername(), c.getContent(), content),
-					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+					bid, SystemMessageUtils.getCommentReplyString(user.getUsername(), c.getContent(), content),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, DateUtils.getSimpleDateSecond()
 			)));
 			return Result.success().add("username", user.getUsername())
-					.add("createtime", SimpleUtils.getSimpleDateSecond())
+					.add("createtime", DateUtils.getSimpleDateSecond())
 					.add("imgpath", myImageService.selectImagePathByUid(user.getUid()).getImagePath());
 		}
 		log.warn("用户回复评论失败, 原因: 连接数据库失败");
@@ -562,7 +560,7 @@ public class BlobHandler extends ParentHandler {
 		author.setDownloads(downloads);
 		log.info("获取作者信息成功");
 		Result result = Result.success().add("author", author).add("webList", webs);
-		if(!StringUtils.isEmpty(WebUtils.toHttp(request).getHeader(WebSessionManager.AUTHORIZATION))) {
+		if(!ObjectUtils.isEmpty(HttpUtils.getSessionId(WebUtils.toHttp(request)))) {
 			boolean b = true;
 			if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
 				b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
@@ -634,8 +632,8 @@ public class BlobHandler extends ParentHandler {
 			log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
 			WebInformation w = webInformationService.selectById(webid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
-					bid, StringFactory.getThumbsString(user.getUsername(), w.getTitle()),
-					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, SimpleUtils.getSimpleDateSecond()
+					bid, SystemMessageUtils.getThumbsString(user.getUsername(), w.getTitle()),
+					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, DateUtils.getSimpleDateSecond()
 			)));
 			return Result.success();
 		}

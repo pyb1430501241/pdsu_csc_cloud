@@ -6,7 +6,7 @@ import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.service.MyImageService;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -94,7 +94,7 @@ public class MyImageServiceImpl implements MyImageService {
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(myImage.getUid());
 					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) SimpleUtils.
+					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setImgpath(myImage.getImagePath());
 					esDao.update(esuser, user.getId());

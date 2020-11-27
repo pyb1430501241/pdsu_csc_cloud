@@ -1,0 +1,40 @@
+server:
+  port: 9527
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: CodeSharingCommunityZuulGateway
+  cloud:
+    config:
+      discovery:
+        enabled: true
+    loadbalancer:
+      ribbon:
+        enabled: false
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:7001/eureka/
+  instance:
+    instance-id: CodeSharingCommunity_路由网关
+    prefer-ip-address: true
+zuul:
+  ignored-services: '*'
+  sensitive-headers:
+  add-proxy-headers: false
+  add-host-header: true
+  prefix: /api
+  routes:
+    study:
+      path: /**
+      service-id: CodeSharingCommunityProvider
+  strip-prefix: false
+
+
+info:
+  app.name: CodeSharingCommunity_路由网关_01
+  company.name: www.halfdream.cn/半梦的个人网址
+  build.artifactId: ${project.artifactId}
+  build.version: ${project.version}

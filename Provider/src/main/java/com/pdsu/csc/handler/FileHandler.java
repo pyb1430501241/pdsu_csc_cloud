@@ -10,9 +10,7 @@ import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.FileDownloadService;
 import com.pdsu.csc.service.UserInformationService;
 import com.pdsu.csc.service.WebFileService;
-import com.pdsu.csc.utils.HashUtils;
-import com.pdsu.csc.utils.ShiroUtils;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.input.ReaderInputStream;
@@ -72,11 +70,11 @@ public class FileHandler extends ParentHandler {
 		Integer uid = user.getUid();
 		log.info("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
 		byte [] s = file.getBytes();
-		String name = HashUtils.getFileNameForHash(title) + SimpleUtils.getSuffixName(file.getOriginalFilename());
+		String name = HashUtils.getFileNameForHash(title) + StringUtils.getSuffixName(file.getOriginalFilename());
 		log.info("文件名为: " + name);
 		FileUtils.writeByteArrayToFile(new File(File_FilePath + name), s);
 		log.info("文件写入成功, 开始在服务器保存地址");
-		WebFile webFile = new WebFile(uid, title, description, name, SimpleUtils.getSimpleDateSecond());
+		WebFile webFile = new WebFile(uid, title, description, name, DateUtils.getSimpleDateSecond());
 		boolean b = webFileService.insert(webFile);
 		if(b) {
 			log.info("上传成功");
@@ -107,7 +105,7 @@ public class FileHandler extends ParentHandler {
 			String url = File_FilePath + filePath;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
-			String filename = title + "_" + uid + SimpleUtils.getSuffixName(filePath);
+			String filename = title + "_" + uid + StringUtils.getSuffixName(filePath);
 			response.setHeader("Content-Disposition", "attachment;filename=\"" + filename + "\"");
 			out = response.getOutputStream();
 			byte [] bytes = new byte[in.available()];

@@ -22,13 +22,11 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -174,7 +172,7 @@ public class UserHandler extends ParentHandler {
 						@RequestParam String hit, @RequestParam String code,
 						@RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
 		log.info("账号: " + uid + "登录开始");
-		log.info("参数为: " + SimpleUtils.toString(uid, password, hit, code, flag));
+		log.info("参数为: " + StringUtils.toString(uid, password, hit, code, flag));
 		if(Objects.isNull(cache.get(hit))) {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
@@ -247,10 +245,10 @@ public class UserHandler extends ParentHandler {
 	@CrossOrigin
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
-			if(StringUtils.isEmpty(email)) {
+			if(ObjectUtils.isEmpty(email)) {
 				return Result.fail().add(EXCEPTION, "邮箱不可为空");
 			}
-			if(StringUtils.isEmpty(name)) {
+			if(ObjectUtils.isEmpty(name)) {
 				return Result.fail().add(EXCEPTION, "用户名不可为空");
 			}
 			if(myEmailService.countByEmail(email)) {
@@ -302,7 +300,7 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, "用户名已存在");
 		}
 		user.setAccountStatus(USER_STATUS_NORMAL);
-		user.setTime(SimpleUtils.getSimpleDate());
+		user.setTime(DateUtils.getSimpleDate());
 		boolean flag = userInformationService.insert(user);
 		if(flag) {
 			myImageService.insert(new MyImage(user.getUid(), Default_User_Img_Name));
@@ -341,7 +339,7 @@ public class UserHandler extends ParentHandler {
 			}
 			String token = RandomUtils.getUUID();
 			cache.put(token, email.getEmail());
-			email.setEmail(SimpleUtils.getAsteriskForString(email.getEmail()));
+			email.setEmail(StringUtils.getAsteriskForString(email.getEmail()));
 			return Result.success().add("email", email)
 					.add("uid", uid)
 					.add("token", token);
@@ -598,7 +596,7 @@ public class UserHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 更换头像开始");
-		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + SimpleUtils.getSuffixName(img.getOriginalFilename());
+		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + StringUtils.getSuffixName(img.getOriginalFilename());
 		File file;
 		log.info("判断用户头像是否为初始头像");
 		if (user.getImgpath() != null && !user.getImgpath().equals(Default_User_Img_Name)) {
@@ -638,13 +636,13 @@ public class UserHandler extends ParentHandler {
 		log.info("原信息为: " + userinfor);
 		boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
 		if(b) {
-			if(!StringUtils.isEmpty(user.getUsername())) {
+			if(!ObjectUtils.isEmpty(user.getUsername())) {
 				userinfor.setUsername(user.getUsername());
 			}
-			if(!StringUtils.isEmpty(user.getClazz())) {
+			if(!ObjectUtils.isEmpty(user.getClazz())) {
 				userinfor.setClazz(user.getClazz());
 			}
-			if(!StringUtils.isEmpty(user.getCollege())) {
+			if(!ObjectUtils.isEmpty(user.getCollege())) {
 				userinfor.setCollege(user.getCollege());
 			}
 			log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
@@ -900,7 +898,7 @@ public class UserHandler extends ParentHandler {
 			log.info("获取失败, 该用户未绑定邮箱");
 			return Result.fail().add(EXCEPTION, "该用户未绑定邮箱");
 		}
-		String email = SimpleUtils.getAsteriskForString(myEmail.getEmail());
+		String email = StringUtils.getAsteriskForString(myEmail.getEmail());
 		return Result.success().add("email", email);
 	}
 	
@@ -1009,7 +1007,7 @@ public class UserHandler extends ParentHandler {
 		for (int i = 0; i < userBrowsingRecords.size(); i++) {
 			BrowsingRecordInformation browsingRecordInformation = new BrowsingRecordInformation();
 			UserBrowsingRecord record = userBrowsingRecords.get(i);
-			browsingRecordInformation.setCreatetime(SimpleUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
+			browsingRecordInformation.setCreatetime(DateUtils.getSimpleDateDifferenceFormat(record.getCreatetime()));
 			browsingRecordInformation.setWfid(record.getWfid());
 			if(record.getTpye().equals(BLOB)) {
 				browsingRecordInformation.setType(BLOB);

@@ -13,6 +13,8 @@
         <module>../Consumer</module>
         <module>../Eureka</module>
         <module>../HystrixDashboard</module>
+        <module>../WebConfigServer</module>
+        <module>../Tool</module>
     </modules>
     <packaging>pom</packaging>
 
@@ -294,6 +296,21 @@
                 <groupId>org.springframework.cloud</groupId>
                 <artifactId>spring-cloud-starter-netflix-zuul</artifactId>
                 <version>2.2.5.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework.cloud</groupId>
+                <artifactId>spring-cloud-config-server</artifactId>
+                <version>2.2.5.RELEASE</version>
+            </dependency>
+            <dependency>
+                <groupId>org.eclipse.jgit</groupId>
+                <artifactId>org.eclipse.jgit</artifactId>
+                <version>4.10.0.201712302008-r</version>
+            </dependency>
+            <dependency>
+                <groupId>org.springframework</groupId>
+                <artifactId>spring-core</artifactId>
+                <version>5.3.1</version>
             </dependency>
         </dependencies>
     </dependencyManagement>

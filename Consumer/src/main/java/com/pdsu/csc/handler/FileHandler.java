@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 /**
@@ -29,7 +30,8 @@ public class FileHandler {
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
     @CrossOrigin
     public Result upload(@RequestParam("file") MultipartFile file, @RequestParam String title,
-                         @RequestParam String description) {
+                         @RequestParam String description,
+                         HttpServletRequest request) {
         return providerService.upload(file, title, description);
     }
 
@@ -40,7 +42,8 @@ public class FileHandler {
      */
     @RequestMapping(value = "/download", method = RequestMethod.GET)
     @CrossOrigin
-    public Result download(@RequestParam Integer uid, @RequestParam String title) {
+    public Result download(@RequestParam Integer uid, @RequestParam String title,
+                           HttpServletRequest request) {
         return providerService.download(uid, title);
     }
 
@@ -51,7 +54,7 @@ public class FileHandler {
      */
     @GetMapping("/getfileindex")
     @CrossOrigin
-    public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) {
+    public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p, HttpServletRequest request) {
         return providerService.getFileIndex(p);
     }
 

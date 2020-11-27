@@ -4,13 +4,11 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.HandlerValueEnum;
-import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.exception.web.user.*;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.web.bind.annotation.GetMapping;
 
 import java.io.File;
 import java.io.IOException;
@@ -144,7 +142,7 @@ public abstract class ParentHandler implements AbstractHandler {
     private static class InitSystem {
         /**
          * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
-         * 详细信息请参考 csc.properties
+         * 详细信息请参考 classpath:properties/csc.properties
          */
         private static void initProperties() {
             log.info("系统配置初始化...");
@@ -160,7 +158,7 @@ public abstract class ParentHandler implements AbstractHandler {
                     switch (HandlerValueEnum.getByKey(key)) {
                         case IMG_SUFFIX :
                             Img_Suffix = value;
-                            Img_Suffix_Except_Point = SimpleUtils.getSuffixNameExceptPoint(value);
+                            Img_Suffix_Except_Point = StringUtils.getSuffixNameExceptPoint(value);
                             break;
                         case FILE_FILEPATH :
                             File_FilePath = value;
@@ -178,7 +176,7 @@ public abstract class ParentHandler implements AbstractHandler {
                     }
                 }
             } catch (IOException e) {
-                log.warn("初始化配置失败...");
+                log.warn("初始化配置失败...", e);
             }
             log.info("系统初始化成功...");
         }

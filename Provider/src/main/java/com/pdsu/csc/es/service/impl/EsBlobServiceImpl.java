@@ -4,7 +4,7 @@ import com.pdsu.csc.bean.EsBlobInformation;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.exception.web.es.QueryException;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -59,7 +59,7 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsBlobInformation>) SimpleUtils.getObjectBySearchHit(searchHits, EsBlobInformation.class);
+			return (List<EsBlobInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsBlobInformation.class);
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			throw new QueryException("解析博客失败");

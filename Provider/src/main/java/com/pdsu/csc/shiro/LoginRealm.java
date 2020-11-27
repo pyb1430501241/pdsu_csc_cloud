@@ -8,7 +8,8 @@ import com.pdsu.csc.service.MyEmailService;
 import com.pdsu.csc.service.MyImageService;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.service.UserInformationService;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
+import com.pdsu.csc.utils.StringUtils;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -68,7 +69,7 @@ public class LoginRealm extends AuthorizingRealm {
 		} catch (NotFoundUidException e) {
 		}
 		userInformation.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(userInformation.getUid()));
-		userInformation.setEmail(SimpleUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(userInformation.getUid()).getEmail()));
+		userInformation.setEmail(StringUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(userInformation.getUid()).getEmail()));
 		return new SimpleAuthenticationInfo(userInformation, credentials, credentialsSalt, realmName);
 	}
 	

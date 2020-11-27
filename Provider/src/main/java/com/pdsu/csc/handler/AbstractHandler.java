@@ -1,31 +1,13 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
-import com.pdsu.csc.exception.web.DeleteInforException;
-import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
-import com.pdsu.csc.exception.web.blob.RepetitionThumbsException;
-import com.pdsu.csc.exception.web.blob.comment.NotFoundCommentIdException;
-import com.pdsu.csc.exception.web.es.InsertException;
-import com.pdsu.csc.exception.web.es.QueryException;
-import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
-import com.pdsu.csc.exception.web.user.*;
-import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
-import org.apache.commons.mail.EmailException;
-import org.apache.shiro.authc.AuthenticationException;
-import org.springframework.validation.BindException;
-import org.springframework.web.bind.MissingServletRequestParameterException;
-import org.springframework.web.bind.annotation.ExceptionHandler;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
-
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 /**
  * @author 半梦
  * @create 2020-08-29 15:19
  * 该接口提供一些系统所需的默认参数
  */
+@SuppressWarnings("all")
 public interface AbstractHandler {
 
     /**

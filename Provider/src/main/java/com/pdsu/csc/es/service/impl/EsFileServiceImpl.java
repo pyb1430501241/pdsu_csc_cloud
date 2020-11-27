@@ -7,7 +7,7 @@ import com.pdsu.csc.bean.EsFileInformation;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.exception.web.es.QueryException;
-import com.pdsu.csc.utils.SimpleUtils;
+import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.elasticsearch.action.search.SearchRequest;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -60,7 +60,7 @@ public class EsFileServiceImpl implements EsService<EsFileInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsFileInformation>) SimpleUtils.getObjectBySearchHit(searchHits, EsFileInformation.class);
+			return (List<EsFileInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsFileInformation.class);
 		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
 				| IllegalArgumentException | InvocationTargetException e) {
 			System.out.println(e.getMessage());
