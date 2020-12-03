@@ -11,7 +11,7 @@ import java.net.UnknownHostException;
  * @author 半梦
  * @create 2020-11-26 19:18
  */
-public final class HttpUtils {
+public abstract class HttpUtils {
 
     private static final String X_FORWARDED_FOR_IP_HEADER_NAME = "x-forwarded-for";
     private static final String PROXY_CLIENT_IP_HEADER_NAME = "Proxy-Client-IP";
@@ -32,7 +32,7 @@ public final class HttpUtils {
     /**
      * 获取用户 IP
      */
-    @NonNull
+    @Nullable
     public static String getIpAddr(@NonNull HttpServletRequest request) {
         String ipAddress;
         try {

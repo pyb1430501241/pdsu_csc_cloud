@@ -8,7 +8,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  *
  */
-public final class HashUtils {
+public abstract class HashUtils {
 
 	/**
 	 * 根据账号密码去加密密码

@@ -72,7 +72,7 @@ public class FileHandler extends ParentHandler {
 		byte [] s = file.getBytes();
 		String name = HashUtils.getFileNameForHash(title) + StringUtils.getSuffixName(file.getOriginalFilename());
 		log.info("文件名为: " + name);
-		FileUtils.writeByteArrayToFile(new File(File_FilePath + name), s);
+		FileUtils.writeByteArrayToFile(new File(fileFilePath + name), s);
 		log.info("文件写入成功, 开始在服务器保存地址");
 		WebFile webFile = new WebFile(uid, title, description, name, DateUtils.getSimpleDateSecond());
 		boolean b = webFileService.insert(webFile);
@@ -102,7 +102,7 @@ public class FileHandler extends ParentHandler {
 			log.info("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String filePath = webfile.getFilePath();
-			String url = File_FilePath + filePath;
+			String url = fileFilePath + filePath;
 			in = new FileInputStream(url);
 			response.setContentType("multipart/form-data");
 			String filename = title + "_" + uid + StringUtils.getSuffixName(filePath);

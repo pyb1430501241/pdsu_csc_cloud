@@ -1,10 +1,13 @@
 package com.pdsu.csc.utils;
 
+import com.pdsu.csc.bean.EsBlobInformation;
+import com.pdsu.csc.bean.EsFileInformation;
+import org.springframework.beans.BeanUtils;
 import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,28 +15,14 @@ import java.util.Set;
  * @author 半梦
  * @create 2020-11-26 19:48
  */
-public final class ConstructorUtils {
+public abstract class ConstructorUtils {
 
     /**
      * 获取该类的构造器
      */
-    @Nullable
-    protected static Constructor<?> getConstructorByClass(@NonNull Class<?> clazz) throws NoSuchMethodException, SecurityException{
-        String name = StringUtils.getSuffixName(clazz.getName()).replaceFirst("[.]", "");
-        Constructor<?> constructor;
-        switch (name) {
-            case "EsUserInformation":
-                constructor = clazz.getDeclaredConstructor(Integer.class, Integer.class, String.class, Integer.class, String.class);
-                break;
-            case "EsBlobInformation":
-                constructor = clazz.getDeclaredConstructor(Integer.class, String.class, String.class);
-                break;
-            case "EsFileInformation":
-                constructor = clazz.getDeclaredConstructor(String.class, String.class, Integer.class);
-                break;
-            default:
-                return clazz.getConstructors()[0];
-        }
+    @NonNull
+    protected static <T> Constructor<T> getConstructorByClass(@NonNull Class<T> clazz) throws NoSuchMethodException, SecurityException{
+        Constructor<T> constructor = clazz.getConstructor();
         constructor.setAccessible(true);
         return constructor;
     }
@@ -42,15 +31,31 @@ public final class ConstructorUtils {
      * 根据构造器把 map 封装成对象
      */
     @NonNull
-    protected static Object getObjectByMap(@NonNull Map<String, Object> map, @NonNull Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+    protected static <T> T getObjectByMapAndClass(@NonNull Map<String, Object> map, @NonNull Class<T> clazz) throws IllegalArgumentException, NoSuchMethodException, NoSuchFieldException, IllegalAccessException {
+        Constructor<T> constructor = getConstructorByClass(clazz);
+        T bean = BeanUtils.instantiateClass(constructor);
+        populateBean(map, bean);
+        return bean;
+    }
+
+    /**
+     * 为属性赋值
+     */
+    public static void populateBean(@NonNull Map<String, Object> map, @NonNull Object bean) throws NoSuchFieldException, IllegalAccessException {
         Set<String> keySet = map.keySet();
-        Object [] objects = new Object[keySet.size()];
-        int i = 0;
+        Class<?> clazz = bean.getClass();
         for(String key : keySet) {
-            objects[i] = map.get(key);
-            i++;
+            doSetBeanAttribute(bean, key, map.get(key), clazz);
         }
-        return constructor.newInstance(objects);
+    }
+
+    /**
+     * 为属性赋值
+     */
+    private static void doSetBeanAttribute(Object bean, String key, Object value, Class<?> clazz) throws NoSuchFieldException, IllegalAccessException {
+        Field declaredField = clazz.getDeclaredField(key);
+        declaredField.setAccessible(true);
+        declaredField.set(bean, value);
     }
 
 }

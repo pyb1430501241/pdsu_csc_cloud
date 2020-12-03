@@ -1,5 +1,6 @@
 package com.pdsu.csc.shiro;
 
+import com.pdsu.csc.bean.AccountStatus;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UserAbnormalException;
@@ -44,6 +45,20 @@ public class LoginRealm extends AuthorizingRealm {
 			AuthenticationToken token) throws AuthenticationException {
 		UsernamePasswordToken uptoken = (UsernamePasswordToken) token;
 		Integer uid = Integer.parseInt(uptoken.getUsername());
+
+		UserInformation user = getUserInformation(uid);
+
+		determineAccountStatus(user.getAccountStatus());
+
+		perfectInformation(user);
+
+		Object credentials = user.getPassword();
+		String realmName = getName();
+		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
+		return new SimpleAuthenticationInfo(user, credentials, credentialsSalt, realmName);
+	}
+
+	private UserInformation getUserInformation(Integer uid) {
 		if(userInformationService.countByUid(uid) == 0) {
 			throw new UnknownAccountException("账号不存在");
 		}
@@ -52,27 +67,32 @@ public class LoginRealm extends AuthorizingRealm {
 		if(userInformation == null) {
 			throw new UserAbnormalException("未知错误, 请稍候重试");
 		}
-		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_FROZEN)) {
-			throw new UserAbnormalException("账号被冻结");
-		}
-		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_BAN)) {
-			throw new UserAbnormalException("账号被封禁");
-		}
-		if(user.getAccountStatus().equals(UserHandler.USER_STATUS_CANCELLED)) {
-			throw new UserAbnormalException("账号已注销");
-		}
-		Object credentials = userInformation.getPassword();
-		String realmName = getName();
-		ByteSource credentialsSalt = ByteSource.Util.bytes(uid+"");
-		try {
-			userInformation.setImgpath(myImageService.selectImagePathByUid(userInformation.getUid()).getImagePath());
-		} catch (NotFoundUidException e) {
-		}
-		userInformation.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(userInformation.getUid()));
-		userInformation.setEmail(StringUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(userInformation.getUid()).getEmail()));
-		return new SimpleAuthenticationInfo(userInformation, credentials, credentialsSalt, realmName);
+		return userInformation;
 	}
-	
+
+	private void determineAccountStatus(Integer status) {
+		switch (AccountStatus.getByKey(status)) {
+			case FROZEN:
+				throw new UserAbnormalException("账号已被冻结");
+			case BAN:
+				throw new UserAbnormalException("账号已被封禁");
+			case CANCELLED:
+				throw new UserAbnormalException("账号已被注销");
+			case OTHER:
+				throw new UserAbnormalException("未知错误, 请稍候重试");
+		}
+	}
+
+	private void perfectInformation(UserInformation user) {
+		try {
+			user.setImgpath(myImageService.selectImagePathByUid(user.getUid()).getImagePath());
+		} catch (NotFoundUidException e) {
+			throw new UserAbnormalException("未知错误, 请稍候重试");
+		}
+		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+		user.setEmail(StringUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(user.getUid()).getEmail()));
+	}
+
 	/**
 	 * 负责权限分配
 	 * 舍弃

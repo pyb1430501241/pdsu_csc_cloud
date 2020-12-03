@@ -19,6 +19,7 @@ public class ProviderServiceError implements ProviderService {
 
     private static final String NETWORK_BUSY = "网络繁忙, 请稍候重试";
     private static final String EXCEPTION = "exception";
+
     private static final Result RESULT = Result.fail().add(EXCEPTION, NETWORK_BUSY);
 
     @Override

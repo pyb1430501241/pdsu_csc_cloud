@@ -14,7 +14,7 @@ import java.util.*;
  * @author 半梦
  */
 @SuppressWarnings("all")
-public final class CodeUtils{
+public abstract class CodeUtils{
 
     private static final String VERIFY_CODES = "0123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjklmnpqrstuvwxyz";
 

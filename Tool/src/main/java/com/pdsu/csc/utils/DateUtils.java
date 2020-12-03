@@ -11,7 +11,7 @@ import java.util.*;
  * @author 半梦
  * @create 2020-11-26 19:38
  */
-public final class DateUtils {
+public abstract class DateUtils {
 
     private static final String DAY_DATE_PATTERN = "yyyy-MM-dd";
     private static final String SECOND_DATE_PATTERN = "yyyy-MM-dd HH:mm:ss";

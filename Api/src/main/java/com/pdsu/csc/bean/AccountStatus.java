@@ -11,17 +11,26 @@ import java.io.Serializable;
  */
 @ToString
 @Getter
-@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AccountStatus implements Serializable{
-    /**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+public enum AccountStatus implements Serializable{
+	NORMAL(1, "正常"),
+	FROZEN(2, "冻结"),
+	BAN(3, "封禁"),
+	CANCELLED(4, "注销"),
+	OTHER(999, "other");
 
 	private Integer id;
 
     private String status;
+
+	public static AccountStatus getByKey(Integer id){
+		for (AccountStatus constants : values()) {
+			if (constants.getId().equals(id)) {
+				return constants;
+			}
+		}
+		return OTHER;
+	}
 
 }

@@ -9,7 +9,7 @@ import java.util.Comparator;
  * @author 半梦
  * @create 2020-09-21 20:33
  */
-public final class SortUtils {
+public abstract class SortUtils {
 
     public static Comparator<BlobInformation> getBlobComparator() {
         return (o1, o2) -> {

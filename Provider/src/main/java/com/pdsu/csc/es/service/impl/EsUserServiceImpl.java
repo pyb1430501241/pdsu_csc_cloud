@@ -57,9 +57,8 @@ public class EsUserServiceImpl implements EsService<EsUserInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsUserInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsUserInformation.class);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
+			return ElasticsearchUtils.getObjectListBySearchHit(searchHits, EsUserInformation.class);
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
 			throw new QueryException("解析用户失败");
 		}
 	}

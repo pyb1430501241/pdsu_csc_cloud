@@ -31,7 +31,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("/blob")
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked"})
 @Log4j2
 public class BlobHandler extends ParentHandler {
 
@@ -194,7 +194,7 @@ public class BlobHandler extends ParentHandler {
 		WebInformation web = webInformationService.selectById(id);
 		Integer uid = web.getUid();
 		if(!Objects.isNull(web.getWebData())) {
-			web.setWebDataString(new String(web.getWebData(),"UTF-8"));
+			web.setWebDataString(new String(web.getWebData(), DEFAULT_CHARACTER));
 			web.setWebData(null);
 		}
 		UserInformation user = ShiroUtils.getUserInformation();
@@ -365,7 +365,7 @@ public class BlobHandler extends ParentHandler {
 		//设置作者UID
 		web.setUid(user.getUid());
 		//把网页主体内容转化为byte字节
-		web.setWebData(web.getWebDataString().getBytes("UTF-8"));
+		web.setWebData(web.getWebDataString().getBytes(DEFAULT_CHARACTER));
 		//设置文章投稿时间
 		web.setSubTime(DateUtils.getSimpleDateSecond());
 		//发布文章
@@ -682,14 +682,14 @@ public class BlobHandler extends ParentHandler {
 	@PostMapping(value = "/blobimg")
 	@CrossOrigin
 	public Result postBlobImg(@RequestParam MultipartFile img) throws Exception {
-		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + Img_Suffix;
+		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + imgSuffix;
 		log.info("用户博客页面上传图片, 图片名为: " + name);
 		InputStream input = img.getInputStream();
 		Thumbnails.of(input)
 		.scale(1f)
 		.outputQuality(0.8f)
-		.outputFormat(Img_Suffix_Except_Point)
-		.toFile(Blob_Img_FilePath + name);
+		.outputFormat(imgSuffixExceptPoint)
+		.toFile(blobImgFilePath + name);
 		log.info("上传并压缩成功");
 		return Result.success().add("img", name);
 	}

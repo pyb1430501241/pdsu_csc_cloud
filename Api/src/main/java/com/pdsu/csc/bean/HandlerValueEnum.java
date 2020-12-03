@@ -2,7 +2,6 @@ package com.pdsu.csc.bean;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 
 /**
  * @author 半梦
@@ -31,7 +30,7 @@ public enum HandlerValueEnum {
     /**
      * 用户默认头像名
      */
-    USER_IMG_NAME("defaultUserImgName"),
+    USER_IMG_NAME("userImgName"),
     /**
      * 未知情况
      */

@@ -12,7 +12,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
  */
 @SpringCloudApplication
 @EnableEurekaClient
-@EnableFeignClients(basePackages = {"com.pdsu.csc"})
+@EnableFeignClients(basePackages = {"com.pdsu.csc.service"})
 public class CodeSharingCommunityConsumerRun {
 
     public static void main(String[] args) {

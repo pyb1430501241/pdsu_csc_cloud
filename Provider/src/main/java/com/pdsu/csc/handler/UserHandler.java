@@ -50,26 +50,6 @@ import java.util.Objects;
 public class UserHandler extends ParentHandler {
 
 	/**
-	 * 账号状态：正常
-	 */
-	public static final Integer USER_STATUS_NORMAL = 1;
-
-	/**
-	 * 账号状态：冻结
-	 */
-	public static final Integer USER_STATUS_FROZEN = 2;
-
-	/**
-	 * 账号状态：封禁
-	 */
-	public static final Integer USER_STATUS_BAN = 3;
-
-	/**
-	 * 账号状态：注销
-	 */
-	public static final Integer USER_STATUS_CANCELLED = 4;
-
-	/**
 	 * 记住我
 	 */
 	private static final Integer REMEMBER_ME = 1;
@@ -246,13 +226,13 @@ public class UserHandler extends ParentHandler {
 	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(ObjectUtils.isEmpty(email)) {
-				return Result.fail().add(EXCEPTION, "邮箱不可为空");
+				return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
 			}
 			if(ObjectUtils.isEmpty(name)) {
-				return Result.fail().add(EXCEPTION, "用户名不可为空");
+				return Result.fail().add(EXCEPTION, USERNAME_NOT_NULL);
 			}
 			if(myEmailService.countByEmail(email)) {
-				return Result.fail().add(EXCEPTION, "此邮箱已被绑定");
+				return Result.fail().add(EXCEPTION, EMAIL_HAS_BEAN_BOUND);
 			}
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
@@ -291,19 +271,19 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		if(userInformationService.countByUid(user.getUid()) != 0) {
-			return Result.fail().add(EXCEPTION, "该账号已存在,是否忘记密码?");
+			return Result.fail().add(EXCEPTION, ACCOUND_ALREADY_USE);
 		}
 		if(myEmailService.countByEmail(user.getEmail())) {
-			return Result.fail().add(EXCEPTION, "此邮箱已被绑定, 忘记密码?");
+			return Result.fail().add(EXCEPTION, EMAIL_HAS_BEAN_BOUND);
 		}
 		if(userInformationService.countByUserName(user.getUsername()) != 0) {
-			return Result.fail().add(EXCEPTION, "用户名已存在");
+			return Result.fail().add(EXCEPTION, USERNAME_ALREADY_USE);
 		}
-		user.setAccountStatus(USER_STATUS_NORMAL);
+		user.setAccountStatus(AccountStatus.NORMAL.getId());
 		user.setTime(DateUtils.getSimpleDate());
 		boolean flag = userInformationService.insert(user);
 		if(flag) {
-			myImageService.insert(new MyImage(user.getUid(), Default_User_Img_Name));
+			myImageService.insert(new MyImage(user.getUid(), userImgName));
 			myEmailService.insert(new MyEmail(null, user.getUid(), user.getEmail()));
 			userRoleService.insert(new UserRole(user.getUid(), 1));
 			log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
@@ -362,7 +342,7 @@ public class UserHandler extends ParentHandler {
 		String email = null;
 		Cache.ValueWrapper valueWrapper = cache.get(token);
 		if(Objects.isNull(valueWrapper)) {
-			return Result.fail().add(EXCEPTION, "验证信息已失效, 请重新验证");
+			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		email = (String) valueWrapper.get();
 		log.info("邮箱: " + email + " 开始发送找回密码的验证码");
@@ -599,14 +579,14 @@ public class UserHandler extends ParentHandler {
 		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + StringUtils.getSuffixName(img.getOriginalFilename());
 		File file;
 		log.info("判断用户头像是否为初始头像");
-		if (user.getImgpath() != null && !user.getImgpath().equals(Default_User_Img_Name)) {
+		if (user.getImgpath() != null && !user.getImgpath().equals(userImgName)) {
 			log.info("用户头像为非初始头像, 删除该头像");
-			file = new File(User_Img_FilePath + user.getImgpath());
+			file = new File(userImgFilePath + user.getImgpath());
 			file.delete();
 		} else {
 			log.info("用户头像为初始头像");
 		}
-		file = new File(User_Img_FilePath + name);
+		file = new File(userImgFilePath + name);
 		log.info("写入新头像, 头像名为: " + name);
 		FileUtils.writeByteArrayToFile(file, img.getBytes());
 		log.info("用户: " + user.getUid() + " 写入新头像成功, 开始写入数据库地址");

@@ -50,6 +50,8 @@ public interface AbstractHandler {
      */
     String SYSTEM_NAME = "平顶山学院——信息工程学院";
 
+    String DEFAULT_CHARACTER = "UTF-8";
+
     /**
      * 广告预留
      * @return

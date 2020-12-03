@@ -42,7 +42,6 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation> {
 		highlightBuilder.preTags("<font color='red'>");
 		highlightBuilder.postTags("</font>");
 		
-		
 		SearchSourceBuilder builder = new SearchSourceBuilder();
 		builder.query(bool);
 		builder.highlighter(highlightBuilder);
@@ -59,9 +58,8 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsBlobInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsBlobInformation.class);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
+			return ElasticsearchUtils.getObjectListBySearchHit(searchHits, EsBlobInformation.class);
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
 			throw new QueryException("解析博客失败");
 		}
 	}

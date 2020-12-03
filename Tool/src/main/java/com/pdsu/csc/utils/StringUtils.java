@@ -35,9 +35,9 @@ public final class StringUtils {
      * @return
      */
     @Nullable
-    public static String getSuffixName(@NonNull String name) {
+    public static String getSuffixName(@Nullable String name) {
         String point = getSuffixNameExceptPoint(name);
-        if(point == null) {
+        if(isBlank(point)) {
             return null;
         }
         return "." + point;
@@ -49,9 +49,13 @@ public final class StringUtils {
      * @return
      */
     @Nullable
-    public static String getSuffixNameExceptPoint(@NonNull String name) {
-        return name.lastIndexOf(".") == -1 || name.lastIndexOf(".") == name.length() - 1
-                ? null : name.substring(name.lastIndexOf(".") + 1);
+    public static String getSuffixNameExceptPoint(@Nullable String name) {
+        if(isBlank(name)) {
+            return null;
+        }
+        int index = name.lastIndexOf(".");
+        return index == -1 || index == name.length() - 1
+                ? null : name.substring(index + 1);
     }
 
     /**

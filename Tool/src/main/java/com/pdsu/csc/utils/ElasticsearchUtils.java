@@ -12,42 +12,25 @@ import java.util.*;
  * @author 半梦
  *
  */
-public final class ElasticsearchUtils {
-
-	/**
-	 * 拼装 SearchHit 成对应的实体类
-	 */
-	@NonNull
-	public static List<?> getObjectBySearchHit(@NonNull SearchHit [] searchHits, @NonNull Class<?> clazz) throws NoSuchMethodException, SecurityException, InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Constructor<?> constructor = ConstructorUtils.getConstructorByClass(clazz);
-		if(constructor == null) {
-			throw new NoSuchMethodException("无此构造方法");
-		}
-		return getListBySearchHit(searchHits, constructor);
-	}
+public abstract class ElasticsearchUtils {
 
 	/**
 	 * 根据类来拼装该类的对象
-	 * 仅支持 EsUserInformation, EsBlobInformation, EsFileInformation
 	 */
 	@NonNull
-	public static Object getObjectByMapAndClass(@NonNull Map<String, Object> map, @NonNull Class<?> clazz) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException{
-		Constructor<?> constructor = ConstructorUtils.getConstructorByClass(clazz);
-		if(constructor == null) {
-			throw new NoSuchMethodException("无此构造方法");
-		}
-		return ConstructorUtils.getObjectByMap(map, constructor);
+	public static <T> T getObjectByMapAndClass(@NonNull Map<String, Object> map, @NonNull Class<T> clazz) throws IllegalAccessException, IllegalArgumentException, NoSuchMethodException, SecurityException, NoSuchFieldException {
+		return ConstructorUtils.getObjectByMapAndClass(map, clazz);
 	}
 
 	/**
 	 * 把数据封装成集合
 	 */
 	@NonNull
-	public static List<Object> getListBySearchHit(@NonNull SearchHit[] searchHits, @NonNull Constructor<?> constructor) throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException{
-		List<Object> list = new ArrayList<>();
+	public static <T> List<T> getObjectListBySearchHit(@NonNull SearchHit[] searchHits, @NonNull Class<T> clazz) throws IllegalAccessException, IllegalArgumentException, NoSuchMethodException, NoSuchFieldException {
+		List<T> list = new ArrayList<>();
 		for(SearchHit hit : searchHits) {
 			Map<String, Object> map = hit.getSourceAsMap();
-			list.add(ConstructorUtils.getObjectByMap(map, constructor));
+			list.add(getObjectByMapAndClass(map, clazz));
 		}
 		return list;
 	}

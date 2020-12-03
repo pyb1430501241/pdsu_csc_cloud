@@ -1,28 +1,22 @@
-/*
-很难优化吧？
- */
 package com.pdsu.csc.handler;
 
-import com.pdsu.csc.bean.HandlerValueEnum;
 import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.config.dao.InitDao;
+import com.pdsu.csc.config.dao.impl.PropertiesDefinition;
 import com.pdsu.csc.exception.web.user.*;
-import com.pdsu.csc.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
-import java.util.Enumeration;
 import java.util.Objects;
-import java.util.Properties;
 
 /**
  * @author 半梦
  * @create 2020-08-19 19:51
  *
- * 该类用于提供子类一些常用的常量, 错误提示, 异常处理方案的实现
+ * 该类用于提供子类一些常用的常量, 错误提示
  */
+@SuppressWarnings("all")
 public abstract class ParentHandler implements AbstractHandler {
 
     /**
@@ -66,14 +60,39 @@ public abstract class ParentHandler implements AbstractHandler {
     protected static final String INSUFFICIENT_PERMISSION = "权限不足";
 
     /**
+     * 邮箱为 null
+     */
+    protected static final String EMAIL_NOT_NULL = "邮箱不可为空";
+
+    /**
+     * 邮箱已被使用
+     */
+    protected static final String EMAIL_HAS_BEAN_BOUND = "邮箱已被绑定";
+
+    /**
+     * 用户名为空
+     */
+    protected static final String USERNAME_NOT_NULL = "用户名不可为空";
+
+    /**
+     * 用户名已被使用
+     */
+    protected static final String USERNAME_ALREADY_USE = "用户名已被使用";
+
+    /**
+     * 账号已存在
+     */
+    protected static final String ACCOUND_ALREADY_USE = "该账号已存在,是否忘记密码?";
+
+    /**
      * 博客
      */
-    public static final Integer BLOB = 1;
+    protected static final Integer BLOB = 1;
 
     /**
      * 文件
      */
-    public static final Integer FILE = 2;
+    protected static final Integer FILE = 2;
 
     /**
      * 系统通知已读
@@ -93,34 +112,34 @@ public abstract class ParentHandler implements AbstractHandler {
     /**
      * 博客页面图片储存地址
      */
-    protected static String Blob_Img_FilePath = DEFAULT_BLOB_IMG_FILEPATH;
+    public static String blobImgFilePath = DEFAULT_BLOB_IMG_FILEPATH;
 
     /**
      * 用户上传资源储存地址
      */
-    protected static String File_FilePath = DEFAULT_FILE_FILEPATH;
+    public static String fileFilePath = DEFAULT_FILE_FILEPATH;
 
     /**
      * 用户头像储存地址
      */
-    protected static String User_Img_FilePath = DEFAULT_USER_IMG_FILEPATH;
+    public static String userImgFilePath = DEFAULT_USER_IMG_FILEPATH;
 
     /**
      * 文件带点后缀名
      * 例: .jpg
      */
-    protected static String Img_Suffix = DEFAULT_IMG_SUFFIX;
+    public static String imgSuffix = DEFAULT_IMG_SUFFIX;
 
     /**
      * 文件后缀名
      * 例: jpg
      */
-    protected static String Img_Suffix_Except_Point = DEFAULT_IMG_SUFFIX_EXCEPT_POINT;
+    public static String imgSuffixExceptPoint = DEFAULT_IMG_SUFFIX_EXCEPT_POINT;
 
     /**
      * 用户默认头像名
      */
-    protected static String Default_User_Img_Name = DEFAULT_USER_IMG_NAME;
+    public static String userImgName = DEFAULT_USER_IMG_NAME;
 
     /**
      *
@@ -135,75 +154,57 @@ public abstract class ParentHandler implements AbstractHandler {
     }
 
     static {
-        InitSystem.init();
+        InitSystem.initSystem();
     }
 
     @SuppressWarnings("all")
-    private static class InitSystem {
+    private static class InitSystem implements InitDao {
+
+        private InitDao initDao = new PropertiesDefinition();
+
         /**
-         * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
-         * 详细信息请参考 classpath:properties/csc.properties
+         * 系统初始化
          */
-        private static void initProperties() {
+        @Override
+        public void initParameters() {
             log.info("系统配置初始化...");
-            Properties properties = new Properties();
-            try {
-                ClassLoader classLoader = ParentHandler.class.getClassLoader();
-                InputStream in = classLoader.getResourceAsStream("properties/csc.properties");
-                properties.load(in);
-                Enumeration enumeration = properties.propertyNames();
-                while (enumeration.hasMoreElements()) {
-                    String key = (String) enumeration.nextElement();
-                    String value = properties.getProperty(key);
-                    switch (HandlerValueEnum.getByKey(key)) {
-                        case IMG_SUFFIX :
-                            Img_Suffix = value;
-                            Img_Suffix_Except_Point = StringUtils.getSuffixNameExceptPoint(value);
-                            break;
-                        case FILE_FILEPATH :
-                            File_FilePath = value;
-                            break;
-                        case USER_IMG_FILEPATH:
-                            User_Img_FilePath = value;
-                            break;
-                        case BLOB_IMG_FILEPATH:
-                            Blob_Img_FilePath = value;
-                            break;
-                        case USER_IMG_NAME:
-                            Default_User_Img_Name = value;
-                            break;
-                        default:
-                    }
-                }
-            } catch (IOException e) {
-                log.warn("初始化配置失败...", e);
-            }
+            initDao.initParameters();
             log.info("系统初始化成功...");
         }
 
         /**
          * 创建程序运行的必要文件
          */
-        private static void mkdirs(){
+        @Override
+        public void mkdirs(){
             log.info("创建系统所需文件...");
-            File file = new File(User_Img_FilePath);
-            if(!file.exists()) {
-                file.mkdirs();
-            }
-            file = new File(Blob_Img_FilePath);
-            if(!file.exists()) {
-                file.mkdirs();
-            }
-            file = new File(File_FilePath);
-            if(!file.exists()) {
-                file.mkdirs();
-            }
-            log.info("文件创建成功...");
+            initDao.mkdirs();
+            log.info("系统所需文件创建成功...");
         }
 
-        public static void init() {
-            initProperties();
-            mkdirs();
+        /**
+         * 读取系统配置信息
+         * @param filepath
+         * @throws IOException
+         * 系统配置初始化, 想要修改对应的信息时, 修改 csc.properties,
+         * 详细信息请参考 classpath:properties/csc.properties
+         */
+        @Override
+        public void reader(String filepath) throws IOException {
+            log.info("读取系统配置...");
+            initDao.reader(filepath);
+            log.info("读取系统配置成功...");
+        }
+
+        public static void initSystem() {
+            InitSystem initSystem = new InitSystem();
+            try {
+                initSystem.reader("properties/csc.properties");
+                initSystem.initParameters();
+                initSystem.mkdirs();
+            } catch (IOException e) {
+                log.warn("系统初始化异常...使用默认参数..." + e);
+            }
         }
     }
 

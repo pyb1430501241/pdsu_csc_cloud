@@ -20,7 +20,7 @@ import java.util.Objects;
  *
  */
 @SuppressWarnings("all")
-public final class ShiroUtils {
+public abstract class ShiroUtils {
 
     @Nullable
 	public static UserInformation getUserInformation() {

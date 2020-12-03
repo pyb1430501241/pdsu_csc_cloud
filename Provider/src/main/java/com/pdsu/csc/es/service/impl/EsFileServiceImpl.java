@@ -60,10 +60,8 @@ public class EsFileServiceImpl implements EsService<EsFileInformation> {
 		}
 		SearchHit[] searchHits = hits.getHits();
 		try {
-			return (List<EsFileInformation>) ElasticsearchUtils.getObjectBySearchHit(searchHits, EsFileInformation.class);
-		} catch (NoSuchMethodException | SecurityException | InstantiationException | IllegalAccessException
-				| IllegalArgumentException | InvocationTargetException e) {
-			System.out.println(e.getMessage());
+			return ElasticsearchUtils.getObjectListBySearchHit(searchHits, EsFileInformation.class);
+		} catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | NoSuchFieldException e) {
 			throw new QueryException("解析文件失败");
 		}
 	}
