@@ -8,11 +8,11 @@ import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.service.WebInformationService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
  *
  */
 @Service("webInformationService")
+@Log4j2
 public class WebInformationServiceImpl implements WebInformationService {
 
 	@Autowired
@@ -85,12 +86,13 @@ public class WebInformationServiceImpl implements WebInformationService {
 				new Thread(()->{
 					try {
 						UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
-						Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-						EsUserInformation esUser = (EsUserInformation) ElasticsearchUtils.
+						Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, user.getId());
+						EsUserInformation esUser = ElasticsearchUtils.
 								getObjectByMapAndClass(map, EsUserInformation.class);
 						esUser.setBlobnum(esUser.getBlobnum() + 1);
 						esDao.update(esUser, user.getId());
 					} catch (Exception e) {
+						log.error("es相关操作出现异常", e);
 					}
 				}).start();
 			}
@@ -159,10 +161,8 @@ public class WebInformationServiceImpl implements WebInformationService {
 		if(visitInformationMapper.deleteByExample(visitInformationExample) != visitCount) {
 			throw new DeleteInforException("删除网页访问信息失败");
 		}
-		
-		/**
-		 *删除和网页相关的点赞信息
-		 */
+
+		/* 删除和网页相关的点赞信息 */
 		WebThumbsExample webThumbsExample = new WebThumbsExample();
 		com.pdsu.csc.bean.WebThumbsExample.Criteria webThumbsCriteria1 = webThumbsExample.createCriteria();
 		webThumbsCriteria1.andWebidEqualTo(id);
@@ -176,12 +176,13 @@ public class WebInformationServiceImpl implements WebInformationService {
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, user.getId());
+					EsUserInformation esUser = ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
-					esuser.setBlobnum(esuser.getBlobnum()-1);
-					esDao.update(esuser, user.getId());
+					esUser.setBlobnum(esUser.getBlobnum()-1);
+					esDao.update(esUser, user.getId());
 				} catch (Exception e) {
+					log.error("es 相关操作出现异常", e);
 				}
 			}).start();
 			return true;
@@ -217,7 +218,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 		criteria.andUidEqualTo(uid);
 		example.setOrderByClause("sub_time DESC");
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
-		return list;
+		return list == null ? new ArrayList<>() : list;
 	}
 
 	/*
@@ -232,17 +233,18 @@ public class WebInformationServiceImpl implements WebInformationService {
 		if(i > 0) {
 			new Thread(()->{
 				try {
-					Map<String, Object> map = esDao.queryByTableNameAndId("blob", web.getId());
-					EsBlobInformation blob = (EsBlobInformation) ElasticsearchUtils
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.BLOB, web.getId());
+					EsBlobInformation blob = ElasticsearchUtils
 							.getObjectByMapAndClass(map, EsBlobInformation.class);
 					blob.setDescription(getDescriptionByWebData(web.getWebDataString()));
 					System.out.println(blob);
 					esDao.update(blob, blob.getWebid());
 				} catch (Exception e) {
+					log.error("es相关操作出现异常", e);
 				}
 			}).start();
 		}
-		return i > 0 ? true : false;
+		return i > 0;
 	}
 
 	/**
@@ -254,7 +256,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(webid);
 		long l = webInformationMapper.countByExample(example);
-		return l <= 0 ? false : true;
+		return l > 0;
 	}
 	
 	/**

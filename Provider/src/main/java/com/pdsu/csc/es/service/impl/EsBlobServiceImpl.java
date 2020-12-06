@@ -1,6 +1,7 @@
 package com.pdsu.csc.es.service.impl;
 
 import com.pdsu.csc.bean.EsBlobInformation;
+import com.pdsu.csc.bean.EsIndex;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.exception.web.es.QueryException;
@@ -48,9 +49,9 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation> {
 		
 		SearchRequest request = new SearchRequest();
 		
-		request.indices("blob");
+		request.indices(EsIndex.BLOB.getName());
 		request.source(builder);
-		SearchHits hits = null;
+		SearchHits hits;
 		try {
 			hits = esDao.queryBySearchRequest(request);
 		} catch (QueryException e1) {

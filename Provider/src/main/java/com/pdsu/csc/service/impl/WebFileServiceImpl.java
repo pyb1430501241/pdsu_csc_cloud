@@ -40,7 +40,8 @@ public class WebFileServiceImpl implements WebFileService {
 		if(t > 0) {
 			EsFileInformation file = new EsFileInformation(webFile.getDescription(),
 					webFile.getTitle(), webFile.getId());
-			return esDao.insert(file, webFile.getId());
+			esDao.insert(file, webFile.getId());
+			return true;
 		}
 		return false;
 	}
@@ -76,7 +77,7 @@ public class WebFileServiceImpl implements WebFileService {
 		WebFileExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		criteria.andTitleEqualTo(title);
-		return webFileMapper.countByExample(example) <= 0 ? false : true;
+		return webFileMapper.countByExample(example) > 0;
 	}
 
 	@Override
@@ -96,7 +97,7 @@ public class WebFileServiceImpl implements WebFileService {
 
 	@Override
 	public List<WebFile> selectFilesByFileIds(@NonNull List<Integer> fileids) {
-		if(fileids == null || fileids.size() == 0) {
+		if(fileids.size() == 0) {
 			return new ArrayList<>();
 		}
 		WebFileExample example = new WebFileExample();

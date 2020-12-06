@@ -5,8 +5,10 @@ import com.pdsu.csc.dao.MyImageMapper;
 import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
+import com.pdsu.csc.handler.UserHandler;
 import com.pdsu.csc.service.MyImageService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.util.Map;
  *
  */
 @Service("myImageService")
+@Log4j2
 public class MyImageServiceImpl implements MyImageService {
 
 	@Autowired
@@ -31,22 +34,26 @@ public class MyImageServiceImpl implements MyImageService {
 	
 	@Autowired
 	private EsDao esDao;
-	
+
 	@Override
 	public List<MyImage> selectImagePathByUids(@NonNull List<Integer> uids) {
-		List<Integer> ids = new ArrayList<Integer>();
+		List<Integer> ids = new ArrayList<>();
+		// 判断当前用户是否存在, 如不存在这舍弃
 		for(Integer id : uids) {
 			if(countByUid(id)) {
 				ids.add(id);
 			}
 		}
 		if(ids.size() == 0) {
-			return new ArrayList<MyImage>();
+			return new ArrayList<>();
 		}
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidIn(ids);
 		List<MyImage> list = myImageMapper.selectByExample(example);
+		if(list == null) {
+			return new ArrayList<>();
+		}
 		return list;
 	}
 
@@ -58,7 +65,7 @@ public class MyImageServiceImpl implements MyImageService {
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return myImageMapper.selectByExample(example).size() == 0 ? new MyImage(uid, "01.png") : myImageMapper.selectByExample(example).get(0);
+		return myImageMapper.selectByExample(example).size() == 0 ? new MyImage(uid, UserHandler.userImgName) : myImageMapper.selectByExample(example).get(0);
 	}
 	
 	/**
@@ -69,7 +76,7 @@ public class MyImageServiceImpl implements MyImageService {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return userInformationMapper.countByExample(example) > 0 ? true : false;
+		return userInformationMapper.countByExample(example) > 0;
 	}
 
 	@Override
@@ -88,17 +95,18 @@ public class MyImageServiceImpl implements MyImageService {
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(myImage.getUid());
-		boolean b = myImageMapper.updateByExampleSelective(myImage, example) == 0 ? false : true;
+		boolean b = myImageMapper.updateByExampleSelective(myImage, example) != 0;
 		if(b) {
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(myImage.getUid());
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, user.getId());
+					EsUserInformation esUser = ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
-					esuser.setImgpath(myImage.getImagePath());
-					esDao.update(esuser, user.getId());
+					esUser.setImgpath(myImage.getImagePath());
+					esDao.update(esUser, user.getId());
 				} catch (Exception e) {
+					log.error("es相关操作出现异常", e);
 				}
 			}).start();
 		}

@@ -2,6 +2,7 @@ package com.pdsu.csc.es.dao.impl;
 
 import com.pdsu.csc.bean.EsBlobInformation;
 import com.pdsu.csc.bean.EsFileInformation;
+import com.pdsu.csc.bean.EsIndex;
 import com.pdsu.csc.bean.EsUserInformation;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.exception.web.es.InsertException;
@@ -50,8 +51,8 @@ public class EsDaoImpl implements EsDao {
 	}
 	
 	@Override
-	public Map<String, Object> queryByTableNameAndId(String str,Integer id) throws QueryException {
-		GetRequest request = new GetRequest(str, id+"");
+	public Map<String, Object> queryByTableNameAndId(EsIndex index, Integer id) throws QueryException {
+		GetRequest request = new GetRequest(index.getName(), id+"");
 		try {
 			GetResponse response = restHighLevelClient.get(request, RequestOptions.DEFAULT);
 			return response.getSourceAsMap();
@@ -81,23 +82,23 @@ public class EsDaoImpl implements EsDao {
 		IndexRequest request = null;
 		if(ob instanceof EsUserInformation) {
 			EsUserInformation user = (EsUserInformation) ob;
-			request = new IndexRequest("user");
+			request = new IndexRequest(EsIndex.USER.getName());
 			request.id(id.toString());
 			request.source(user.toString(), XContentType.JSON);
 			return indexUtil(request);
 		}else if(ob instanceof EsBlobInformation) {
 			EsBlobInformation blob = (EsBlobInformation) ob;
-			request = new IndexRequest("blob");
+			request = new IndexRequest(EsIndex.BLOB.getName());
 			request.id(id.toString());
 			request.source(blob.toString(), XContentType.JSON);
 			return indexUtil(request);
 		}else if(ob instanceof EsFileInformation) {
 			EsFileInformation file = (EsFileInformation) ob;
-			request = new IndexRequest("file");
+			request = new IndexRequest(EsIndex.FILE.getName());
 			request.id(id.toString());
 			request.source(file.toString(), XContentType.JSON);
 			return indexUtil(request);
-		}else {
+		} else {
 			throw new InsertException("类型转换异常", id, request.index() + "id");
 		}
 	}
@@ -123,17 +124,17 @@ public class EsDaoImpl implements EsDao {
 		UpdateRequest request = null;
 		if(ob instanceof EsUserInformation) {
 			EsUserInformation user = (EsUserInformation) ob;
-			request = new UpdateRequest("user", id.toString());
+			request = new UpdateRequest(EsIndex.USER.getName(), id.toString());
 			request.doc(user.toString(), XContentType.JSON);
 			return updateUtil(request);
 		}else if(ob instanceof EsBlobInformation) {
 			EsBlobInformation blob = (EsBlobInformation) ob;
-			request = new UpdateRequest("blob", id.toString());
+			request = new UpdateRequest(EsIndex.BLOB.getName(), id.toString());
 			request.doc(blob.toString(), XContentType.JSON);
 			return updateUtil(request);
 		}else if(ob instanceof EsFileInformation) {
 			EsFileInformation file = (EsFileInformation) ob;
-			request = new UpdateRequest("file", id.toString());
+			request = new UpdateRequest(EsIndex.FILE.getName(), id.toString());
 			request.doc(file.toString(), XContentType.JSON);
 			return updateUtil(request);
 		}else {

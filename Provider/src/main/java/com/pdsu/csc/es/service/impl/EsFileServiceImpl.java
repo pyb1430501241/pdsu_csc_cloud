@@ -4,6 +4,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
 import com.pdsu.csc.bean.EsFileInformation;
+import com.pdsu.csc.bean.EsIndex;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.exception.web.es.QueryException;
@@ -50,9 +51,9 @@ public class EsFileServiceImpl implements EsService<EsFileInformation> {
 		
 		SearchRequest request = new SearchRequest();
 		
-		request.indices("file");
+		request.indices(EsIndex.FILE.getName());
 		request.source(builder);
-		SearchHits hits = null;
+		SearchHits hits;
 		try {
 			hits = esDao.queryBySearchRequest(request);
 		} catch (QueryException e1) {

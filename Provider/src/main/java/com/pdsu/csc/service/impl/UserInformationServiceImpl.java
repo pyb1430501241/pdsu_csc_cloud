@@ -12,6 +12,7 @@ import com.pdsu.csc.utils.HashUtils;
 import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -275,18 +276,15 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 */
 	@Override
 	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId) throws NotFoundUidException {
-//		if(countByUid(likeId) == 0) {
-//			throw new NotFoundUidException("该用户不存在");
-//		}
 		List<Integer> uids = myLikeMapper.selectUidByLikeId(likeId);
 		if(uids.size() == 0) {
-			return new ArrayList<UserInformation>();
+			return new ArrayList<>();
 		}
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidIn(uids);
 		List<UserInformation> list = userInformationMapper.selectByExample(example);
-		return list == null ? new ArrayList<UserInformation>() : list;
+		return list == null ? new ArrayList<>() : list;
 	}
 
 	/**
@@ -294,8 +292,8 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 如果该用户不存在, 则剔除集合
 	 */
 	@Override
-	public List<UserInformation> selectUsersByUids(@NonNull List<Integer> uids) {
-		List<Integer> f = new ArrayList<Integer>();
+	public List<UserInformation> selectUsersByUids(@Nullable List<Integer> uids) {
+		List<Integer> f = new ArrayList<>();
 		if(uids == null) {
 			return new ArrayList<>();
 		}
@@ -357,8 +355,8 @@ public class UserInformationServiceImpl implements UserInformationService {
 			new Thread(()->{
 				try {
 					UserInformation userinfor = userInformationMapper.selectUserByUid(uid);
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", userinfor.getId());
-					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, userinfor.getId());
+					EsUserInformation esuser = ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setUsername(user.getUsername() == null ? userinfor.getUsername() : user.getUsername());
 					esDao.update(esuser, user.getId());

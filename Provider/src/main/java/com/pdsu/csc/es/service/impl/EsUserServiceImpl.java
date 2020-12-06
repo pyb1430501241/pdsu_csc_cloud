@@ -1,5 +1,6 @@
 package com.pdsu.csc.es.service.impl;
 
+import com.pdsu.csc.bean.EsIndex;
 import com.pdsu.csc.bean.EsUserInformation;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.es.service.EsService;
@@ -47,9 +48,9 @@ public class EsUserServiceImpl implements EsService<EsUserInformation> {
 		
 		SearchRequest request = new SearchRequest();
 		
-		request.indices("user");
+		request.indices(EsIndex.USER.getName());
 		request.source(builder);
-		SearchHits hits = null;
+		SearchHits hits;
 		try {
 			hits = esDao.queryBySearchRequest(request);
 		} catch (QueryException e1) {

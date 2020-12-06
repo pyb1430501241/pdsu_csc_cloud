@@ -1,16 +1,15 @@
 package com.pdsu.csc.utils;
 
+import com.pdsu.csc.bean.EsBlobInformation;
 import org.elasticsearch.search.SearchHit;
 import org.springframework.lang.NonNull;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
  * 常用的工具类
  * @author 半梦
- *
+ * @see BeanUtils
  */
 public abstract class ElasticsearchUtils {
 
@@ -19,7 +18,7 @@ public abstract class ElasticsearchUtils {
 	 */
 	@NonNull
 	public static <T> T getObjectByMapAndClass(@NonNull Map<String, Object> map, @NonNull Class<T> clazz) throws IllegalAccessException, IllegalArgumentException, NoSuchMethodException, SecurityException, NoSuchFieldException {
-		return ConstructorUtils.getObjectByMapAndClass(map, clazz);
+		return BeanUtils.getObjectByMapAndClass(map, clazz);
 	}
 
 	/**
@@ -34,6 +33,5 @@ public abstract class ElasticsearchUtils {
 		}
 		return list;
 	}
-
 
 }

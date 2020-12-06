@@ -2,6 +2,7 @@ package com.pdsu.csc.es.dao;
 
 import java.util.Map;
 
+import com.pdsu.csc.bean.EsIndex;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.exception.web.es.QueryException;
 import com.pdsu.csc.exception.web.es.UpdateException;
@@ -34,6 +35,6 @@ public interface EsDao {
 	
 	public boolean update(Object ob, Integer id) throws UpdateException;
 	
-	public Map<String, Object> queryByTableNameAndId(String str, Integer id) throws QueryException;
+	public Map<String, Object> queryByTableNameAndId(EsIndex index, Integer id) throws QueryException;
 	
 }

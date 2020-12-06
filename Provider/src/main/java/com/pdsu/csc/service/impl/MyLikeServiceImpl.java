@@ -9,6 +9,7 @@ import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.csc.service.MyLikeService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.Map;
  *
  */
 @Service("myLikeService")
+@Log4j2
 public class MyLikeServiceImpl implements MyLikeService {
 
 	@Autowired
@@ -65,13 +67,13 @@ public class MyLikeServiceImpl implements MyLikeService {
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(myLike.getLikeId());
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, user.getId());
+					EsUserInformation esuser = ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setLikenum(esuser.getLikenum()+1);
 					esDao.update(esuser, user.getId());
 				} catch (Exception e) {
-
+					log.error("es相关操作出现异常", e);
 				}
 			}).start();
 			return true;
@@ -126,12 +128,13 @@ public class MyLikeServiceImpl implements MyLikeService {
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(uid);
-					Map<String, Object> map = esDao.queryByTableNameAndId("user", user.getId());
-					EsUserInformation esuser = (EsUserInformation) ElasticsearchUtils.
+					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.USER, user.getId());
+					EsUserInformation esuser =  ElasticsearchUtils.
 							getObjectByMapAndClass(map, EsUserInformation.class);
 					esuser.setLikenum(esuser.getLikenum()-1);
 					esDao.update(esuser, user.getId());
 				} catch (Exception e) {
+
 				}
 			}).start();
 		}
