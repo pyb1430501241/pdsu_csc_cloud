@@ -300,4 +300,16 @@ public class ExceptionHandler extends ParentHandler {
         return Result.bedRequest().add(EXCEPTION, "无效的请求地址或参数错误");
     }
 
+    /**
+     * 处理 UserException 异常
+     * @param e
+     * @return
+     */
+    @org.springframework.web.bind.annotation.ExceptionHandler(UserException.class)
+    public Result processUserException(UserException e) {
+        log.info("登录发生未知错误, 原因: " + e.getMessage());
+        return Result.bedRequest().add(EXCEPTION, e.getMessage());
+    }
+
+
 }

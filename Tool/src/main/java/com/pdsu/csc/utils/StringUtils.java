@@ -77,4 +77,12 @@ public final class StringUtils {
         return builder.toString();
     }
 
+    /**
+     * 以 <code>','</code> 分割字符串
+     */
+    @NonNull
+    public static String [] splitString(@NonNull String str) {
+        return str.split(",");
+    }
+
 }

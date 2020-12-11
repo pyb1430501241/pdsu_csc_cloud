@@ -56,14 +56,14 @@ public interface AbstractHandler {
      * 广告预留
      * @return
      */
-    public default Result advertising() {
+    default Result advertising() {
         return Result.bedRequest();
     }
 
     /**
      *  通知预留
      */
-    public default Result globalNotification() {
+    default Result globalNotification() {
         return Result.bedRequest();
     }
 

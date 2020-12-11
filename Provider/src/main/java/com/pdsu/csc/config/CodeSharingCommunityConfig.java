@@ -6,23 +6,27 @@ import com.alibaba.druid.support.http.WebStatFilter;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import com.pdsu.csc.es.RestHighLevelClientFactory;
 import com.pdsu.csc.shiro.LoginRealm;
+import com.pdsu.csc.shiro.WebCookieRememberMeManager;
 import com.pdsu.csc.shiro.WebSessionManager;
+import com.pdsu.csc.utils.DateUtils;
+import com.pdsu.csc.utils.HttpUtils;
+import com.pdsu.csc.utils.StringUtils;
 import com.pdsu.csc.web.WebStartInterceptor;
-import com.thetransactioncompany.cors.CORSFilter;
+import lombok.extern.log4j.Log4j2;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.AllSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
+import org.apache.shiro.mgt.RememberMeManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
-import org.aspectj.lang.annotation.Aspect;
 import org.elasticsearch.client.RestHighLevelClient;
-import org.springframework.aop.Advisor;
-import org.springframework.aop.aspectj.AspectJExpressionPointcut;
-import org.springframework.aop.support.DefaultPointcutAdvisor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
@@ -33,13 +37,8 @@ import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.jdbc.datasource.DataSourceTransactionManager;
-import org.springframework.transaction.TransactionDefinition;
-import org.springframework.transaction.TransactionManager;
-import org.springframework.transaction.interceptor.*;
-import org.springframework.web.cors.CorsConfiguration;
-import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.filter.CorsFilter;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
@@ -51,6 +50,8 @@ import java.util.*;
  */
 @Configuration
 public class CodeSharingCommunityConfig {
+
+    private static final Logger log = LoggerFactory.getLogger("初始化日志");
 
     @ConfigurationProperties(prefix = "spring.datasource")
     @Bean
@@ -114,12 +115,17 @@ public class CodeSharingCommunityConfig {
         return authenticator;
     }
 
+    private static final String DEFAULT_ENCRYPTION_MODE = "MD5";
+    private static final Integer DEFAULT_ENCRYPTION_NUMBER = 2;
+
     @Bean
     public Realm loginRealm() {
         LoginRealm realm = new LoginRealm();
         HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
-        credentialsMatcher.setHashAlgorithmName("MD5");
-        credentialsMatcher.setHashIterations(2);
+        log.info("系统初始化...使用默认加密规则: " + DEFAULT_ENCRYPTION_MODE);
+        log.info("系统初始化...使用默认加密规则, 默认加密次数: " + DEFAULT_ENCRYPTION_NUMBER);
+        credentialsMatcher.setHashAlgorithmName(DEFAULT_ENCRYPTION_MODE);
+        credentialsMatcher.setHashIterations(DEFAULT_ENCRYPTION_NUMBER);
         realm.setCredentialsMatcher(credentialsMatcher);
         return realm;
     }
@@ -129,6 +135,12 @@ public class CodeSharingCommunityConfig {
         DefaultWebSecurityManager webSecurityManager = new DefaultWebSecurityManager();
         webSecurityManager.setRealm(loginRealm);
         webSecurityManager.setSessionManager(new WebSessionManager());
+        webSecurityManager.setRememberMeManager(new WebCookieRememberMeManager());
+        CookieRememberMeManager rememberMeManager = (CookieRememberMeManager) webSecurityManager.getRememberMeManager();
+        rememberMeManager.getCookie().setHttpOnly(false);
+        log.info("系统初始化...Shiro记住我 Cookie 是否为仅http访问: " + rememberMeManager.getCookie().isHttpOnly());
+        rememberMeManager.getCookie().setMaxAge((int) DateUtils.CSC_YEAR);
+        log.info("系统初始化...Shiro记住我 Cookie 存在时间为: " + rememberMeManager.getCookie().getMaxAge() + "s");
         EhCacheManager ehCacheManager = new EhCacheManager();
         ehCacheManager.setCacheManager(cacheManager);
         webSecurityManager.setCacheManager(ehCacheManager);
@@ -171,27 +183,90 @@ public class CodeSharingCommunityConfig {
         return new WebStartInterceptor();
     }
 
+    private static final String ALL = "*";
+
     /**
      *  跨域
      */
-    @Bean
-    public CorsConfiguration buildConfig(@Value("${csc.cors.allow-ip}")String allowIp) {
-        CorsConfiguration corsConfiguration = new CorsConfiguration();
-        corsConfiguration.addAllowedOrigin(allowIp);
-        corsConfiguration.addAllowedHeader("Authorization, Accept, Origin, X-Requested-With, Content-Type, Last-Modified");
-        corsConfiguration.addAllowedMethod("POST, GET");
-        corsConfiguration.addExposedHeader("Set-Cookie");
-        corsConfiguration.setAllowCredentials(true);
-        return corsConfiguration;
-    }
+//    @Bean
+//    public CorsConfiguration buildConfig(@Value("${csc.cors.allow-ip}")String allowIp) {
+//        CorsConfiguration corsConfiguration = new CorsConfiguration();
+//        if(allowIp.equals("all")) {
+//            allowIp = ALL;
+//            corsConfiguration.addAllowedOrigin(allowIp);
+//        } else {
+//            String[] allowIps = StringUtils.splitString(allowIp);
+//            for (String allow : allowIps) {
+//                corsConfiguration.addAllowedOrigin(allow.trim());
+//            }
+//        }
+//        log.info("系统初始化...允许以下 IP 进行访问: " + corsConfiguration.getAllowedOrigins());
+//        corsConfiguration.addAllowedHeader(ALL);
+//        log.info("系统初始化...允许添加以下请求头: " + corsConfiguration.getAllowedHeaders());
+//        corsConfiguration.addAllowedMethod("POST");
+//        corsConfiguration.addAllowedMethod("GET");
+//        corsConfiguration.addAllowedMethod("OPTIONS");
+//        log.info("系统初始化...允许以下请求方式访问: " + corsConfiguration.getAllowedMethods());
+//        corsConfiguration.addExposedHeader("Set-Cookie");
+//        log.info("系统初始化...允许以下请求头暴露: " + corsConfiguration.getExposedHeaders());
+//        corsConfiguration.setAllowCredentials(true);
+//        log.info("系统初始化...是否允许保持用户认证状态: " + corsConfiguration.getAllowCredentials());
+//        return corsConfiguration;
+//    }
+//
+//    @Bean
+//    public CorsFilter corsFilter(CorsConfiguration configuration) {
+//        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+//        source.registerCorsConfiguration("/**", configuration); //注册
+//        return new CorsFilter(source);
+//    }
+    /**
+     * 允许访问的请求方式
+     */
+    private static final String [] ALLOW_METHOD = new String[]{"POST", "GET", "OPTIONS"};
+
+    /**
+     * 允许对外暴露的请求头
+     */
+    private static final String [] EXPOSED_HEADER = new String[]{
+            HttpUtils.getSetCookieName(),
+            HttpUtils.getSessionHeader(),
+            "Cookie",
+            HttpUtils.getRememberCookieName()
+    };
+
+    /**
+     * 跨域预检间隔时间
+     */
+    private static final long MAX_AGE = DateUtils.CSC_MINUTE * 30;
 
     @Bean
-    public CorsFilter corsFilter(CorsConfiguration configuration) {
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration); //注册
-        return new CorsFilter(source);
+    public WebMvcConfigurer webMvcConfigurer(@Value("${csc.cors.allow-ip}") String allowIp) {
+        String [] allowOrigin;
+        if(allowIp.equals("all")) {
+            allowOrigin = new String[]{ALL};
+        } else {
+            allowOrigin = StringUtils.splitString(allowIp);
+        }
+        log.info("系统初始化...允许以下 IP 进行访问: " + Arrays.asList(allowOrigin));
+        log.info("系统初始化...允许添加以下请求头: " + ALL);
+        log.info("系统初始化...允许以下请求方式访问: " + Arrays.asList(ALLOW_METHOD));
+        log.info("系统初始化...允许以下请求头暴露: " + Arrays.asList(EXPOSED_HEADER));
+        log.info("系统初始化...是否允许保持用户认证状态: " + Boolean.TRUE);
+        log.info("系统初始化...跨域预检间隔时间为: " + MAX_AGE + "s");
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")	// 允许跨域访问的路径
+                        .allowedOrigins(allowOrigin)	// 允许跨域访问的源
+                        .allowedMethods(ALLOW_METHOD)
+                        .maxAge(MAX_AGE)	// 预检间隔时间
+                        .allowedHeaders(ALL) // 允许头部设置
+                        .exposedHeaders(EXPOSED_HEADER)
+                        .allowCredentials(Boolean.TRUE);	// 是否发送cookie
+            }
+        };
     }
-
     /**
      * Hystrix
      */
@@ -204,6 +279,9 @@ public class CodeSharingCommunityConfig {
         registrationBean.setName("HystrixMetricsStreamServlet");
         return registrationBean;
     }
+
+
+
 
 
 }

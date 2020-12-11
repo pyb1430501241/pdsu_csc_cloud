@@ -33,8 +33,11 @@ public abstract class ShiroUtils {
             if(Objects.isNull(user)){
                 session.setAttribute("user", userInformation);
             }
+            if(Objects.isNull(session.getAttribute(HttpUtils.getSessionHeader()))) {
+                session.setAttribute(HttpUtils.getSessionHeader(), session.getId());
+            }
             return userInformation;
-        }else{
+        } else {
             return null;
         }
 	}

@@ -1,5 +1,6 @@
 package com.pdsu.csc.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.bean.SystemNotificationExample;
 import com.pdsu.csc.dao.SystemNotificationMapper;
@@ -28,11 +29,14 @@ public class SystemNotificationServiceImpl implements SystemNotificationService 
     }
 
     @Override
-    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid) {
+    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid, Integer p) {
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
         example.setOrderByClause("createtime DESC");
+        if(p != null) {
+            PageHelper.startPage(p, 10);
+        }
         return systemNotificationMapper.selectByExample(example);
     }
 

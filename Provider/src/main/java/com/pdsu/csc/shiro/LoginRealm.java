@@ -46,10 +46,13 @@ public class LoginRealm extends AuthorizingRealm {
 		UsernamePasswordToken uptoken = (UsernamePasswordToken) token;
 		Integer uid = Integer.parseInt(uptoken.getUsername());
 
+		// 获取登录账号的详细信息
 		UserInformation user = getUserInformation(uid);
 
+		// 查看其账号状态
 		determineAccountStatus(user.getAccountStatus());
 
+		// 完善其信息
 		perfectInformation(user);
 
 		Object credentials = user.getPassword();

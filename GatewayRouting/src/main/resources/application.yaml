@@ -33,6 +33,7 @@ zuul:
   strip-prefix: false
 
 
+
 info:
   app.name: CodeSharingCommunity_路由网关_01
   company.name: www.halfdream.cn/半梦的个人网址

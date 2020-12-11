@@ -1,5 +1,6 @@
 package com.pdsu.csc.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.EsFileInformation;
 import com.pdsu.csc.bean.WebFile;
 import com.pdsu.csc.bean.WebFileExample;
@@ -89,9 +90,12 @@ public class WebFileServiceImpl implements WebFileService {
 	}
 
 	@Override
-	public List<WebFile> selectFilesOrderByTime() {
+	public List<WebFile> selectFilesOrderByTime(Integer p) {
 		WebFileExample example = new WebFileExample();
 		example.setOrderByClause("creattime DESC");
+		if(p != null) {
+			PageHelper.startPage(p, 15);
+		}
 		return webFileMapper.selectByExample(example);
 	}
 

@@ -5,7 +5,7 @@
 <Configuration status="WARN" monitorInterval="500">
     <!--定义日志储存文件目录-->
     <properties>
-        <property name="LOG_HOME">ProviderLogs</property>
+        <property name="LOG_HOME">providerLogs</property>
     </properties>
     <Appenders>
         <!--控制台输出所有日志-->

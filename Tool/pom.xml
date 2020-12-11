@@ -39,7 +39,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.artifactId}</finalName>
+        <finalName>Tool</finalName>
         <plugins>
             <plugin>
                 <groupId>org.springframework.boot</groupId>

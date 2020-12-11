@@ -6,33 +6,31 @@ import java.io.PrintWriter;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
+import com.pdsu.csc.handler.AbstractHandler;
+import com.pdsu.csc.handler.ParentHandler;
 import com.pdsu.csc.utils.ShiroUtils;
+import lombok.extern.log4j.Log4j2;
 import net.minidev.json.JSONObject;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.LogoutFilter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 /**
  * 退出请求拦截器
  * @author 半梦
- *
  */
+@Log4j2
 public class UserLogoutFilter extends LogoutFilter{
 
-	 private static final Logger log = LoggerFactory.getLogger(UserLogoutFilter.class);
-	
 	@Override
 	protected boolean preHandle(ServletRequest request, ServletResponse response) {
 		Subject subject = getSubject(request, response);
-		PrintWriter out = null;
+		PrintWriter out;
 		try {
 			out = response.getWriter();
 		} catch (IOException e) {
 			return false;
 		}
-		response.setCharacterEncoding("UTF-8");
+		response.setCharacterEncoding(AbstractHandler.DEFAULT_CHARACTER);
         JSONObject json = new JSONObject();
 		try {
 			log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录");

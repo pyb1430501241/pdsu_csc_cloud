@@ -18,10 +18,7 @@ import com.pdsu.csc.service.UserInformationService;
 import com.pdsu.csc.service.UserRoleService;
 import com.pdsu.csc.utils.ShiroUtils;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,9 +28,8 @@ import java.util.Objects;
  * @author 半梦
  * 班级方案已被舍弃
  * 		by 庞亚彬 2020-09-21
- * 1. 该页面负责管理员的相关操作
- * 	如, 封号, 修改用户信息, 删除用户文章等等
- *
+ * 管理员方案, 另行准备一个微服务, 该方案已被舍弃。
+ * 		by 庞亚彬 2020-12-21
  */
 @RestController
 @RequestMapping("/admin")
@@ -86,10 +82,6 @@ public class AdminHandler extends ParentHandler{
 
 	/**
 	 *
-	 * @param clazzName
-	 * @param uids
-	 * @return
-	 * @throws Exception
 	 */
 	@Deprecated
 	@CrossOrigin

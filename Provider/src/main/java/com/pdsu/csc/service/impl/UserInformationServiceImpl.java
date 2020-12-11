@@ -1,5 +1,6 @@
 package com.pdsu.csc.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.dao.*;
 import com.pdsu.csc.es.dao.EsDao;
@@ -256,10 +257,13 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByUid(@NonNull Integer uid) throws NotFoundUidException {
+	public List<UserInformation> selectUsersByUid(@NonNull Integer uid, Integer p) throws NotFoundUidException {
 //		if(countByUid(uid) == 0) {
 //			throw new NotFoundUidException("该用户不存在");
 //		}
+		if(p != null) {
+			PageHelper.startPage(p, 20);
+		}
 		List<Integer> likeids = myLikeMapper.selectLikeIdByUid(uid);
 		if(likeids.size() == 0) {
 			return new ArrayList<>();
@@ -275,7 +279,10 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * @throws NotFoundUidException 
 	 */
 	@Override
-	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId) throws NotFoundUidException {
+	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId, Integer p) throws NotFoundUidException {
+		if(p != null) {
+			PageHelper.startPage(p, 20);
+		}
 		List<Integer> uids = myLikeMapper.selectUidByLikeId(likeId);
 		if(uids.size() == 0) {
 			return new ArrayList<>();

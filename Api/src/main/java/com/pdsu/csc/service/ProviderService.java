@@ -15,6 +15,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
+import static com.pdsu.csc.service.ProviderService.PROVIDER_NAME;
+
 
 /**
  * @author 半梦
@@ -33,7 +35,7 @@ import java.util.List;
  *  value 需要映射的微服务名称
  *  fallbackFactory 服务降级所用的工厂
  */
-@FeignClient(value = ProviderService.PROVIDER_NAME, fallbackFactory = ProviderServiceFallBack.class)
+@FeignClient(value = PROVIDER_NAME, fallbackFactory = ProviderServiceFallBack.class)
 @Service
 public interface ProviderService {
 

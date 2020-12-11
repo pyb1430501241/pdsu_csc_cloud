@@ -6,6 +6,7 @@ import com.pdsu.csc.bean.MyCollection;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.user.UidAndWebIdRepetitionException;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 /**
  * 该接口提供和收藏相关的方法
@@ -70,6 +71,6 @@ public interface MyCollectionService {
 	 * @param uid
 	 * @return
 	 */
-	public List<MyCollection> selectWebIdsByUid(@NonNull Integer uid);
+	public List<MyCollection> selectWebIdsByUid(@NonNull Integer uid, @Nullable Integer p);
 	
 }

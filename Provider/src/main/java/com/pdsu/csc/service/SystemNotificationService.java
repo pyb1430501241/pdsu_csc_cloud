@@ -2,6 +2,7 @@ package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.SystemNotification;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -23,7 +24,7 @@ public interface SystemNotificationService {
      * @param uid
      * @return
      */
-    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid);
+    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid, @Nullable Integer p);
 
     /**
      * 删除用户通知

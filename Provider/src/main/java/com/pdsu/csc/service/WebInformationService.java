@@ -41,14 +41,14 @@ public interface WebInformationService {
 	 * 根据时间查询网页集合
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationOrderByTimetest();
+	public List<WebInformation> selectWebInformationOrderByTimetest(Integer p);
 
 	/**
 	 * 根据作者学号查询网页集
 	 * @param uid  学号
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid);
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid, @Nullable Integer p);
 
 	/**
 	 * 更新文章
@@ -84,6 +84,6 @@ public interface WebInformationService {
 	 * @param webids
 	 * @return
 	 */
-	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag);
+	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag, @Nullable Integer p);
 	
 }

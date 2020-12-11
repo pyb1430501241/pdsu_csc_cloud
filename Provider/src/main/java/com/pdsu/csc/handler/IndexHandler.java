@@ -9,10 +9,7 @@ import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -68,11 +65,10 @@ public class IndexHandler extends ParentHandler {
     private FileDownloadService fileDownloadService;
 
     @GetMapping("/index")
-    public Result index() throws Exception {
-        PageHelper.startPage(1,6);
+    public Result index(@RequestParam(defaultValue = "1", value = "p") Integer p) throws Exception {
         log.info("开始获取首页信息");
         log.info("开始获取博客模块");
-        List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest();
+        List<WebInformation> webList = webInformationService.selectWebInformationOrderByTimetest(p);
         List<Integer> uids = new ArrayList<>();
         List<Integer> webids = new ArrayList<>();
         for(WebInformation w : webList) {
@@ -116,8 +112,7 @@ public class IndexHandler extends ParentHandler {
         PageInfo<BlobInformation> pageInfo = new PageInfo<>(blobList);
         log.info("获取博客模块成功");
         log.info("开始获取文件模块");
-        PageHelper.startPage(1,6);
-        List<WebFile> webFiles = webFileService.selectFilesOrderByTime();
+        List<WebFile> webFiles = webFileService.selectFilesOrderByTime(p);
         uids = new ArrayList<Integer>();
         List<Integer> fileids = new ArrayList<>();
         for(WebFile file : webFiles) {

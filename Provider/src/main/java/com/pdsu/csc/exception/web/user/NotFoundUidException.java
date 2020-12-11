@@ -5,7 +5,7 @@ package com.pdsu.csc.exception.web.user;
  * @author 半梦
  *
  */
-public class NotFoundUidException extends UserExpection{
+public class NotFoundUidException extends UserException {
 
 	/**
 	 * 

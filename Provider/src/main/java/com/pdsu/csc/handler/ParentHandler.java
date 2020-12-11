@@ -142,7 +142,11 @@ public abstract class ParentHandler implements AbstractHandler {
     public static String userImgName = DEFAULT_USER_IMG_NAME;
 
     /**
-     *
+     * 默认访问人
+     */
+    public static final UserInformation DEFAULT_VISTOR = new UserInformation(0);
+
+    /**
      * @param user 用户信息
      * @throws UserNotLoginException
      *  用户未登录时抛出对应异常

@@ -4,6 +4,7 @@ import com.pdsu.csc.bean.WebFile;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -49,7 +50,7 @@ public interface WebFileService {
 	 * 获取文件首页数据
 	 * @return
 	 */
-	public List<WebFile> selectFilesOrderByTime();
+	public List<WebFile> selectFilesOrderByTime(@Nullable Integer p);
 
 	/**
 	 * 根据fileid获取文件呢信息

@@ -8,11 +8,11 @@ import com.pdsu.csc.exception.web.WebException;
  * @author 半梦
  *
  */
-public class UserExpection extends WebException {
+public class UserException extends WebException {
 
 	private static final long serialVersionUID = 1L;
 
-	public UserExpection(String exceptiopn) {
+	public UserException(String exceptiopn) {
 		super(exceptiopn);
 	}
 }

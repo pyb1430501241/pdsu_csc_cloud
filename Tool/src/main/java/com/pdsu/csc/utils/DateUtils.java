@@ -11,6 +11,7 @@ import java.util.*;
  * @author 半梦
  * @create 2020-11-26 19:38
  */
+@SuppressWarnings("all")
 public abstract class DateUtils {
 
     private static final String DAY_DATE_PATTERN = "yyyy-MM-dd";
@@ -55,21 +56,21 @@ public abstract class DateUtils {
         return diff;
     }
 
-    private static final long CSC_SECOND = 1;
+    public static final long CSC_SECOND = 1;
 
-    private static final long CSC_MINUTE = CSC_SECOND * 60;
+    public static final long CSC_MINUTE = CSC_SECOND * 60;
 
-    private static final long CSC_HOURS = CSC_MINUTE * 60;
+    public static final long CSC_HOURS = CSC_MINUTE * 60;
 
-    private static final long CSC_DAY = CSC_HOURS * 24;
+    public static final long CSC_DAY = CSC_HOURS * 24;
 
-    private static final long CSC_WEEK = CSC_DAY * 7;
+    public static final long CSC_WEEK = CSC_DAY * 7;
 
-    private static final long CSC_MONTH = CSC_DAY * 30;
+    public static final long CSC_MONTH = CSC_DAY * 30;
 
-    private static final long CSC_YEAR = CSC_DAY * 365;
+    public static final long CSC_YEAR = CSC_DAY * 365;
 
-    private static final Map<Long, String> MAP = new HashMap<Long, String>();
+    public static final Map<Long, String> MAP = new HashMap<Long, String>();
 
     @SuppressWarnings("all")
     private static final Set<Long> KETSET = new TreeSet<Long>(Comparator.reverseOrder());

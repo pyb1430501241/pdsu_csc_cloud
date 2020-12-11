@@ -3,6 +3,7 @@ package com.pdsu.csc.service.impl;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.MyCollection;
 import com.pdsu.csc.bean.MyCollectionExample;
 import com.pdsu.csc.bean.WebInformationExample;
@@ -110,10 +111,13 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 	}
 
 	@Override
-	public List<MyCollection> selectWebIdsByUid(@NonNull Integer uid) {
+	public List<MyCollection> selectWebIdsByUid(@NonNull Integer uid, Integer p) {
 		MyCollectionExample example = new MyCollectionExample();
 		MyCollectionExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
+		if(p != null) {
+			PageHelper.startPage(p, 10);
+		}
 		return myCollectionMapper.selectByExample(example);
 	}
 }

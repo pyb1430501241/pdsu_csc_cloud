@@ -1,5 +1,6 @@
 package com.pdsu.csc.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.dao.*;
 import com.pdsu.csc.es.dao.EsDao;
@@ -201,9 +202,10 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public List<WebInformation> selectWebInformationOrderByTimetest() {
+	public List<WebInformation> selectWebInformationOrderByTimetest(Integer p) {
 		WebInformationExample example = new WebInformationExample();
 		example.setOrderByClause("sub_time DESC");
+		PageHelper.startPage(p, 10);
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		if(Objects.isNull(list)) {
 			return new ArrayList<>();
@@ -212,11 +214,14 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid) {
+	public List<WebInformation> selectWebInformationsByUid(@NonNull Integer uid, Integer p) {
 		WebInformationExample example = new WebInformationExample();
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		example.setOrderByClause("sub_time DESC");
+		if(p != null) {
+			PageHelper.startPage(p, 15);
+		}
 		List<WebInformation> list = webInformationMapper.selectByExample(example);
 		return list == null ? new ArrayList<>() : list;
 	}
@@ -280,7 +285,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	}
 
 	@Override
-	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag) {
+	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag, Integer p) {
 		if(Objects.isNull(webids) || webids.size() == 0) {
 			return new ArrayList<>();
 		}
@@ -289,6 +294,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 		criteria.andIdIn(webids);
 		if(flag) {
 			example.setOrderByClause("sub_time DESC");
+		}
+		if(p != null) {
+			PageHelper.startPage(p, 10);
 		}
 		return webInformationMapper.selectByExample(example);
 	}

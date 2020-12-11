@@ -1,5 +1,6 @@
 package com.pdsu.csc.service.impl;
 
+import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.UserBrowsingRecord;
 import com.pdsu.csc.bean.UserBrowsingRecordExample;
 import com.pdsu.csc.dao.UserBrowsingRecordMapper;
@@ -26,11 +27,14 @@ public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService 
     }
 
     @Override
-    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid) {
+    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid, Integer p) {
         UserBrowsingRecordExample example = new UserBrowsingRecordExample();
         UserBrowsingRecordExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
         example.setOrderByClause("createtime DESC");
+        if(p != null) {
+            PageHelper.startPage(p,15);
+        }
         return userBrowsingRecordMapper.selectByExample(example);
     }
 

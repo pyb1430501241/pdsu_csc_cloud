@@ -1,5 +1,6 @@
 package com.pdsu.csc.utils;
 
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -16,13 +17,14 @@ public abstract class HttpUtils {
     private static final String X_FORWARDED_FOR_IP_HEADER_NAME = "x-forwarded-for";
     private static final String PROXY_CLIENT_IP_HEADER_NAME = "Proxy-Client-IP";
     private static final String WL_PROXY_CLIENT_IP_HEADER_NAME = "x-forwarded-for";
+    private static final String UNKNOWN = "unknown";
 
     /**
      * 保持用户认证状态的请求头以及 Cookie 的名字
      */
-    public static final String AUTHORIZATION = "Authorization";
-
-    private static final String UNKNOWN = "unknown";
+    protected static final String AUTHORIZATION = "Authorization";
+    protected static final String REMEMBER_COOKIE_NAME = CookieRememberMeManager.DEFAULT_REMEMBER_ME_COOKIE_NAME;
+    protected static final String SET_COOKIE_NAME = "Set-Cookie";
 
     /**
      * 本机 IP
@@ -74,4 +76,18 @@ public abstract class HttpUtils {
         return request.getHeader(AUTHORIZATION);
     }
 
+    @NonNull
+    public static String getSessionHeader() {
+        return AUTHORIZATION;
+    }
+
+    @NonNull
+    public static String getRememberCookieName() {
+        return REMEMBER_COOKIE_NAME;
+    }
+
+    @NonNull
+    public static String getSetCookieName() {
+        return SET_COOKIE_NAME;
+    }
 }

@@ -2,7 +2,9 @@ package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.UserBrowsingRecord;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
+import javax.validation.constraints.Null;
 import java.util.List;
 
 /**
@@ -24,7 +26,7 @@ public interface UserBrowsingRecordService {
      * @return
      */
     @NonNull
-    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid);
+    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid, @Nullable Integer p);
 
     /**
      * 清空用户记录

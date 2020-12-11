@@ -5,6 +5,7 @@ import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidRepetitionException;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 import java.util.List;
 
@@ -20,7 +21,6 @@ public interface UserInformationService {
 	 * @param information
 	 * @return
 	 * @throws UidRepetitionException
-	 * @throws InsertException
 	 */
 	public boolean insert(@NonNull UserInformation information) throws UidRepetitionException;
 
@@ -47,7 +47,7 @@ public interface UserInformationService {
 	 * @return
 	 * @throws NotFoundUidException
 	 */
-	public List<UserInformation> selectUsersByUid(@NonNull Integer uid) throws NotFoundUidException;
+	public List<UserInformation> selectUsersByUid(@NonNull Integer uid, @Nullable Integer p) throws NotFoundUidException;
 
 	/**
 	 * 根据学号查询其粉丝信息
@@ -55,7 +55,7 @@ public interface UserInformationService {
 	 * @return
 	 * @throws NotFoundUidException
 	 */
-	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId) throws NotFoundUidException;
+	public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId, @Nullable Integer p) throws NotFoundUidException;
 
 	/**
 	 * 根据一组学号获取一组学生信息

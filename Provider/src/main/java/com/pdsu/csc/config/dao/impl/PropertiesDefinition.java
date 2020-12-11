@@ -4,6 +4,9 @@ import com.pdsu.csc.bean.HandlerValueEnum;
 import com.pdsu.csc.config.dao.InitDao;
 import com.pdsu.csc.handler.ParentHandler;
 import com.pdsu.csc.utils.StringUtils;
+import lombok.extern.log4j.Log4j2;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,6 +19,8 @@ import java.util.*;
  */
 @SuppressWarnings("all")
 public class PropertiesDefinition implements InitDao {
+
+    private static final Logger log = LoggerFactory.getLogger("初始化日志");
 
     private Properties properties = new Properties();
 
@@ -39,6 +44,7 @@ public class PropertiesDefinition implements InitDao {
         Set<String> keys = initMap.keySet();
         for(String key : keys) {
             String value = initMap.get(key);
+            log.info("系统初始化...正在初始化参数 " + key + ", 其值为: " + value);
             switch (HandlerValueEnum.getByKey(key)) {
                 case IMG_SUFFIX:
                     ParentHandler.imgSuffix = value;
@@ -64,14 +70,17 @@ public class PropertiesDefinition implements InitDao {
     @Override
     public void mkdirs() {
         File file = new File(ParentHandler.userImgFilePath);
+        log.info("系统初始化...创建目录: " + ParentHandler.userImgFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }
         file = new File(ParentHandler.blobImgFilePath);
+        log.info("系统初始化...创建目录: " + ParentHandler.blobImgFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }
         file = new File(ParentHandler.fileFilePath);
+        log.info("系统初始化...创建目录: " + ParentHandler.fileFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }

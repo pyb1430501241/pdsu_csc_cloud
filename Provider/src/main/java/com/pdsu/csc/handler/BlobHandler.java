@@ -126,13 +126,11 @@ public class BlobHandler extends ParentHandler {
 		List<WebInformation> webList;
 		if (lid.equals(0)) {
 			log.info("获取首页数据");
-			PageHelper.startPage(p, 10);
-			webList = webInformationService.selectWebInformationOrderByTimetest();
+			webList = webInformationService.selectWebInformationOrderByTimetest(p);
 		} else {
 			log.info("按标签获取首页数据");
 			List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
-			PageHelper.startPage(p, 10);
-			webList = webInformationService.selectWebInformationsByIds(wids, true);
+			webList = webInformationService.selectWebInformationsByIds(wids, true, p);
 		}
 		if(webList == null || webList.size() == 0) {
 			log.info("首页没有数据");
@@ -181,7 +179,26 @@ public class BlobHandler extends ParentHandler {
 		PageInfo<WebInformation> page = new PageInfo<>(webList);
 		return Result.success().add("blobList", blobList).add(HAS_NEXT_PAGE, page.isHasNextPage());
 	}
-	
+
+	/**
+	 * 曾经的图片前缀名
+	 */
+	private static final String  OBSOLETE_SIGN = "http://121.199.27.93/blob/img/";
+	/**
+	 * 如今的图片前缀名
+	 */
+	private static final String  NOW_SIGN = "http://121.199.27.93/blob/image/";
+
+	/**
+	 * 替换前缀名
+	 */
+	private String obsoleteConversionNow(String webString) {
+		if(!webString.contains(OBSOLETE_SIGN)) {
+			return webString;
+		}
+		return webString.replaceAll(OBSOLETE_SIGN, NOW_SIGN);
+	}
+
 	/**
 	 * 获取博客的相关信息
 	 * @param id
@@ -194,19 +211,19 @@ public class BlobHandler extends ParentHandler {
 		WebInformation web = webInformationService.selectById(id);
 		Integer uid = web.getUid();
 		if(!Objects.isNull(web.getWebData())) {
-			web.setWebDataString(new String(web.getWebData(), DEFAULT_CHARACTER));
+			web.setWebDataString(obsoleteConversionNow(new String(web.getWebData(), DEFAULT_CHARACTER)));
 			web.setWebData(null);
 		}
 		UserInformation user = ShiroUtils.getUserInformation();
 		// 如果未登录, 默认访问人
 		if(Objects.isNull(user)) {
-			user = new UserInformation(181360226);
+			user = DEFAULT_VISTOR;
 		}
 		log.info("添加访问信息");
 		visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
 		log.info("添加用户浏览记录");
 		if(!Objects.isNull(user.getUsername())) {
-			userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), 1
+			userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), BLOB
 				, DateUtils.getSimpleDateSecond()));
 		}
 		log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
@@ -272,7 +289,7 @@ public class BlobHandler extends ParentHandler {
 		}
 		log.info("获取文章标签");
 		List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
-		List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids);
+		List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids, 1);
 		return Result.success().add("web", web)
 			   .add("visit", visits)
 			   .add("thubms", thubms)
@@ -516,7 +533,7 @@ public class BlobHandler extends ParentHandler {
 		author.setUid(user.getUid());
 		author.setUsername(user.getUsername());
 		log.info("获取作者其余文章");
-		List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid);
+		List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid, null);
 		List<WebInformation> webs = new ArrayList<WebInformation>();
 		List<Integer> webids = new ArrayList<>();
 		int i = 0;
@@ -580,8 +597,7 @@ public class BlobHandler extends ParentHandler {
 	public Result getCollectionByUid(@RequestParam Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p)
 			throws Exception {
 		log.info("获取用户: " + uid + " 收藏的文章");
-		PageHelper.startPage(p, 10);
-		List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid);
+		List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid, p);
 		List<Integer> webids = new ArrayList<>();
 		List<Integer> uids = new ArrayList<>();
 		for (MyCollection collection : collections) {
@@ -589,7 +605,7 @@ public class BlobHandler extends ParentHandler {
 			uids.add(collection.getBid());
 		}
 		log.info("获取文章信息");
-		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
+		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false, p);
 		log.info("获取文章访问量");
 		List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
 		log.info("获取文章收藏量");
@@ -702,8 +718,7 @@ public class BlobHandler extends ParentHandler {
 	@GetMapping("/getlabel")
 	public Result getLabel(@RequestParam(defaultValue = "1") Integer p) throws Exception{
 		log.info("获取所有标签");
-		PageHelper.startPage(p, 16);
-		List<WebLabel> label = webLabelService.selectLabel();
+		List<WebLabel> label = webLabelService.selectLabel(p);
 		PageInfo<WebLabel> labs = new PageInfo<>(label);
 		log.info("获取标签成功");
 		return Result.success().add("labelList", labs);

@@ -5,7 +5,7 @@ package com.pdsu.csc.exception.web.user;
  * @author 半梦
  *
  */
-public class UidAndWebIdRepetitionException extends UserExpection{
+public class UidAndWebIdRepetitionException extends UserException {
 
 	public UidAndWebIdRepetitionException(String exceptiopn) {
 		super(exceptiopn);

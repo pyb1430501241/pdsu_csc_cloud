@@ -14,14 +14,19 @@ package com.pdsu.csc.handler;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.csc.bean.*;
+import com.pdsu.csc.exception.web.user.UserException;
 import com.pdsu.csc.service.*;
 import com.pdsu.csc.utils.*;
+import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
+import org.apache.shiro.web.mgt.CookieRememberMeManager;
+import org.apache.shiro.web.subject.WebSubject;
+import org.apache.shiro.web.util.WebUtils;
+import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.Cache;
 import org.springframework.cache.CacheManager;
@@ -30,29 +35,33 @@ import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 
 /**
  * @author 半梦
- * @create
- * 该类负责和用户相关的请求处理,
+ * @create 2020-04-26 09:17
+ * 该类负责和用户相关的请求处理
  */
 @Controller
 @RequestMapping("/user")
 @Log4j2
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "null"})
 public class UserHandler extends ParentHandler {
 
 	/**
 	 * 记住我
 	 */
 	private static final Integer REMEMBER_ME = 1;
+
+	private static final String SET_COOKE_SEPARATOR = "; ";
+	private static final String NAME_VALUE_DELIMITER = "=";
 
 	/**
 	 * 用户信息相关
@@ -124,16 +133,25 @@ public class UserHandler extends ParentHandler {
 	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getLoginStatus() throws Exception{
+	public Result getLoginStatus(HttpSession session) throws Exception{
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
+
 		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+
 		if(!Objects.isNull(user.getPassword())) {
 			user.setPassword(null);
 		}
-		return Result.success().add("user", user);
+
+		String header = HttpUtils.getSessionHeader();
+		String sessionId = (String) session.getAttribute(header);
+		if(sessionId == null) {
+			return Result.success().add("user", user);
+		}
+
+		return Result.success().add("user", user).add(header, sessionId);
 	}
-	
+
 	/**
 	 * 处理登录
 	 * @param uid 账号
@@ -149,8 +167,9 @@ public class UserHandler extends ParentHandler {
 	@RequestMapping(value = "/login", method = RequestMethod.POST)
 	@CrossOrigin
 	public Result login(@RequestParam String uid, @RequestParam String password,
-						@RequestParam String hit, @RequestParam String code,
-						@RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
+                        @RequestParam String hit, @RequestParam String code,
+                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
+                        HttpServletResponse response, HttpServletRequest request) throws Exception {
 		log.info("账号: " + uid + "登录开始");
 		log.info("参数为: " + StringUtils.toString(uid, password, hit, code, flag));
 		if(Objects.isNull(cache.get(hit))) {
@@ -163,7 +182,7 @@ public class UserHandler extends ParentHandler {
 			log.info(CODE_ERROR);
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
-		Subject subject = SecurityUtils.getSubject();
+		WebSubject subject = new WebSubject.Builder(request, response).buildWebSubject();
 		if(!Objects.isNull(ShiroUtils.getUserInformation())) {
 		    subject.logout();
         }
@@ -178,12 +197,37 @@ public class UserHandler extends ParentHandler {
         subject.login(token);
         UserInformation uu = (UserInformation) subject.getPrincipal();
         uu.setPassword(null);
-        log.info("账号: " + uid + "登录成功, sessionid为: " + subject.getSession().getId());
+		log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
         return Result.success()
 					.add("user", uu)
-					.add("AccessToken", subject.getSession().getId());
+					.add(HttpUtils.getSetCookieName(), getSetCookieValue(subject, HttpUtils.getSetCookieName()))
+					.add(HttpUtils.getRememberCookieName(), getSetCookieValue(subject, HttpUtils.getRememberCookieName()));
 	}
-	
+
+	/**
+	 * @see WebUtils#getHttpResponse
+	 * @see WebSubject.Builder
+	 */
+	@SuppressWarnings("all")
+	protected String getSetCookieValue(@NonNull Subject subject, String name) throws UserException {
+		if(!WebUtils.isHttp(subject)) {
+			throw new UserException(DEFAULT_ERROR_PROMPT);
+		}
+
+		HttpServletResponse httpResponse = WebUtils.getHttpResponse(subject);
+
+		StringBuilder builder = new StringBuilder("");
+
+		// 获取用户登录认证信息
+		String value = httpResponse.getHeader(name);
+		if (value == null) {
+			return null;
+		}
+		builder.append(value);
+
+		return builder.toString();
+	}
+
 	/**
 	 * 获取验证码
 	 * 储存验证码到缓存区 cache
@@ -223,7 +267,7 @@ public class UserHandler extends ParentHandler {
 	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result sendEmailforApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
+	public Result sendEmailForApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(ObjectUtils.isEmpty(email)) {
 				return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
@@ -646,8 +690,7 @@ public class UserHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "获取自己的文章开始");
-		PageHelper.startPage(p, 15);
-		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid());
+		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid(), p);
 		List<Integer> webids = new ArrayList<Integer>();
 		for (WebInformation web : weblist) {
 			webids.add(web.getId());
@@ -677,8 +720,7 @@ public class UserHandler extends ParentHandler {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
-		PageHelper.startPage(p, 20);
-		List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid());
+		List<UserInformation> users = userInformationService.selectUsersByLikeId(user.getUid(), p);
 		List<Integer> uids = new ArrayList<>();
 		for(UserInformation userinfor : users) {
 			UserInformation u = userinfor;
@@ -719,8 +761,7 @@ public class UserHandler extends ParentHandler {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
 		log.info("获取关注人信息");
-		PageHelper.startPage(p, 20);
-		List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid());
+		List<UserInformation> users = userInformationService.selectUsersByUid(user.getUid(), p);
 		log.info("获取关注人学号");
 		List<Integer> uids = new ArrayList<>();
 		for(UserInformation userinfor : users) {
@@ -757,8 +798,7 @@ public class UserHandler extends ParentHandler {
 	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, @RequestParam Integer uid)
 			throws Exception{
 		log.info("获取用户: " + uid + " 的文章开始");
-		PageHelper.startPage(p, 15);
-		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid);
+		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid, p);
 		List<Integer> webids = new ArrayList<Integer>();
 		for (WebInformation web : weblist) {
 			webids.add(web.getId());
@@ -794,8 +834,7 @@ public class UserHandler extends ParentHandler {
 	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("用户: " + uid + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
-		PageHelper.startPage(p, 20);
-		List<UserInformation> users = userInformationService.selectUsersByLikeId(uid);
+		List<UserInformation> users = userInformationService.selectUsersByLikeId(uid, p);
 		log.info("获取粉丝学号");
 		List<Integer> uids = new ArrayList<>();
 		for(UserInformation userinfor : users) {
@@ -836,8 +875,7 @@ public class UserHandler extends ParentHandler {
 	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("获取用户: " + uid + " 的关注人信息");
 		log.info("获取关注人信息");
-		PageHelper.startPage(p, 20);
-		List<UserInformation> users = userInformationService.selectUsersByUid(uid);
+		List<UserInformation> users = userInformationService.selectUsersByUid(uid, p);
 		log.info("获取关注人学号");
 		List<Integer> uids = new ArrayList<>();
 		for(UserInformation userinfor : users) {
@@ -959,8 +997,7 @@ public class UserHandler extends ParentHandler {
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("获取访问记录信息");
-		PageHelper.startPage(p,15);
-		List<UserBrowsingRecord> userBrowsingRecords = userBrowsingRecordService.selectBrowsingRecordByUid(user.getUid());
+		List<UserBrowsingRecord> userBrowsingRecords = userBrowsingRecordService.selectBrowsingRecordByUid(user.getUid(), p);
 		List<Integer> webids = new ArrayList<>();
 		List<Integer> fileids = new ArrayList<>();
 		log.info("获取访问过的博客或文件ID");
@@ -972,7 +1009,7 @@ public class UserHandler extends ParentHandler {
 			}
 		}
 		log.info("获取博客信息");
-		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false);
+		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false, null);
 		List<Integer> uids = new ArrayList<>();
 		for(WebInformation web : webs) {
 			uids.add(web.getUid());
@@ -1036,7 +1073,7 @@ public class UserHandler extends ParentHandler {
 		log.info("用户: " + user.getUid() + " 获取通知开始");
 		log.info("获取通知");
 		PageHelper.startPage(p, 10);
-		List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid());
+		List<SystemNotification> systemNotifications = systemNotificationService.selectSystemNotificationsByUid(user.getUid(), p);
 		List<SystemNotificationInformation> list = new ArrayList<>();
 		for (SystemNotification s : systemNotifications) {
 			SystemNotificationInformation information = new SystemNotificationInformation();

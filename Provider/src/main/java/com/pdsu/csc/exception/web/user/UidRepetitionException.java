@@ -5,7 +5,7 @@ package com.pdsu.csc.exception.web.user;
  * @author Admin
  *
  */
-public class UidRepetitionException extends UserExpection{
+public class UidRepetitionException extends UserException {
 
 	/**
 	 * 

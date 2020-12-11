@@ -142,8 +142,7 @@ public class FileHandler extends ParentHandler {
 	@CrossOrigin
 	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) throws Exception{
 		log.info("获取首页文件");
-		PageHelper.startPage(p, 15);
-		List<WebFile> list = webFileService.selectFilesOrderByTime();
+		List<WebFile> list = webFileService.selectFilesOrderByTime(p);
 		List<Integer> uids = new ArrayList<Integer>();
 		List<Integer> fileids = new ArrayList<Integer>();
 		for(WebFile file : list) {
