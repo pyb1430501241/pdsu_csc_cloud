@@ -19,9 +19,12 @@ import com.pdsu.csc.service.*;
 import com.pdsu.csc.utils.*;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
+import net.minidev.json.JSONObject;
 import org.apache.commons.io.FileUtils;
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
+import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.subject.WebSubject;
@@ -59,9 +62,6 @@ public class UserHandler extends ParentHandler {
 	 * 记住我
 	 */
 	private static final Integer REMEMBER_ME = 1;
-
-	private static final String SET_COOKE_SEPARATOR = "; ";
-	private static final String NAME_VALUE_DELIMITER = "=";
 
 	/**
 	 * 用户信息相关
@@ -133,21 +133,24 @@ public class UserHandler extends ParentHandler {
 	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
 	@ResponseBody
 	@CrossOrigin
-	public Result getLoginStatus(HttpSession session) throws Exception{
+	public Result getLoginStatus(HttpServletRequest request) throws Exception{
 		UserInformation user = ShiroUtils.getUserInformation();
+		// 这里排除未认证的情况
 		loginOrNotLogin(user);
 
 		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
-
 		if(!Objects.isNull(user.getPassword())) {
 			user.setPassword(null);
 		}
 
-		String header = HttpUtils.getSessionHeader();
-		String sessionId = (String) session.getAttribute(header);
-		if(sessionId == null) {
-			return Result.success().add("user", user);
+		// 首先查看请求头中是否有 sessionId
+		String sessionId = HttpUtils.getSessionId(request);
+		// 如没有, 则通过 Shiro 尝试获取 sessionId
+		if(StringUtils.isBlank(sessionId)) {
+			sessionId = ShiroUtils.getSessionId();
 		}
+		// 获取请求头
+		String header = HttpUtils.getSessionHeader();
 
 		return Result.success().add("user", user).add(header, sessionId);
 	}
@@ -182,11 +185,10 @@ public class UserHandler extends ParentHandler {
 			log.info(CODE_ERROR);
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
-		WebSubject subject = new WebSubject.Builder(request, response).buildWebSubject();
+		Subject subject = new WebSubject.Builder(request, response).buildWebSubject();
 		if(!Objects.isNull(ShiroUtils.getUserInformation())) {
 		    subject.logout();
         }
-        log.info("账号: " + uid + "开始登录认证");
         UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
         //是否记住我
         if(!flag.equals(REMEMBER_ME)) {
@@ -198,7 +200,7 @@ public class UserHandler extends ParentHandler {
         UserInformation uu = (UserInformation) subject.getPrincipal();
         uu.setPassword(null);
 		log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
-        return Result.success()
+		return Result.success()
 					.add("user", uu)
 					.add(HttpUtils.getSetCookieName(), getSetCookieValue(subject, HttpUtils.getSetCookieName()))
 					.add(HttpUtils.getRememberCookieName(), getSetCookieValue(subject, HttpUtils.getRememberCookieName()));
@@ -226,6 +228,17 @@ public class UserHandler extends ParentHandler {
 		builder.append(value);
 
 		return builder.toString();
+	}
+
+	@RequestMapping("/logout")
+	@SuppressWarnings("all")
+	@CrossOrigin
+	public Result logout() throws Exception{
+		Subject subject = SecurityUtils.getSubject();
+		log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录");
+		subject.logout();
+		log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录成功");
+		return Result.success();
 	}
 
 	/**

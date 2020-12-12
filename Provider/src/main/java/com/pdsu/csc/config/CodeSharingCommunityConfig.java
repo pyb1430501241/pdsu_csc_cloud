@@ -151,7 +151,7 @@ public class CodeSharingCommunityConfig {
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
         shiroFilterFactoryBean.setSecurityManager(securityManager);
-        LinkedHashMap<String, String> filterChainDefinitionMap = new LinkedHashMap<>();
+        LinkedHashMap<String, String> filterChainDefinitionMap=new LinkedHashMap<>();
         filterChainDefinitionMap.put("/user/logout", "logout");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
         return shiroFilterFactoryBean;

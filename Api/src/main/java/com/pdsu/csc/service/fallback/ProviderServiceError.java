@@ -271,4 +271,9 @@ public class ProviderServiceError implements ProviderService {
     public Result searchByText(String text) {
         return RESULT;
     }
+
+    @Override
+    public Result logout() {
+        return RESULT;
+    }
 }

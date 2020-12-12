@@ -67,9 +67,6 @@ public class ConsumerConfig {
     /**
      * 允许对外暴露的请求头
      */
-    /**
-     * 允许对外暴露的请求头
-     */
     public static final String [] EXPOSED_HEADER = new String[]{
             HttpUtils.getSetCookieName(),
             HttpUtils.getSessionHeader(),

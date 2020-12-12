@@ -4,8 +4,11 @@ import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.config.ConsumerConfig;
 import com.pdsu.csc.service.ProviderService;
+import com.pdsu.csc.utils.CookieUtils;
+import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.StringUtils;
+import org.apache.shiro.web.servlet.SimpleCookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +29,26 @@ public class UserHandler {
     @Autowired
     private ProviderService providerService;
 
+
+    @RequestMapping("/logout")
+    public Result logout(HttpServletRequest request) {
+        Result logout = providerService.logout();
+        // 退出登录成功, 则清空 cookie
+        if(isHttpSuccess(logout)) {
+            Cookie[] cookies = request.getCookies();
+            for(Cookie cookie : cookies) {
+                cookie.setMaxAge(0);
+            }
+        }
+        return logout;
+    }
+
+    private static final String CODE = "code";
+
+    private boolean isHttpSuccess(Result result) {
+        return result.getJson().get(CODE).equals(200);
+    }
+
     @PostMapping("/login")
     @CrossOrigin
     public Result login(@RequestParam String uid, @RequestParam String password,
@@ -34,23 +57,28 @@ public class UserHandler {
                         HttpServletResponse response,
                         HttpServletRequest request) {
         Result login = providerService.login(uid, password, hit, code, flag);
-        /*
-            由于 feign 转发请求时会默认清理 response 里的 Cookie, 请求头信息,
-            故选择将其添加到服务提供放的返回值里, 供消费放拿到后, 添加到请求头里。
-        */
-        String setCookieName = ConsumerConfig.EXPOSED_HEADER[0];
-        String setCookieValue = (String) login.getJson().get(setCookieName);
-        response.addHeader(setCookieName, setCookieValue);
-        login.getJson().remove(setCookieName);
+        // 如果请求成功
+        if(isHttpSuccess(login)) {
+            /*
+                由于 feign 转发请求时会默认清理 response 里的 Cookie, 请求头信息,
+                故选择将其添加到服务提供放的返回值里, 供消费方拿到后, 添加到请求头里。
+                    // 如在本项目中认证, 通过对应的参数进行调用, 则省去该步骤
+                    // 但由于架子已成, 如修改, 幅度巨大, 故放弃。
+            */
+            String setCookieName = HttpUtils.getSetCookieName();
+            String setCookieValue = (String) login.getJson().get(setCookieName);
+            response.addHeader(setCookieName, setCookieValue);
+            login.getJson().remove(setCookieName);
 
-        String rememberName = ConsumerConfig.EXPOSED_HEADER[3];
-        String rememberValue = (String) login.getJson().get(rememberName);
-        // 用户可能选择不记住
-        if(!StringUtils.isBlank(rememberValue)) {
-            // setCookieName 为给浏览器添加 cookie
-            response.addHeader(setCookieName, rememberValue);
+            String rememberName = HttpUtils.getRememberCookieName();
+            String rememberValue = (String) login.getJson().get(rememberName);
+            // 用户可能选择不记住
+            if(!StringUtils.isBlank(rememberValue)) {
+                // setCookieName 为给浏览器添加 cookie
+                response.addHeader(setCookieName, rememberValue);
+            }
+            login.getJson().remove(rememberName);
         }
-        login.getJson().remove(rememberValue);
         return login;
     }
 
@@ -64,22 +92,33 @@ public class UserHandler {
     @CrossOrigin
     public Result getLoginStatus(HttpServletRequest request, HttpServletResponse response){
         Result result = providerService.loginStatus();
-        // 由于 rememberMe 认证的用户, sessionId 丢失, 故在第一个请求中加入 sessionId
-        Cookie[] cookies = request.getCookies();
-        boolean f = true;
-        for(Cookie cookie : cookies) {
-            if(cookie.getName().equals(HttpUtils.getSessionHeader())) {
-                f = false;
-                break;
+        // 如果请求成功, 由于用户未登录时, 返回值 code 为500, 即代表请求成功时
+        // cookie 中必有 Authorization 或 rememberMe
+        if(isHttpSuccess(result)) {
+            // 由于 rememberMe 认证的用户, sessionId 丢失, 故在第一个请求中加入 sessionId
+            Cookie[] cookies = request.getCookies();
+            boolean f = true;
+            // 查询用户是否已认证, 即为已登录状态
+            for(Cookie cookie : cookies) {
+                // 如果 cookie 里有 Authorization, 则 f 为 false
+                if(cookie.getName().equals(HttpUtils.getSessionHeader())) {
+                    f = false;
+                    break;
+                }
             }
-        }
-        if(f) {
-            String setCookieName = ConsumerConfig.EXPOSED_HEADER[0];
-            String sessionHeader = ConsumerConfig.EXPOSED_HEADER[1];
-
-            String sessionIdValue = (String) result.getJson().get(sessionHeader);
-            if(!StringUtils.isBlank(sessionIdValue)) {
-                response.addHeader(setCookieName, sessionIdValue);
+            String sessionHeader = HttpUtils.getSessionHeader();
+            // 如果有 cookie 中没有 Authorization, 则获取并添加进 cookie
+            if(f) {
+                String setCookieName = HttpUtils.getSetCookieName();
+                String sessionIdValue = (String) result.getJson().get(sessionHeader);
+                // Authorization 不为空时
+                if(!StringUtils.isBlank(sessionIdValue)) {
+                    String path = "/";
+                    String endValue = CookieUtils.buildHeaderValue(sessionHeader, sessionIdValue, null,
+                            null, path, -1, CookieUtils.DEFAULT_VERSION, false, false,
+                            org.apache.shiro.web.servlet.Cookie.SameSiteOptions.LAX);
+                    response.addHeader(setCookieName, endValue);
+                }
             }
             result.getJson().remove(sessionHeader);
         }

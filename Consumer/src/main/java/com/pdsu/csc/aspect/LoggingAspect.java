@@ -1,6 +1,7 @@
 package com.pdsu.csc.aspect;
 
 import com.pdsu.csc.utils.HttpUtils;
+import com.pdsu.csc.utils.StringUtils;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterThrowing;
 import org.aspectj.lang.annotation.Aspect;
@@ -24,8 +25,10 @@ public class LoggingAspect {
 
     @Before(value = "execution(public * com.pdsu.csc.handler..*(..))&&args(.., request)")
     public void before(HttpServletRequest request) {
-        log.info("当前用户 SessionId为: " + HttpUtils.getSessionId(request)
-            + ", IP地址为: " + HttpUtils.getIpAddr(request));
+        String sessionId = HttpUtils.getSessionId(request);
+        log.info("当前用户 SessionId为: "
+                + (StringUtils.isBlank(sessionId) ? "用户未登录或通过rememberMe认证" : sessionId)
+                + ", IP地址为: " + HttpUtils.getIpAddr(request));
     }
 
     @AfterThrowing(value = "execution(public * com.pdsu.csc.handler..*(..))&&args(.., request)", throwing = "ex")

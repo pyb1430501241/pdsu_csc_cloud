@@ -33,14 +33,33 @@ public abstract class ShiroUtils {
             if(Objects.isNull(user)){
                 session.setAttribute("user", userInformation);
             }
-            if(Objects.isNull(session.getAttribute(HttpUtils.getSessionHeader()))) {
-                session.setAttribute(HttpUtils.getSessionHeader(), session.getId());
-            }
             return userInformation;
         } else {
             return null;
         }
 	}
+
+    /**
+     * 获取 sessionId
+     */
+    @Nullable
+    public static String getSessionId() {
+        Subject subject = SecurityUtils.getSubject();
+        Session session = subject.getSession(false);
+        if(Objects.isNull(session)) {
+            return null;
+        }
+        return (String) session.getId();
+    }
+
+    /**
+     * 获取用户是否已登录
+     */
+    public static boolean isAuthorization() {
+        Subject subject = SecurityUtils.getSubject();
+        return subject.isAuthenticated() || subject.isRemembered();
+    }
+
 	
 	 /**
 	  * 根据 sessionid 获取用户信息

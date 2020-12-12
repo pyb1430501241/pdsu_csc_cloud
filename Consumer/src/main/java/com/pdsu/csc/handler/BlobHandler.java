@@ -6,6 +6,7 @@ import com.pdsu.csc.service.ProviderService;
 import com.pdsu.csc.utils.HttpUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -203,7 +204,7 @@ public class BlobHandler {
      * @param img
      * @return
      */
-    @PostMapping(value = "/blobimg")
+    @PostMapping(value = "/blobimg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     @CrossOrigin
     public Result postBlobImg(@RequestParam MultipartFile img, HttpServletRequest request) {
         return providerService.postBlobImg(img);
