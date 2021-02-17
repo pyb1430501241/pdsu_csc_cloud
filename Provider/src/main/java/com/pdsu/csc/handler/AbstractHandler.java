@@ -1,6 +1,11 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
+import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.exception.web.user.UserNotLoginException;
+import org.springframework.lang.Nullable;
+
+import javax.validation.constraints.Null;
 
 /**
  * @author 半梦
@@ -66,5 +71,7 @@ public interface AbstractHandler {
     default Result globalNotification() {
         return Result.bedRequest();
     }
+
+    void loginOrNotLogin(@Nullable UserInformation user) throws UserNotLoginException;
 
 }

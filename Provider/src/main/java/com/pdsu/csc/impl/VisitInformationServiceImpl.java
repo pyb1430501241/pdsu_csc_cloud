@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -23,8 +23,8 @@ import org.springframework.stereotype.Service;
  * @author 半梦
  *
  */
-@Service("visitInformation")
-public class VisitInformationImpl implements VisitInformationService {
+@Service("visitInformationService")
+public class VisitInformationServiceImpl implements VisitInformationService {
 
 	@Autowired
 	private VisitInformationMapper visitInformationMapper;

@@ -6,6 +6,7 @@ import com.pdsu.csc.config.dao.impl.PropertiesDefinition;
 import com.pdsu.csc.exception.web.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.Nullable;
 
 import java.io.IOException;
 import java.util.Objects;
@@ -67,7 +68,7 @@ public abstract class ParentHandler implements AbstractHandler {
     /**
      * 邮箱已被使用
      */
-    protected static final String EMAIL_HAS_BEAN_BOUND = "邮箱已被绑定";
+    protected static final String EMAIL_ALREADY_USE = "邮箱已被绑定";
 
     /**
      * 用户名为空
@@ -151,7 +152,7 @@ public abstract class ParentHandler implements AbstractHandler {
      * @throws UserNotLoginException
      *  用户未登录时抛出对应异常
      */
-    protected void loginOrNotLogin(UserInformation user) throws UserNotLoginException {
+     public void loginOrNotLogin(@Nullable UserInformation user) throws UserNotLoginException {
         if(Objects.isNull(user)) {
             throw new UserNotLoginException();
         }
@@ -164,16 +165,20 @@ public abstract class ParentHandler implements AbstractHandler {
     @SuppressWarnings("all")
     private static class InitSystem implements InitDao {
 
-        private InitDao initDao = new PropertiesDefinition();
+        private InitDao initDao;
+
+        public InitSystem(InitDao initDao) {
+            this.initDao = initDao;
+        }
 
         /**
          * 系统初始化
          */
         @Override
         public void initParameters() {
-            log.info("系统配置初始化...");
+            log.info("系统初始化...初始化参数开始...");
             initDao.initParameters();
-            log.info("系统初始化成功...");
+            log.info("系统初始化...初始化参数成功...");
         }
 
         /**
@@ -181,9 +186,9 @@ public abstract class ParentHandler implements AbstractHandler {
          */
         @Override
         public void mkdirs(){
-            log.info("创建系统所需文件...");
+            log.info("系统初始化...创建系统所需文件开始...");
             initDao.mkdirs();
-            log.info("系统所需文件创建成功...");
+            log.info("系统初始化...创建系统所需文件成功...");
         }
 
         /**
@@ -195,13 +200,13 @@ public abstract class ParentHandler implements AbstractHandler {
          */
         @Override
         public void reader(String filepath) throws IOException {
-            log.info("读取系统配置...");
+            log.info("系统初始化...读取系统配置信息开始...");
             initDao.reader(filepath);
-            log.info("读取系统配置成功...");
+            log.info("系统初始化...读取系统配置信息成功...");
         }
 
         public static void initSystem() {
-            InitSystem initSystem = new InitSystem();
+            InitSystem initSystem = new InitSystem(new PropertiesDefinition());
             try {
                 initSystem.reader("properties/csc.properties");
                 initSystem.initParameters();

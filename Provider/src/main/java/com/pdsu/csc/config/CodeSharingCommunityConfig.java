@@ -1,23 +1,22 @@
 package com.pdsu.csc.config;
 
-import com.alibaba.druid.pool.DruidDataSource;
-import com.alibaba.druid.support.http.StatViewServlet;
-import com.alibaba.druid.support.http.WebStatFilter;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
 import com.pdsu.csc.es.RestHighLevelClientFactory;
 import com.pdsu.csc.shiro.LoginRealm;
+import com.pdsu.csc.shiro.UserLogoutFilter;
 import com.pdsu.csc.shiro.WebCookieRememberMeManager;
 import com.pdsu.csc.shiro.WebSessionManager;
 import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.StringUtils;
 import com.pdsu.csc.web.WebStartInterceptor;
-import lombok.extern.log4j.Log4j2;
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
+import org.apache.catalina.User;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.AllSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
 import org.apache.shiro.cache.ehcache.EhCacheManager;
-import org.apache.shiro.mgt.RememberMeManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
@@ -29,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.CacheManager;
 import org.springframework.cache.ehcache.EhCacheCacheManager;
@@ -40,6 +38,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
+import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
 import javax.sql.DataSource;
 import java.util.*;
@@ -53,36 +52,15 @@ public class CodeSharingCommunityConfig {
 
     private static final Logger log = LoggerFactory.getLogger("初始化日志");
 
-    @ConfigurationProperties(prefix = "spring.datasource")
     @Bean
-    public DataSource druid() {
-        return new DruidDataSource();
+    public DataSource hikariCP(HikariConfig hikariConfig) {
+        return new HikariDataSource(hikariConfig);
     }
 
-    /**
-     * 配置 Druid 监控
-     * 1. 配置一个管理后台的 Servlet
-     */
     @Bean
-    @SuppressWarnings("unchecked")
-    public ServletRegistrationBean statViewServlet() {
-        ServletRegistrationBean bean = new ServletRegistrationBean(new StatViewServlet(), "/druid/*");
-        Map<String, String> map = new HashMap<>();
-        map.put("loginUsername", "root");
-        map.put("loginPassword", "pdsu_csc_admin");
-        bean.setInitParameters(map);
-        return bean;
-    }
-    /**
-     * 2. 配置一个监控的 Filter
-     */
-    @Bean
-    @SuppressWarnings("unchecked")
-    public FilterRegistrationBean webStatFilter() {
-        FilterRegistrationBean bean = new FilterRegistrationBean();
-        bean.setFilter(new WebStatFilter());
-        bean.setUrlPatterns(Arrays.asList("/*"));
-        return bean;
+    @ConfigurationProperties(prefix = "spring.datasource.hikari")
+    public HikariConfig hikariConfig() {
+        return new HikariConfig();
     }
 
     @Bean
@@ -122,10 +100,10 @@ public class CodeSharingCommunityConfig {
     public Realm loginRealm() {
         LoginRealm realm = new LoginRealm();
         HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
-        log.info("系统初始化...使用默认加密规则: " + DEFAULT_ENCRYPTION_MODE);
-        log.info("系统初始化...使用默认加密规则, 默认加密次数: " + DEFAULT_ENCRYPTION_NUMBER);
         credentialsMatcher.setHashAlgorithmName(DEFAULT_ENCRYPTION_MODE);
+        log.info("系统初始化...使用默认加密规则: " + DEFAULT_ENCRYPTION_MODE);
         credentialsMatcher.setHashIterations(DEFAULT_ENCRYPTION_NUMBER);
+        log.info("系统初始化...使用默认加密规则, 默认加密次数: " + DEFAULT_ENCRYPTION_NUMBER);
         realm.setCredentialsMatcher(credentialsMatcher);
         return realm;
     }
@@ -136,11 +114,6 @@ public class CodeSharingCommunityConfig {
         webSecurityManager.setRealm(loginRealm);
         webSecurityManager.setSessionManager(new WebSessionManager());
         webSecurityManager.setRememberMeManager(new WebCookieRememberMeManager());
-        CookieRememberMeManager rememberMeManager = (CookieRememberMeManager) webSecurityManager.getRememberMeManager();
-        rememberMeManager.getCookie().setHttpOnly(false);
-        log.info("系统初始化...Shiro记住我 Cookie 是否为仅http访问: " + rememberMeManager.getCookie().isHttpOnly());
-        rememberMeManager.getCookie().setMaxAge((int) DateUtils.CSC_YEAR);
-        log.info("系统初始化...Shiro记住我 Cookie 存在时间为: " + rememberMeManager.getCookie().getMaxAge() + "s");
         EhCacheManager ehCacheManager = new EhCacheManager();
         ehCacheManager.setCacheManager(cacheManager);
         webSecurityManager.setCacheManager(ehCacheManager);
@@ -150,10 +123,17 @@ public class CodeSharingCommunityConfig {
     @Bean
     public ShiroFilterFactoryBean shiroFilterFactoryBean(SecurityManager securityManager) {
         ShiroFilterFactoryBean shiroFilterFactoryBean = new ShiroFilterFactoryBean();
+
         shiroFilterFactoryBean.setSecurityManager(securityManager);
-        LinkedHashMap<String, String> filterChainDefinitionMap=new LinkedHashMap<>();
+
+        Map<String, Filter> filterMap = new HashMap<>();
+        filterMap.put("logout", new UserLogoutFilter());
+        shiroFilterFactoryBean.setFilters(filterMap);
+
+        Map<String, String> filterChainDefinitionMap = new HashMap<>();
         filterChainDefinitionMap.put("/user/logout", "logout");
         shiroFilterFactoryBean.setFilterChainDefinitionMap(filterChainDefinitionMap);
+
         return shiroFilterFactoryBean;
     }
 

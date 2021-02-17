@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.WebInformationExample;
 import com.pdsu.csc.bean.WebThumbs;

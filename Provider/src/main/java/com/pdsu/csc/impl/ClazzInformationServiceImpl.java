@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.ClazzInformation;
 import com.pdsu.csc.dao.ClazzInformationMapper;
@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
  * @author 半梦
  * @create 2020-08-21 14:47
  */
-@Service("clazzInformationService")
 @Deprecated
+@Service("clazzInformationService")
 public class ClazzInformationServiceImpl implements ClazzInformationService {
 
     @Autowired

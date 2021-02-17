@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.WebComment;
 import com.pdsu.csc.bean.WebCommentExample;
@@ -20,7 +20,6 @@ import java.util.List;
  * @author 半梦
  *
  */
-
 @Service("webCommentService")
 public class WebCommentServiceImpl implements WebCommentService {
 

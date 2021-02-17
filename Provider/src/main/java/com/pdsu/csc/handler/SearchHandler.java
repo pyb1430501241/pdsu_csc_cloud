@@ -1,10 +1,8 @@
 package com.pdsu.csc.handler;
 
-import com.pdsu.csc.bean.EsBlobInformation;
-import com.pdsu.csc.bean.EsFileInformation;
-import com.pdsu.csc.bean.EsUserInformation;
-import com.pdsu.csc.bean.Result;
+import com.pdsu.csc.bean.*;
 import com.pdsu.csc.es.service.EsService;
+import com.pdsu.csc.utils.StringUtils;
 import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,14 +53,29 @@ public class SearchHandler extends ParentHandler {
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	@CrossOrigin
-	public Result searchByText(@RequestParam(value = "p")String text) throws Exception{
+	public Result searchByText(@RequestParam(value = "p")String text, @RequestParam(required = false) String type) throws Exception{
 		log.info("用户查询: " + text + " 开始");
-		List<EsUserInformation> users = esUserService.queryByText(text);
-		List<EsBlobInformation> blobs = esBlobService.queryByText(text);
-		List<EsFileInformation> files = esFileService.queryByText(text);
-		log.info("查询成功");
-		return Result.success().add("authorList", users).add("blobList", blobs)
-				.add("fileList", files);
+		if(StringUtils.isBlank(type)) {
+			List<EsUserInformation> users = esUserService.queryByText(text);
+			List<EsBlobInformation> blobs = esBlobService.queryByText(text);
+			List<EsFileInformation> files = esFileService.queryByText(text);
+			log.info("查询成功");
+			return Result.success().add("authorList", users).add("blobList", blobs)
+					.add("fileList", files);
+		}
+		switch (EsIndex.valueOf(type)) {
+			case BLOB:
+				List<EsBlobInformation> blobs = esBlobService.queryByText(text);
+				return Result.success().add("blobList", blobs);
+			case FILE:
+				List<EsFileInformation> files = esFileService.queryByText(text);
+				return Result.success().add("fileList", files);
+			case USER:
+				List<EsUserInformation> users = esUserService.queryByText(text);
+				return Result.success().add("userList", users);
+			default:
+				return Result.fail().add(EXCEPTION, DEFAULT_ERROR_PROMPT);
+		}
 	}
 
 }

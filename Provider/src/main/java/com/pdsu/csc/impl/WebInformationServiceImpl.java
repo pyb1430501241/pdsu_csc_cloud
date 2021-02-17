@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.*;
@@ -27,8 +27,8 @@ import java.util.regex.Pattern;
  * @author 半梦
  *
  */
-@Service("webInformationService")
 @Log4j2
+@Service("webInformationService")
 public class WebInformationServiceImpl implements WebInformationService {
 
 	@Autowired

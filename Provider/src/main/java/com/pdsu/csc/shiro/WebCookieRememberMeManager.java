@@ -1,6 +1,7 @@
 package com.pdsu.csc.shiro;
 
 import com.pdsu.csc.utils.CookieUtils;
+import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
 import lombok.extern.log4j.Log4j2;
 import org.apache.shiro.codec.Base64;
@@ -21,13 +22,21 @@ import javax.servlet.http.HttpServletResponse;
 @Log4j2
 public class WebCookieRememberMeManager extends CookieRememberMeManager {
 
+    @SuppressWarnings("all")
+    public WebCookieRememberMeManager() {
+        super();
+        getCookie().setHttpOnly(false);
+        log.info("系统初始化...Shiro记住我 Cookie 是否为仅http访问: " + getCookie().isHttpOnly());
+        log.info("系统初始化...Shiro记住我 Cookie 存在时间为: " + getCookie().getMaxAge() + "s");
+    }
+
     protected void rememberSerializedIdentity(Subject subject, byte[] serialized) {
         if (!WebUtils.isHttp(subject)) {
             return;
         }
         HttpServletRequest request = WebUtils.getHttpRequest(subject);
         HttpServletResponse response = WebUtils.getHttpResponse(subject);
-        //对用户信息进行 base64 加密
+        // 对用户信息进行 base64 加密
         String base64 = Base64.encodeToString(serialized);
         // 成员变量 cookie 只是为了提供一个模板
         Cookie template = getCookie();
@@ -46,7 +55,7 @@ public class WebCookieRememberMeManager extends CookieRememberMeManager {
         boolean httpOnly = cookie.isHttpOnly();
         Cookie.SameSiteOptions sameSite = cookie.getSameSite();
 
-        //讲 cookie 封装程对应的格式
+        // 将 cookie 封装程对应的格式
         String endValue = CookieUtils.buildHeaderValue(name, value, comment, domain, path, maxAge, version, secure, httpOnly, sameSite);
         if(com.pdsu.csc.utils.StringUtils.isBlank(endValue)) {
             return;

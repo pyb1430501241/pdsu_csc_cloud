@@ -14,9 +14,21 @@ import java.io.Serializable;
 @NoArgsConstructor
 @AllArgsConstructor
 public enum AccountStatus implements Serializable{
+	/**
+	 * 账号正常
+	 */
 	NORMAL(1, "正常"),
+	/**
+	 * 账号被冻结
+	 */
 	FROZEN(2, "冻结"),
+	/**
+	 * 账号被封禁
+	 */
 	BAN(3, "封禁"),
+	/**
+	 * 账号注销
+	 */
 	CANCELLED(4, "注销"),
 	OTHER(999, "other");
 

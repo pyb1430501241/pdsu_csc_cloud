@@ -78,7 +78,7 @@
         <logger name="org.springframework.boot" level="WARN"></logger>
         <logger name="org.springframework.data" level="WARN"></logger>
         <logger name=" com.netflix" level="WARN"></logger>
-        <Root level="Info">
+        <Root level="info">
             <AppenderRef ref="Console" />
             <AppenderRef ref="InfoFile" />
             <AppenderRef ref="WarnFile" />

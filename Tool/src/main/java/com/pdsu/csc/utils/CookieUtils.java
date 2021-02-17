@@ -38,13 +38,15 @@ public class CookieUtils {
 
     public static String calculatePath(HttpServletRequest request, Cookie cookie) {
         String path = org.apache.shiro.util.StringUtils.clean(cookie.getPath());
+
         if (!org.apache.shiro.util.StringUtils.hasText(path)) {
             path = org.apache.shiro.util.StringUtils.clean(request.getContextPath());
         }
 
-        if (path == null) {
+        if (com.pdsu.csc.utils.StringUtils.isBlank(path)) {
             path = SimpleCookie.ROOT_PATH;
         }
+
         return path;
     }
 
@@ -60,23 +62,30 @@ public class CookieUtils {
     public static String buildHeaderValue(String name, String value, String comment,
                                     String domain, String path, int maxAge, int version,
                                     boolean secure, boolean httpOnly, Cookie.SameSiteOptions sameSite) {
-        if (!org.apache.shiro.util.StringUtils.hasText(name)) {
+        if (!StringUtils.hasText(name)) {
             return null;
         }
 
         StringBuilder sb = new StringBuilder(name).append(NAME_VALUE_DELIMITER);
 
-        if (org.apache.shiro.util.StringUtils.hasText(value)) {
+        if (StringUtils.hasText(value)) {
             sb.append(value);
         }
 
         appendComment(sb, comment);
+
         appendDomain(sb, domain);
+
         appendPath(sb, path);
+
         appendExpires(sb, maxAge);
+
         appendVersion(sb, version);
+
         appendSecure(sb, secure);
+
         appendHttpOnly(sb, httpOnly);
+
         appendSameSite(sb, sameSite);
 
         return sb.toString();
@@ -84,14 +93,14 @@ public class CookieUtils {
     }
 
     private static void appendComment(StringBuilder sb, String comment) {
-        if (org.apache.shiro.util.StringUtils.hasText(comment)) {
+        if (StringUtils.hasText(comment)) {
             sb.append(ATTRIBUTE_DELIMITER);
             sb.append(COMMENT_ATTRIBUTE_NAME).append(NAME_VALUE_DELIMITER).append(comment);
         }
     }
 
     private static void appendDomain(StringBuilder sb, String domain) {
-        if (org.apache.shiro.util.StringUtils.hasText(domain)) {
+        if (StringUtils.hasText(domain)) {
             sb.append(ATTRIBUTE_DELIMITER);
             sb.append(DOMAIN_ATTRIBUTE_NAME).append(NAME_VALUE_DELIMITER).append(domain);
         }

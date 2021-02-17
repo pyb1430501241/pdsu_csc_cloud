@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.dao.UserClazzInformationMapper;
 import com.pdsu.csc.service.UserClazzInformationService;
@@ -12,8 +12,8 @@ import java.util.List;
  * @author 半梦
  * @create 2020-08-21 18:30
  */
-@Service("userClazzInformationService")
 @Deprecated
+@Service("userClazzInformationService")
 public class UserClazzInformationServiceImpl implements UserClazzInformationService {
 
     @Autowired

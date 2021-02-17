@@ -32,7 +32,7 @@ public class Role implements Serializable {
 
     @AllArgsConstructor
     @Getter
-    private enum RoleFactory {
+    public enum RoleFactory {
         USER(new Role(ROLE_USER, SYSTEM_USER)),
         TEACHER(new Role(ROLE_TEACHER, SYSTEM_TEACHER)),
         ADMIN(new Role(ROLE_ADMIN, SYSTEM_ADMIN));

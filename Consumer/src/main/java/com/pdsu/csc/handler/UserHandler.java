@@ -2,13 +2,10 @@ package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
-import com.pdsu.csc.config.ConsumerConfig;
 import com.pdsu.csc.service.ProviderService;
 import com.pdsu.csc.utils.CookieUtils;
-import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.StringUtils;
-import org.apache.shiro.web.servlet.SimpleCookie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,24 +26,19 @@ public class UserHandler {
     @Autowired
     private ProviderService providerService;
 
+    private static final String CODE = "code";
+    private static final Integer SUCCESS_CODE = 200;
+
+
 
     @RequestMapping("/logout")
     public Result logout(HttpServletRequest request) {
-        Result logout = providerService.logout();
-        // 退出登录成功, 则清空 cookie
-        if(isHttpSuccess(logout)) {
-            Cookie[] cookies = request.getCookies();
-            for(Cookie cookie : cookies) {
-                cookie.setMaxAge(0);
-            }
-        }
-        return logout;
+        providerService.logout();
+        return Result.success();
     }
 
-    private static final String CODE = "code";
-
     private boolean isHttpSuccess(Result result) {
-        return result.getJson().get(CODE).equals(200);
+        return result.getJson().get(CODE).equals(SUCCESS_CODE);
     }
 
     @PostMapping("/login")
@@ -262,7 +254,7 @@ public class UserHandler {
      * @return
      * 	是否取消成功
      */
-    @RequestMapping(value = "/dislike", method = RequestMethod.POST)
+    @RequestMapping(value = "/delike", method = RequestMethod.POST)
     @CrossOrigin
     public Result disLike(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.disLike(uid);

@@ -17,4 +17,5 @@ public enum EsIndex {
 
     String name;
 
+
 }

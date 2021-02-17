@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.UserRole;
 import com.pdsu.csc.bean.UserRoleExample;

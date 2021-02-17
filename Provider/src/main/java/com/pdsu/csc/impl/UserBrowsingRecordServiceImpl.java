@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.UserBrowsingRecord;
@@ -15,7 +15,7 @@ import java.util.List;
  * @author 半梦
  * @create 2020-08-12 22:43
  */
-@Service("uerBrowsingRecordService")
+@Service("userBrowsingRecordService")
 public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService {
 
     @Autowired

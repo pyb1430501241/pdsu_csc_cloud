@@ -19,14 +19,11 @@ import com.pdsu.csc.service.*;
 import com.pdsu.csc.utils.*;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
-import net.minidev.json.JSONObject;
 import org.apache.commons.io.FileUtils;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
-import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.subject.WebSubject;
 import org.apache.shiro.web.util.WebUtils;
 import org.checkerframework.checker.units.qual.s;
@@ -40,7 +37,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -196,8 +192,14 @@ public class UserHandler extends ParentHandler {
         } else {
             token.setRememberMe(true);
         }
-        subject.login(token);
-        UserInformation uu = (UserInformation) subject.getPrincipal();
+		/**
+		 *	开始登陆, 实际调用
+		 *	@see com.pdsu.csc.shiro.LoginRealm#doGetAuthenticationInfo
+		 */
+		subject.login(token);
+		// 如果登录成功, 则 shiro 应已保存用户信息
+		UserInformation uu = (UserInformation) subject.getPrincipal();
+		// 密码置为空
         uu.setPassword(null);
 		log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
 		return Result.success()
@@ -222,7 +224,7 @@ public class UserHandler extends ParentHandler {
 
 		// 获取用户登录认证信息
 		String value = httpResponse.getHeader(name);
-		if (value == null) {
+		if (StringUtils.isBlank(value)) {
 			return null;
 		}
 		builder.append(value);
@@ -230,16 +232,14 @@ public class UserHandler extends ParentHandler {
 		return builder.toString();
 	}
 
-	@RequestMapping("/logout")
-	@SuppressWarnings("all")
-	@CrossOrigin
-	public Result logout() throws Exception{
-		Subject subject = SecurityUtils.getSubject();
-		log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录");
-		subject.logout();
-		log.info("用户: " + ShiroUtils.getUserInformation().getUid() + ", 退出登录成功");
-		return Result.success();
-	}
+//	@RequestMapping("/logout")
+//	@SuppressWarnings("all")
+//	@CrossOrigin
+//	public Result logout() throws Exception {
+//		Subject subject = SecurityUtils.getSubject();
+//		subject.logout();
+//		return Result.success();
+//	}
 
 	/**
 	 * 获取验证码
@@ -282,14 +282,14 @@ public class UserHandler extends ParentHandler {
 	@CrossOrigin
 	public Result sendEmailForApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
-			if(ObjectUtils.isEmpty(email)) {
+			if(StringUtils.isBlank(email)) {
 				return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
 			}
-			if(ObjectUtils.isEmpty(name)) {
+			if(StringUtils.isBlank(name)) {
 				return Result.fail().add(EXCEPTION, USERNAME_NOT_NULL);
 			}
 			if(myEmailService.countByEmail(email)) {
-				return Result.fail().add(EXCEPTION, EMAIL_HAS_BEAN_BOUND);
+				return Result.fail().add(EXCEPTION, EMAIL_ALREADY_USE);
 			}
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
@@ -324,25 +324,29 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		String ss = (String) valueWrapper.get();
-		if(!ss.equals(code)) {
+		if(!code.equals(ss)) {
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		if(userInformationService.countByUid(user.getUid()) != 0) {
 			return Result.fail().add(EXCEPTION, ACCOUND_ALREADY_USE);
 		}
 		if(myEmailService.countByEmail(user.getEmail())) {
-			return Result.fail().add(EXCEPTION, EMAIL_HAS_BEAN_BOUND);
+			return Result.fail().add(EXCEPTION, EMAIL_ALREADY_USE);
 		}
 		if(userInformationService.countByUserName(user.getUsername()) != 0) {
 			return Result.fail().add(EXCEPTION, USERNAME_ALREADY_USE);
 		}
+		// 添加账号状态
 		user.setAccountStatus(AccountStatus.NORMAL.getId());
+		// 申请时间
 		user.setTime(DateUtils.getSimpleDate());
 		boolean flag = userInformationService.insert(user);
 		if(flag) {
+			// 添加默认头像
 			myImageService.insert(new MyImage(user.getUid(), userImgName));
 			myEmailService.insert(new MyEmail(null, user.getUid(), user.getEmail()));
-			userRoleService.insert(new UserRole(user.getUid(), 1));
+			// 添加用户权限
+			userRoleService.insert(new UserRole(user.getUid(), Role.ROLE_USER));
 			log.info("申请账号: " + user.getUid() + "成功, " + "账号信息为:" + user);
 			return Result.success();
 		} else {
@@ -350,7 +354,8 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, "申请失败");
 		}
 	}
-	
+
+
 	/**
 	 * 找回密码API集开始
 	 *	===============================================================================================
@@ -402,6 +407,9 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		email = (String) valueWrapper.get();
+		if(StringUtils.isBlank(email)) {
+			return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
+		}
 		log.info("邮箱: " + email + " 开始发送找回密码的验证码");
 		EmailUtils utils = new EmailUtils();
 		//发送邮件
@@ -437,7 +445,7 @@ public class UserHandler extends ParentHandler {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
 		String ss = (String) valueWrapper.get();
-		if(!ss.equals(code)) {
+		if(!code.equals(ss)) {
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		boolean b = userInformationService.modifyThePassword(uid, password);
@@ -515,7 +523,7 @@ public class UserHandler extends ParentHandler {
 			log.info("验证码已过期, key 为: " + token);
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
-		if(!valueWrapper.get().equals(code)) {
+		if(!code.equals(valueWrapper.get())) {
 			log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
@@ -673,13 +681,13 @@ public class UserHandler extends ParentHandler {
 		log.info("原信息为: " + userinfor);
 		boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
 		if(b) {
-			if(!ObjectUtils.isEmpty(user.getUsername())) {
+			if(!StringUtils.isBlank(user.getUsername())) {
 				userinfor.setUsername(user.getUsername());
 			}
-			if(!ObjectUtils.isEmpty(user.getClazz())) {
+			if(!StringUtils.isBlank(user.getClazz())) {
 				userinfor.setClazz(user.getClazz());
 			}
-			if(!ObjectUtils.isEmpty(user.getCollege())) {
+			if(!StringUtils.isBlank(user.getCollege())) {
 				userinfor.setCollege(user.getCollege());
 			}
 			log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);

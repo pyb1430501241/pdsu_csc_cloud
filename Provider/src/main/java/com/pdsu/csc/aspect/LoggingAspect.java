@@ -23,7 +23,7 @@ public class LoggingAspect {
 	 */
 	private static final Logger log = LoggerFactory.getLogger("服务端日志监控器");
 
-	@Pointcut("execution(public * com.pdsu.csc.service..*.*(..)) && !execution(public * com.pdsu.csc.service.fallback..*(..)))")
+	@Pointcut("execution(public * com.pdsu.csc.impl..*(..))")
 	public void pointCut(){
 	}
 

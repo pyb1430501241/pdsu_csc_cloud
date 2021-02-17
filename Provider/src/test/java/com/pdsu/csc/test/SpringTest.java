@@ -4,6 +4,7 @@ import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.ElasticsearchUtils;
+import com.zaxxer.hikari.HikariDataSource;
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +25,7 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
+import javax.sql.DataSource;
 import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.Instant;

@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import java.util.List;
 
@@ -8,7 +8,6 @@ import com.pdsu.csc.dao.ContypeMapper;
 import com.pdsu.csc.service.ContypeService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
  * @author 半梦

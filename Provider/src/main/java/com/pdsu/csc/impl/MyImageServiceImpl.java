@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.dao.MyImageMapper;
@@ -22,8 +22,8 @@ import java.util.Map;
  * @author 半梦
  *
  */
-@Service("myImageService")
 @Log4j2
+@Service("myImageService")
 public class MyImageServiceImpl implements MyImageService {
 
 	@Autowired

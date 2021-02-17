@@ -35,6 +35,7 @@ public class PropertiesDefinition implements InitDao {
         while (enumeration.hasMoreElements()) {
             String key = (String) enumeration.nextElement();
             String value = properties.getProperty(key);
+            log.info("系统初始化...读取配置文件参数: " + key + ", 其值为: " + value);
             initMap.put(key, value);
         }
     }
@@ -44,7 +45,7 @@ public class PropertiesDefinition implements InitDao {
         Set<String> keys = initMap.keySet();
         for(String key : keys) {
             String value = initMap.get(key);
-            log.info("系统初始化...正在初始化参数 " + key + ", 其值为: " + value);
+            log.info("系统初始化...正在初始化参数: " + key + ", 其值为: " + value);
             switch (HandlerValueEnum.getByKey(key)) {
                 case IMG_SUFFIX:
                     ParentHandler.imgSuffix = value;

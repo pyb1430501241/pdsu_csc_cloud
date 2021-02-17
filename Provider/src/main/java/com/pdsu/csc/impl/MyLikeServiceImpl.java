@@ -1,4 +1,4 @@
-package com.pdsu.csc.service.impl;
+package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.dao.MyLikeMapper;
@@ -23,8 +23,8 @@ import java.util.Map;
  * @author 半梦
  *
  */
-@Service("myLikeService")
 @Log4j2
+@Service("myLikeService")
 public class MyLikeServiceImpl implements MyLikeService {
 
 	@Autowired

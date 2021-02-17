@@ -35,12 +35,14 @@ public enum HandlerValueEnum {
      * 未知情况
      */
     OTHER("default");
+
     private String key;
 
-    public static HandlerValueEnum getByKey(String key){
-        for (HandlerValueEnum constants : values()) {
-            if (constants.getKey().equalsIgnoreCase(key)) {
-                return constants;
+    public static HandlerValueEnum getByKey(String name) {
+        HandlerValueEnum[] values = HandlerValueEnum.values();
+        for (HandlerValueEnum value : values) {
+            if(value.key.equals(name.trim())) {
+                return value;
             }
         }
         return OTHER;

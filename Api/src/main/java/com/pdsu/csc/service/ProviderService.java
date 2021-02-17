@@ -34,9 +34,9 @@ import static com.pdsu.csc.service.ProviderService.PROVIDER_NAME;
  */
 @FeignClient(value = PROVIDER_NAME, fallbackFactory = ProviderServiceFallBack.class)
 @Service
+@SuppressWarnings("all")
 public interface ProviderService {
 
-    @SuppressWarnings("all")
     String PROVIDER_NAME = "CODESHARINGCOMMUNITYPROVIDER";
 
     String USER_API_PREFIX = "/user/";
@@ -113,7 +113,7 @@ public interface ProviderService {
     /**
      * 验证验证码
      */
-    @GetMapping(USER_API_PREFIX + "/modifybefore")
+    @GetMapping(USER_API_PREFIX + "modifybefore")
     public Result modifyBefore(@RequestParam("token") String token, @RequestParam("code") String code);
 
     /**
@@ -197,7 +197,7 @@ public interface ProviderService {
     /**
      * 数据校验
      */
-    @GetMapping(USER_API_PREFIX + "/datacheck")
+    @GetMapping(USER_API_PREFIX + "datacheck")
     public Result dataCheck(@RequestParam("data") String data, @RequestParam("type") String type);
 
     /**
@@ -222,7 +222,7 @@ public interface ProviderService {
     /**
      * 获取博客页面信息
      */
-    @GetMapping(BLOB_API_PREFIX + "/{webid}")
+    @GetMapping(BLOB_API_PREFIX + "{webid}")
     public Result getBlobInformation(@PathVariable("webid")Integer id);
 
     /**
