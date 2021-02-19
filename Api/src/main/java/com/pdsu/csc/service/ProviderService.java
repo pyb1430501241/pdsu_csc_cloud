@@ -309,7 +309,7 @@ public interface ProviderService {
     /**
      * 博客页面上传图片
      */
-    @PostMapping(BLOB_API_PREFIX + "blobimg")
+    @PostMapping(value = BLOB_API_PREFIX + "blobimg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Result postBlobImg(@RequestParam("img") MultipartFile img);
 
     /**

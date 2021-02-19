@@ -1,18 +1,19 @@
 package com.pdsu.csc.config;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.netflix.hystrix.contrib.metrics.eventstream.HystrixMetricsStreamServlet;
+import com.pdsu.csc.bean.CrossConfig;
+import com.pdsu.csc.bean.EncryptConfig;
 import com.pdsu.csc.es.RestHighLevelClientFactory;
 import com.pdsu.csc.shiro.LoginRealm;
 import com.pdsu.csc.shiro.UserLogoutFilter;
 import com.pdsu.csc.shiro.WebCookieRememberMeManager;
 import com.pdsu.csc.shiro.WebSessionManager;
-import com.pdsu.csc.utils.DateUtils;
-import com.pdsu.csc.utils.HttpUtils;
-import com.pdsu.csc.utils.StringUtils;
 import com.pdsu.csc.web.WebStartInterceptor;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-import org.apache.catalina.User;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.authc.pam.AllSuccessfulStrategy;
 import org.apache.shiro.authc.pam.ModularRealmAuthenticator;
@@ -21,12 +22,10 @@ import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.spring.security.interceptor.AuthorizationAttributeSourceAdvisor;
 import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
-import org.apache.shiro.web.mgt.CookieRememberMeManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.boot.web.servlet.ServletRegistrationBean;
 import org.springframework.cache.CacheManager;
@@ -35,8 +34,15 @@ import org.springframework.cache.ehcache.EhCacheManagerFactoryBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.data.redis.connection.RedisConnectionFactory;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+import redis.clients.jedis.JedisPoolConfig;
+import redis.clients.jedis.JedisShardInfo;
+import redis.clients.jedis.ShardedJedisPool;
 
 import javax.servlet.Filter;
 import javax.servlet.ServletContextListener;
@@ -93,17 +99,14 @@ public class CodeSharingCommunityConfig {
         return authenticator;
     }
 
-    private static final String DEFAULT_ENCRYPTION_MODE = "MD5";
-    private static final Integer DEFAULT_ENCRYPTION_NUMBER = 2;
-
     @Bean
-    public Realm loginRealm() {
+    public Realm loginRealm(EncryptConfig encrypt) {
         LoginRealm realm = new LoginRealm();
         HashedCredentialsMatcher credentialsMatcher = new HashedCredentialsMatcher();
-        credentialsMatcher.setHashAlgorithmName(DEFAULT_ENCRYPTION_MODE);
-        log.info("系统初始化...使用默认加密规则: " + DEFAULT_ENCRYPTION_MODE);
-        credentialsMatcher.setHashIterations(DEFAULT_ENCRYPTION_NUMBER);
-        log.info("系统初始化...使用默认加密规则, 默认加密次数: " + DEFAULT_ENCRYPTION_NUMBER);
+        credentialsMatcher.setHashAlgorithmName(encrypt.getMode());
+        log.info("系统初始化...使用默认加密规则: " + encrypt.getMode());
+        credentialsMatcher.setHashIterations(encrypt.getNumber());
+        log.info("系统初始化...使用默认加密规则, 默认加密次数: " + encrypt.getNumber());
         realm.setCredentialsMatcher(credentialsMatcher);
         return realm;
     }
@@ -163,11 +166,7 @@ public class CodeSharingCommunityConfig {
         return new WebStartInterceptor();
     }
 
-    private static final String ALL = "*";
 
-    /**
-     *  跨域
-     */
 //    @Bean
 //    public CorsConfiguration buildConfig(@Value("${csc.cors.allow-ip}")String allowIp) {
 //        CorsConfiguration corsConfiguration = new CorsConfiguration();
@@ -200,53 +199,30 @@ public class CodeSharingCommunityConfig {
 //        source.registerCorsConfiguration("/**", configuration); //注册
 //        return new CorsFilter(source);
 //    }
-    /**
-     * 允许访问的请求方式
-     */
-    private static final String [] ALLOW_METHOD = new String[]{"POST", "GET", "OPTIONS"};
 
-    /**
-     * 允许对外暴露的请求头
-     */
-    private static final String [] EXPOSED_HEADER = new String[]{
-            HttpUtils.getSetCookieName(),
-            HttpUtils.getSessionHeader(),
-            "Cookie",
-            HttpUtils.getRememberCookieName()
-    };
-
-    /**
-     * 跨域预检间隔时间
-     */
-    private static final long MAX_AGE = DateUtils.CSC_MINUTE * 30;
 
     @Bean
-    public WebMvcConfigurer webMvcConfigurer(@Value("${csc.cors.allow-ip}") String allowIp) {
-        String [] allowOrigin;
-        if(allowIp.equals("all")) {
-            allowOrigin = new String[]{ALL};
-        } else {
-            allowOrigin = StringUtils.splitString(allowIp);
-        }
-        log.info("系统初始化...允许以下 IP 进行访问: " + Arrays.asList(allowOrigin));
-        log.info("系统初始化...允许添加以下请求头: " + ALL);
-        log.info("系统初始化...允许以下请求方式访问: " + Arrays.asList(ALLOW_METHOD));
-        log.info("系统初始化...允许以下请求头暴露: " + Arrays.asList(EXPOSED_HEADER));
+    public WebMvcConfigurer webMvcConfigurer(CrossConfig crossConfig) {
+        log.info("系统初始化...允许以下 IP 进行访问: " + crossConfig.getAllowIp());
+        log.info("系统初始化...允许添加以下请求头: " + crossConfig.getAllowHeader());
+        log.info("系统初始化...允许以下请求方式访问: " + crossConfig.getAllowMethod());
+        log.info("系统初始化...允许以下请求头暴露: " + crossConfig.getExposedHeader());
         log.info("系统初始化...是否允许保持用户认证状态: " + Boolean.TRUE);
-        log.info("系统初始化...跨域预检间隔时间为: " + MAX_AGE + "s");
+        log.info("系统初始化...跨域预检间隔时间为: " + crossConfig.getMaxAge() + "s");
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")	// 允许跨域访问的路径
-                        .allowedOrigins(allowOrigin)	// 允许跨域访问的源
-                        .allowedMethods(ALLOW_METHOD)
-                        .maxAge(MAX_AGE)	// 预检间隔时间
-                        .allowedHeaders(ALL) // 允许头部设置
-                        .exposedHeaders(EXPOSED_HEADER)
+                        .allowedOrigins(crossConfig.getAllowIpOrigin())	// 允许跨域访问的源
+                        .allowedMethods(crossConfig.getAllowMethodOrigin())
+                        .maxAge(crossConfig.getMaxAge())	// 预检间隔时间
+                        .allowedHeaders(crossConfig.getAllowHeaderOrigin()) // 允许头部设置
+                        .exposedHeaders(crossConfig.getExposedHeaderOrigin())
                         .allowCredentials(Boolean.TRUE);	// 是否发送cookie
             }
         };
     }
+
     /**
      * Hystrix
      */
@@ -261,7 +237,28 @@ public class CodeSharingCommunityConfig {
     }
 
 
-
-
+    /**
+     *  redis
+     */
+    @Bean
+    @SuppressWarnings("all")
+    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+        RedisTemplate<String, Object> template = new RedisTemplate<String, Object>();
+        template.setConnectionFactory(factory);
+//        Jackson2JsonRedisSerializer jackson2JsonRedisSerializer = new Jackson2JsonRedisSerializer(Object.class);
+//        ObjectMapper om = new ObjectMapper();
+//        om.setVisibility(PropertyAccessor.ALL, JsonAutoDetect.Visibility.ANY);
+//        om.enableDefaultTyping(ObjectMapper.DefaultTyping.NON_FINAL);
+//        jackson2JsonRedisSerializer.setObjectMapper(om);
+        StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
+        // key采用String的序列化方式
+        template.setKeySerializer(stringRedisSerializer);
+        // hash的key也采用String的序列化方式
+        template.setHashKeySerializer(stringRedisSerializer);
+        template.setValueSerializer(stringRedisSerializer);
+        template.setHashValueSerializer(stringRedisSerializer);
+        template.afterPropertiesSet();
+        return template;
+    }
 
 }

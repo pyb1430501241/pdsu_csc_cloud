@@ -22,9 +22,9 @@ public abstract class HttpUtils {
     /**
      * 保持用户认证状态的请求头以及 Cookie 的名字
      */
-    protected static final String AUTHORIZATION = "Authorization";
-    protected static final String REMEMBER_COOKIE_NAME = CookieRememberMeManager.DEFAULT_REMEMBER_ME_COOKIE_NAME;
-    protected static final String SET_COOKIE_NAME = "Set-Cookie";
+    private static final String AUTHORIZATION = "Authorization";
+    private static final String REMEMBER_COOKIE_NAME = CookieRememberMeManager.DEFAULT_REMEMBER_ME_COOKIE_NAME;
+    private static final String SET_COOKIE_NAME = "Set-Cookie";
 
     /**
      * 本机 IP

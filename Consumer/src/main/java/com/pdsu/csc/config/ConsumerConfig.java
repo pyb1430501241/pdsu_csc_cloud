@@ -1,5 +1,6 @@
 package com.pdsu.csc.config;
 
+import com.pdsu.csc.bean.CrossConfig;
 import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.StringUtils;
@@ -20,8 +21,6 @@ import java.util.Arrays;
 @Configuration
 @Log4j2
 public class ConsumerConfig {
-
-    private static final String ALL = "*";
 
 //    /**
 //     *  跨域
@@ -59,51 +58,26 @@ public class ConsumerConfig {
 //        return new CorsFilter(source);
 //    }
 
-    /**
-     * 允许访问的请求方式
-     */
-    private static final String [] ALLOW_METHOD = new String[]{"POST", "GET", "OPTIONS"};
-
-    /**
-     * 允许对外暴露的请求头
-     */
-    public static final String [] EXPOSED_HEADER = new String[]{
-            HttpUtils.getSetCookieName(),
-            HttpUtils.getSessionHeader(),
-            "Cookie",
-            HttpUtils.getRememberCookieName()
-    };
-
-    /**
-     * 跨域预检间隔时间
-     */
-    private static final long MAX_AGE = DateUtils.CSC_MINUTE * 30;
-
     @Bean
-    public WebMvcConfigurer webMvcConfigurer(@Value("${csc.cors.allow-ip}") String allowIp) {
-        String [] allowOrigin;
-        if(allowIp.equals("all")) {
-            allowOrigin = new String[]{ALL};
-        } else {
-            allowOrigin = StringUtils.splitString(allowIp);
-        }
-        log.info("系统初始化...允许以下 IP 进行访问: " + Arrays.asList(allowOrigin));
-        log.info("系统初始化...允许添加以下请求头: " + ALL);
-        log.info("系统初始化...允许以下请求方式访问: " + Arrays.asList(ALLOW_METHOD));
-        log.info("系统初始化...允许以下请求头暴露: " + Arrays.asList(EXPOSED_HEADER));
+    public WebMvcConfigurer webMvcConfigurer(CrossConfig crossConfig) {
+        log.info("系统初始化...允许以下 IP 进行访问: " + crossConfig.getAllowIp());
+        log.info("系统初始化...允许添加以下请求头: " + crossConfig.getAllowHeader());
+        log.info("系统初始化...允许以下请求方式访问: " + crossConfig.getAllowMethod());
+        log.info("系统初始化...允许以下请求头暴露: " + crossConfig.getExposedHeader());
         log.info("系统初始化...是否允许保持用户认证状态: " + Boolean.TRUE);
-        log.info("系统初始化...跨域预检间隔时间为: " + MAX_AGE + "s");
+        log.info("系统初始化...跨域预检间隔时间为: " + crossConfig.getMaxAge() + "s");
         return new WebMvcConfigurer() {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")	// 允许跨域访问的路径
-                        .allowedOrigins(allowOrigin)	// 允许跨域访问的源
-                        .allowedMethods(ALLOW_METHOD)
-                        .maxAge(MAX_AGE)	// 预检间隔时间
-                        .allowedHeaders(ALL) // 允许头部设置
-                        .exposedHeaders(EXPOSED_HEADER)
+                        .allowedOrigins(crossConfig.getAllowIpOrigin())	// 允许跨域访问的源
+                        .allowedMethods(crossConfig.getAllowMethodOrigin())
+                        .maxAge(crossConfig.getMaxAge())	// 预检间隔时间
+                        .allowedHeaders(crossConfig.getAllowHeaderOrigin()) // 允许头部设置
+                        .exposedHeaders(crossConfig.getExposedHeaderOrigin())
                         .allowCredentials(Boolean.TRUE);	// 是否发送cookie
             }
         };
     }
+
 }

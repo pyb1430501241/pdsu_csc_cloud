@@ -4,6 +4,7 @@ import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.ElasticsearchUtils;
+import com.pdsu.csc.utils.RedisUtils;
 import com.zaxxer.hikari.HikariDataSource;
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
@@ -29,9 +30,7 @@ import javax.sql.DataSource;
 import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * @author 半梦
@@ -689,10 +688,16 @@ public class SpringTest {
         System.out.println(response.getContentAsString());
     }
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     @Test
     public void tsts() {
-        Logger log = LoggerFactory.getLogger("TTTT");
-        System.out.println(log.getClass().getName());
+//        System.out.println(redisUtils.get("k1"));
+        Map<String, Object> a = new HashMap<>();
+        a.put("aaa", "bbb");
+        redisUtils.hmset("k2", a);
+        System.out.println(redisUtils.hmget("k2"));
     }
 
 }
