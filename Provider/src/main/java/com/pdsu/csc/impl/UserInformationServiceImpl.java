@@ -8,7 +8,7 @@ import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidRepetitionException;
-import com.pdsu.csc.service.UserInformationService;
+import com.pdsu.csc.service.impl.AbstractUserInformationService;
 import com.pdsu.csc.utils.HashUtils;
 import com.pdsu.csc.utils.ElasticsearchUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +26,7 @@ import java.util.Map;
  *
  */
 @Service("userInformationService")
-public class UserInformationServiceImpl implements UserInformationService {
+public class UserInformationServiceImpl extends AbstractUserInformationService {
 	
 	@Autowired
 	private UserInformationMapper userInformationMapper;
@@ -98,7 +98,9 @@ public class UserInformationServiceImpl implements UserInformationService {
 	 * 以及自身的访问量，头像，实名认证，邮箱绑定
 	 * 上传文件，下载量， 收藏量，关注以及被关注等等，所以要先删除
 	 * 所依赖于它的相关信息
-	 * @throws NotFoundUidException, DeleteInforException
+	 * 实际上不应该删除，应只删除 es 里的信息，并对数据库信息进行不可见
+	 * @throws NotFoundUidException 未找到学号
+	 * @throws DeleteInforException 删除信息失败
 	 */
 	@Override
 	public boolean deleteByUid(@NonNull Integer uid) throws NotFoundUidException, DeleteInforException {
@@ -106,7 +108,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		
-		/**
+		/*
 		 * 删除和用户相关的收藏信息 
 		 */
 		MyCollectionExample myCollectionExample = new MyCollectionExample();
@@ -121,7 +123,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户收藏信息失败");
 		}
 		
-		/**
+		/*
 		 *删除和用户相关的访问信息 
 		 */
 		VisitInformationExample visitInformationExample = new VisitInformationExample();
@@ -135,7 +137,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户访问信息失败");
 		}
 		
-		/**
+		/*
 		 *删除用户相关的点赞信息
 		 */
 		WebThumbsExample webThumbsExample = new WebThumbsExample();
@@ -149,7 +151,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户点赞信息失败");
 		}
 		
-		/**
+		/*
 		 *删除用户相关的邮箱信息 
 		 */
 		MyEmailExample myEmailExample = new MyEmailExample();
@@ -160,7 +162,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户邮箱失败");
 		}
 		
-		/**
+		/*
 		 * 删除用户相关的头像信息
 		 */
 		MyImageExample myImageExample = new MyImageExample();
@@ -171,7 +173,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户头像失败");
 		}
 		
-		/**
+		/*
 		 * 删除用户上传的文件信息
 		 */
 		WebFileExample webFileExample = new WebFileExample();
@@ -182,7 +184,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户文件失败");
 		}
 		
-		/**
+		/*
 		 * 删除用户相关的关注信息
 		 */
 		MyLikeExample myLikeExample = new MyLikeExample();
@@ -196,7 +198,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户关注信息失败");
 		}
 		
-		/**
+		/*
 		 * 删除用户相关的评论信息
 		 */
 		WebCommentReplyExample webCommentReplyExample = new WebCommentReplyExample();
@@ -218,7 +220,7 @@ public class UserInformationServiceImpl implements UserInformationService {
 			throw new DeleteInforException("删除用户评论信息失败");
 		}
 		
-		/**
+		/*
 		 * 删除用户博客相关的信息		
 		 */
 		WebInformationExample webInformationExample = new WebInformationExample();

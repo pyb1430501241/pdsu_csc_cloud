@@ -34,7 +34,8 @@ public class CrossConfig {
     /**
      * 默认允许对外暴露的请求头
      */
-    private static final String [] EXPOSED_HEADER = new String [] {"Set-Cookie", "Authorization",
+    @SuppressWarnings("all")
+    public static final String [] EXPOSED_HEADER = new String [] {"Set-Cookie", "Authorization",
                                         "Cookie", "rememberMe"};
 
     /**

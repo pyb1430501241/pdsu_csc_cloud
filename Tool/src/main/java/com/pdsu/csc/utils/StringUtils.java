@@ -85,4 +85,12 @@ public final class StringUtils {
         return str.split(",");
     }
 
+    /**
+     * 比对两个字符串, 无视大小写
+     */
+    public static boolean CompareIgnoreCase(@NonNull String s, @NonNull String v) {
+        return s.trim().toLowerCase().equals(v.trim().toLowerCase());
+    }
+
+
 }

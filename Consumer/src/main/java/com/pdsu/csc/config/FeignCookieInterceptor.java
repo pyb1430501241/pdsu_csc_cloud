@@ -6,6 +6,7 @@ package com.pdsu.csc.config;
  */
 
 import com.netflix.hystrix.strategy.concurrency.HystrixConcurrencyStrategy;
+import com.pdsu.csc.bean.CrossConfig;
 import feign.RequestInterceptor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -39,7 +40,7 @@ public class FeignCookieInterceptor {
             if(request == null) {
                 return;
             }
-            for (String headerName : ConsumerConfig.EXPOSED_HEADER) {
+            for (String headerName : CrossConfig.EXPOSED_HEADER) {
                 String value = request.getHeader(headerName);
                 if(!Objects.isNull(value)) {
                     requestTemplate.header(headerName, value);

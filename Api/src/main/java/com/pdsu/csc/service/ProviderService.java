@@ -48,10 +48,10 @@ public interface ProviderService {
     /**
      * 登录
      */
-    @PostMapping(value = USER_API_PREFIX + "login")
-    public Result login(@RequestParam("uid") String uid, @RequestParam("password") String password,
-                        @RequestParam("hit") String hit, @RequestParam("code") String code,
-                        @RequestParam(value = "flag", defaultValue = "0")Integer flag);
+//    @PostMapping(value = USER_API_PREFIX + "login")
+//    public Result login(@RequestParam("uid") String uid, @RequestParam("password") String password,
+//                        @RequestParam("hit") String hit, @RequestParam("code") String code,
+//                        @RequestParam(value = "flag", defaultValue = "0")Integer flag);
 
     /**
      *  获取验证码

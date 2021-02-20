@@ -1,5 +1,6 @@
 package com.pdsu.csc;
 
+import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.cloud.client.SpringCloudApplication;
@@ -12,6 +13,7 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
  */
 @SpringBootApplication
 @EnableZuulProxy
+@MapperScan({"com.pdsu.csc.zuulDao"})
 public class CodeSharingCommunityGatewayRun {
 
     public static void main(String[] args) {

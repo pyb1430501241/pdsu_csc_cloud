@@ -22,10 +22,10 @@ public class ProviderServiceError implements ProviderService {
 
     private static final Result RESULT = Result.fail().add(EXCEPTION, NETWORK_BUSY);
 
-    @Override
-    public Result login(String uid, String password, String hit, String code, Integer flag) {
-        return RESULT;
-    }
+//    @Override
+//    public Result login(String uid, String password, String hit, String code, Integer flag) {
+//        return RESULT;
+//    }
 
     @Override
     public Result getCodeForLogin() {

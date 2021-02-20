@@ -5,7 +5,7 @@ import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.bean.SystemNotificationExample;
 import com.pdsu.csc.dao.SystemNotificationMapper;
 import com.pdsu.csc.handler.ParentHandler;
-import com.pdsu.csc.service.SystemNotificationService;
+import com.pdsu.csc.service.impl.AbstractSystemNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ import java.util.List;
  * @create 2020-08-13 14:12
  */
 @Service("systemNotificationService")
-public class SystemNotificationServiceImpl implements SystemNotificationService {
+public class SystemNotificationServiceImpl extends AbstractSystemNotificationService {
 
     @Autowired
     private SystemNotificationMapper systemNotificationMapper;

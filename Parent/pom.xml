@@ -330,6 +330,11 @@
                 <artifactId>jedis</artifactId>
                 <version>3.5.1</version>
             </dependency>
+            <dependency>
+                <groupId>org.mybatis</groupId>
+                <artifactId>mybatis</artifactId>
+                <version>3.5.5</version>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 

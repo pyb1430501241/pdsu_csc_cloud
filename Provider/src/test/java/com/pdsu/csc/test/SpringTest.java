@@ -1,19 +1,15 @@
 package com.pdsu.csc.test;
 
 import com.pdsu.csc.bean.SystemNotification;
+import com.pdsu.csc.handler.AbstractHandler;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.utils.DateUtils;
-import com.pdsu.csc.utils.ElasticsearchUtils;
 import com.pdsu.csc.utils.RedisUtils;
-import com.zaxxer.hikari.HikariDataSource;
 import org.apache.shiro.SecurityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletResponse;
 import org.springframework.mock.web.MockMultipartFile;
@@ -26,7 +22,6 @@ import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.sql.DataSource;
 import java.io.FileInputStream;
 import java.time.Duration;
 import java.time.Instant;
@@ -684,7 +679,7 @@ public class SpringTest {
         MvcResult result = mvc.perform(MockMvcRequestBuilders.get("/blob/collectionstatuts")
         ).andReturn();
         MockHttpServletResponse response = result.getResponse();
-        response.setCharacterEncoding("UTF-8");
+        response.setCharacterEncoding(AbstractHandler.DEFAULT_CHARACTER);
         System.out.println(response.getContentAsString());
     }
 
@@ -694,10 +689,11 @@ public class SpringTest {
     @Test
     public void tsts() {
 //        System.out.println(redisUtils.get("k1"));
-        Map<String, Object> a = new HashMap<>();
-        a.put("aaa", "bbb");
-        redisUtils.hmset("k2", a);
-        System.out.println(redisUtils.hmget("k2"));
+//        Map<String, Object> a = new HashMap<>();
+//        a.put("aaa", "bbb");
+//        redisUtils.hmset("k2", a);
+//        System.out.println(redisUtils.hmget("k2"));
+        System.out.println(redisUtils.getExpire("75ec8bfb976e44b5beeb72810070578c"));
     }
 
 }

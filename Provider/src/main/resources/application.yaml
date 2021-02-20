@@ -68,8 +68,3 @@ info:
 
 logging:
   config: classpath:log4j2/log4j2.xml
-
-csc:
-  cors:
-    # 该配置代表本服务允许访问的域名
-    allow-ip: localhost

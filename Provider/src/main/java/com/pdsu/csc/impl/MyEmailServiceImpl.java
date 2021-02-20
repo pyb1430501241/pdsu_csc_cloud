@@ -10,7 +10,7 @@ import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.email.EmailRepetitionException;
 import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
-import com.pdsu.csc.service.MyEmailService;
+import com.pdsu.csc.service.impl.AbstractMyEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -22,7 +22,7 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("myEmailService")
-public class MyEmailServiceImpl implements MyEmailService {
+public class MyEmailServiceImpl extends AbstractMyEmailService {
 
 	@Autowired
 	private MyEmailMapper myEmailMapper;

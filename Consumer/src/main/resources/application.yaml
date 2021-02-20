@@ -2,27 +2,28 @@
 #  port: 80
 #  servlet:
 #    context-path: /
+#  max-http-header-size: 128KB
 #spring:
+#  profiles: dev
 #  application:
-#    # 本名称并无实际意义, 因为本服务不注册进 Eureka
-#    name: CodeSharingCommunity_客户端
+#    # 自己在 eureka 里的唯一标识
+#    name: CodeSharingCommunityConsumer
 #eureka:
 #  client:
 #    service-url:
 #      # Eureka 管理, 如为集群模式, 则应注册到所有 eureka
 #      defaultZone: http://localhost:7001/eureka/
-#      # 不注册自己进 Eureka
-#    register-with-eureka: false
+#      # 注册自己进 Eureka
+#    register-with-eureka: true
 #  instance:
 #    # 自己的唯一名称
-#    instance-id: CodeSharingCommumity_客户端
+#    instance-id: CodeSharingCommunity_客户端
 #    prefer-ip-address: true
 #feign:
 #  hystrix:
 #    # 开启 hystrix 降级机制
 #    # 降级即为服务端宕机时, 一个备用的响应返回
 #    enabled: true
-#
 #hystrix:
 #  command:
 #    default:
@@ -35,7 +36,3 @@
 #          maxConcurrentRequests: 20
 #logging:
 #  config: classpath:log4j2.xml
-#csc:
-#  cors:
-#    # 该配置代表本服务允许访问的域名
-#    allow-ip: http://112.124.30.43:8080

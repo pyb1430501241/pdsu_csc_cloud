@@ -32,13 +32,11 @@ public class LoggingAspect {
 		/*
 		 * 如未登录, 则默认执行人为游客,账号为: 0
 		 */
-		UserInformation user;
-		user = ShiroUtils.getUserInformation() == null ? UserHandler.DEFAULT_VISTOR : ShiroUtils.getUserInformation();
 		String name = ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
 		String str = joinPoint.getTarget().getClass().getName() + "."
 					+ name;
 		String args = StringUtils.toString(joinPoint.getArgs());
-		log.info("开始执行 " + str + " 方法, 请求参数为: " + args + ", 请求人学号为: " + user.getUid());
+		log.info("开始执行 " + str + " 方法, 请求参数为: " + args);
 	}
 
 	@AfterReturning(pointcut = "pointCut()", returning = "result")

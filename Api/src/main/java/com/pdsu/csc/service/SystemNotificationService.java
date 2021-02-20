@@ -46,4 +46,5 @@ public interface SystemNotificationService {
      * @return
      */
     public Integer countSystemNotificationByUidAndUnRead(@NonNull Integer uid);
+
 }

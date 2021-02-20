@@ -6,7 +6,7 @@ import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.handler.UserHandler;
-import com.pdsu.csc.service.MyImageService;
+import com.pdsu.csc.service.impl.AbstractMyImageService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -24,7 +24,7 @@ import java.util.Map;
  */
 @Log4j2
 @Service("myImageService")
-public class MyImageServiceImpl implements MyImageService {
+public class MyImageServiceImpl extends AbstractMyImageService {
 
 	@Autowired
 	private MyImageMapper myImageMapper;

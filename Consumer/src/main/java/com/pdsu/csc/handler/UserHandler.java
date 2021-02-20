@@ -41,38 +41,38 @@ public class UserHandler {
         return result.getJson().get(CODE).equals(SUCCESS_CODE);
     }
 
-    @PostMapping("/login")
-    @CrossOrigin
-    public Result login(@RequestParam String uid, @RequestParam String password,
-                        @RequestParam String hit, @RequestParam String code,
-                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
-                        HttpServletResponse response,
-                        HttpServletRequest request) {
-        Result login = providerService.login(uid, password, hit, code, flag);
-        // 如果请求成功
-        if(isHttpSuccess(login)) {
-            /*
-                由于 feign 转发请求时会默认清理 response 里的 Cookie, 请求头信息,
-                故选择将其添加到服务提供放的返回值里, 供消费方拿到后, 添加到请求头里。
-                    // 如在本项目中认证, 通过对应的参数进行调用, 则省去该步骤
-                    // 但由于架子已成, 如修改, 幅度巨大, 故放弃。
-            */
-            String setCookieName = HttpUtils.getSetCookieName();
-            String setCookieValue = (String) login.getJson().get(setCookieName);
-            response.addHeader(setCookieName, setCookieValue);
-            login.getJson().remove(setCookieName);
-
-            String rememberName = HttpUtils.getRememberCookieName();
-            String rememberValue = (String) login.getJson().get(rememberName);
-            // 用户可能选择不记住
-            if(!StringUtils.isBlank(rememberValue)) {
-                // setCookieName 为给浏览器添加 cookie
-                response.addHeader(setCookieName, rememberValue);
-            }
-            login.getJson().remove(rememberName);
-        }
-        return login;
-    }
+//    @PostMapping("/login")
+//    @CrossOrigin
+//    public Result login(@RequestParam String uid, @RequestParam String password,
+//                        @RequestParam String hit, @RequestParam String code,
+//                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
+//                        HttpServletResponse response,
+//                        HttpServletRequest request) {
+//        Result login = providerService.login(uid, password, hit, code, flag);
+//        // 如果请求成功
+//        if(isHttpSuccess(login)) {
+//            /*
+//                由于 feign 转发请求时会默认清理 response 里的 Cookie, 请求头信息,
+//                故选择将其添加到服务提供放的返回值里, 供消费方拿到后, 添加到请求头里。
+//                    // 如在本项目中认证, 通过对应的参数进行调用, 则省去该步骤
+//                    // 但由于架子已成, 如修改, 幅度巨大, 故放弃。
+//            */
+//            String setCookieName = HttpUtils.getSetCookieName();
+//            String setCookieValue = (String) login.getJson().get(setCookieName);
+//            response.addHeader(setCookieName, setCookieValue);
+//            login.getJson().remove(setCookieName);
+//
+//            String rememberName = HttpUtils.getRememberCookieName();
+//            String rememberValue = (String) login.getJson().get(rememberName);
+//            // 用户可能选择不记住
+//            if(!StringUtils.isBlank(rememberValue)) {
+//                // setCookieName 为给浏览器添加 cookie
+//                response.addHeader(setCookieName, rememberValue);
+//            }
+//            login.getJson().remove(rememberName);
+//        }
+//        return login;
+//    }
 
     @GetMapping("/getcodeforlogin")
     @CrossOrigin

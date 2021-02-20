@@ -55,11 +55,6 @@ import java.util.*;
 public class UserHandler extends ParentHandler {
 
 	/**
-	 * 记住我
-	 */
-	private static final Integer REMEMBER_ME = 1;
-
-	/**
 	 * 用户信息相关
 	 */
 	private UserInformationService userInformationService;
@@ -109,15 +104,9 @@ public class UserHandler extends ParentHandler {
 	 */
 	private UserRoleService userRoleService;
 	
-	/**
-	 * 缓存管理器
-	 */
-	private CacheManager cacheManager;
-	
-	/**
-	 * 缓存区
-	 */
-	private Cache cache = null;
+	private RedisUtils redisUtils;
+
+	private static final Integer CODE_EXPIATION_TIME = 300;
 	
 	/**
 	 * @return  用户的登录状态
@@ -151,62 +140,6 @@ public class UserHandler extends ParentHandler {
 		return Result.success().add("user", user).add(header, sessionId);
 	}
 
-	/**
-	 * 处理登录
-	 * @param uid 账号
-	 * @param password 密码
-	 * @param hit cache获取数据的key
-	 * @param code 输入的验证码
-	 * @param flag  是否记住密码 默认为不记住
-	 * @return
-	 * 	如登录成功, 返回用户信息及其对应的 sessionId;
-	 * 	如失败则返回失败原因
-	 */
-	@ResponseBody
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result login(@RequestParam String uid, @RequestParam String password,
-                        @RequestParam String hit, @RequestParam String code,
-                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
-                        HttpServletResponse response, HttpServletRequest request) throws Exception {
-		log.info("账号: " + uid + "登录开始");
-		log.info("参数为: " + StringUtils.toString(uid, password, hit, code, flag));
-		if(Objects.isNull(cache.get(hit))) {
-			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
-		}
-		//从缓存中获取验证码
-		String ss = ((String) cache.get(hit).get()).toLowerCase();
-		log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
-		if(!ss.equals(code.toLowerCase())) {
-			log.info(CODE_ERROR);
-			return Result.fail().add(EXCEPTION, CODE_ERROR);
-		}
-		Subject subject = new WebSubject.Builder(request, response).buildWebSubject();
-		if(!Objects.isNull(ShiroUtils.getUserInformation())) {
-		    subject.logout();
-        }
-        UsernamePasswordToken token = new UsernamePasswordToken(uid+"", password);
-        //是否记住我
-        if(!flag.equals(REMEMBER_ME)) {
-            token.setRememberMe(false);
-        } else {
-            token.setRememberMe(true);
-        }
-		/**
-		 *	开始登陆, 实际调用
-		 *	@see com.pdsu.csc.shiro.LoginRealm#doGetAuthenticationInfo
-		 */
-		subject.login(token);
-		// 如果登录成功, 则 shiro 应已保存用户信息
-		UserInformation uu = (UserInformation) subject.getPrincipal();
-		// 密码置为空
-        uu.setPassword(null);
-		log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
-		return Result.success()
-					.add("user", uu)
-					.add(HttpUtils.getSetCookieName(), getSetCookieValue(subject, HttpUtils.getSetCookieName()))
-					.add(HttpUtils.getRememberCookieName(), getSetCookieValue(subject, HttpUtils.getRememberCookieName()));
-	}
 
 	/**
 	 * @see WebUtils#getHttpResponse
@@ -232,15 +165,6 @@ public class UserHandler extends ParentHandler {
 		return builder.toString();
 	}
 
-//	@RequestMapping("/logout")
-//	@SuppressWarnings("all")
-//	@CrossOrigin
-//	public Result logout() throws Exception {
-//		Subject subject = SecurityUtils.getSubject();
-//		subject.logout();
-//		return Result.success();
-//	}
-
 	/**
 	 * 获取验证码
 	 * 储存验证码到缓存区 cache
@@ -252,17 +176,13 @@ public class UserHandler extends ParentHandler {
 	@CrossOrigin
 	public Result getCode() throws Exception {
 		log.info("获取验证码开始");
-		if(Objects.isNull(cache)) {
-			System.setProperty("java.awt.headless", "true");
-			cache = cacheManager.getCache("code");
-		}
 		String verifyCode = CodeUtils.generateVerifyCode(4);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		CodeUtils.outputImage(100, 30, out, verifyCode);
 		String base64 = Base64.encodeToString(out.toByteArray());
 		String src = "data:image/png;base64," + base64;
 		String token = RandomUtils.getUUID();
-		cache.put(token, verifyCode);
+		redisUtils.set(token, verifyCode, CODE_EXPIATION_TIME);
 		log.info("获取成功, 验证码为: " + verifyCode);
 		return Result.success()
 				.add("token", token)
@@ -294,11 +214,8 @@ public class UserHandler extends ParentHandler {
 			EmailUtils utils = new EmailUtils();
 			utils.sendEmailForApply(email, name);
 			String text = utils.getText();
-			if(Objects.isNull(cache)) {
-				cache = cacheManager.getCache("code");
-			}
 			String token = RandomUtils.getUUID();
-			cache.put(token, text);
+			redisUtils.set(token, text, CODE_EXPIATION_TIME);
 			log.info("发送成功, 验证码为: " + text);
 			return Result.success().add("token", token);
 	}
@@ -319,12 +236,11 @@ public class UserHandler extends ParentHandler {
 			throws Exception {
 		log.info("申请账号: " + user.getUid() + "开始");
 		//验证验证码
-		Cache.ValueWrapper valueWrapper = cache.get(token);
-		if(Objects.isNull(valueWrapper)) {
+		String ss = (String) redisUtils.get(token);
+		if(Objects.isNull(ss)) {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
-		String ss = (String) valueWrapper.get();
-		if(!code.equals(ss)) {
+		if(!StringUtils.CompareIgnoreCase(ss, code)) {
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		if(userInformationService.countByUid(user.getUid()) != 0) {
@@ -376,11 +292,8 @@ public class UserHandler extends ParentHandler {
 		if(i != 0) {
 			log.info("账号: " + uid + "存在");
 			MyEmail email = myEmailService.selectMyEmailByUid(uid);
-			if(Objects.isNull(cache)) {
-				cache = cacheManager.getCache("code");
-			}
 			String token = RandomUtils.getUUID();
-			cache.put(token, email.getEmail());
+			redisUtils.set(token, email.getEmail(), CODE_EXPIATION_TIME);
 			email.setEmail(StringUtils.getAsteriskForString(email.getEmail()));
 			return Result.success().add("email", email)
 					.add("uid", uid)
@@ -401,12 +314,10 @@ public class UserHandler extends ParentHandler {
 	@ResponseBody
 	@CrossOrigin
 	public Result sendEmailForRetrieve(@RequestParam String token) throws Exception{
-		String email = null;
-		Cache.ValueWrapper valueWrapper = cache.get(token);
-		if(Objects.isNull(valueWrapper)) {
+		String email = (String) redisUtils.get(token);
+		if(Objects.isNull(email)) {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
-		email = (String) valueWrapper.get();
 		if(StringUtils.isBlank(email)) {
 			return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
 		}
@@ -418,7 +329,7 @@ public class UserHandler extends ParentHandler {
 						myEmailService.selectMyEmailByEmail(email).getUid()).getUsername());
 		String text = utils.getText();
 		String uuid = RandomUtils.getUUID();
-		cache.put(uuid, text);
+		redisUtils.set(uuid, text, CODE_EXPIATION_TIME);
 		log.info("发送验证码成功, 验证码为: " + text);
 		return Result.success().add("token", uuid);
 	}
@@ -440,12 +351,11 @@ public class UserHandler extends ParentHandler {
 									  @RequestParam String token,
 									  @RequestParam String code) throws Exception {
 		log.info("账号: " + uid + "开始找回密码");
-		Cache.ValueWrapper valueWrapper = cache.get(token);
-		if(Objects.isNull(valueWrapper)) {
+		String ss = (String) redisUtils.get(token);
+		if(Objects.isNull(ss)) {
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
-		String ss = (String) valueWrapper.get();
-		if(!code.equals(ss)) {
+		if(!StringUtils.CompareIgnoreCase(ss, code)) {
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		boolean b = userInformationService.modifyThePassword(uid, password);
@@ -496,12 +406,9 @@ public class UserHandler extends ParentHandler {
 		log.info("邮箱: " + email + "开始发送修改密码的验证码");
 		EmailUtils utils = new EmailUtils();
 		utils.sendEmailForModify(email, ShiroUtils.getUserInformation().getUsername());
-		if(Objects.isNull(cache)) {
-			cache = cacheManager.getCache("code");
-		}
 		String token = RandomUtils.getUUID();
 		String text = utils.getText();
-		cache.put(token, text);
+		redisUtils.set(token, text, CODE_EXPIATION_TIME);
 		log.info("邮箱: " + email + "发送验证码成功, 验证码为: " + text);
 		return Result.success().add("token", token);
 	}
@@ -518,13 +425,13 @@ public class UserHandler extends ParentHandler {
 	@CrossOrigin
 	public Result modifyBefore(@RequestParam String token, @RequestParam String code) throws Exception{
 		log.info("开始验证验证码是否正确");
-		Cache.ValueWrapper valueWrapper = cache.get(token);
-		if(Objects.isNull(valueWrapper)) {
+		String ss = (String) redisUtils.get(token);
+		if(Objects.isNull(ss)) {
 			log.info("验证码已过期, key 为: " + token);
 			return Result.fail().add(EXCEPTION, CODE_EXPIRED);
 		}
-		if(!code.equals(valueWrapper.get())) {
-			log.info("验证码错误, 服务器端验证码为: " + valueWrapper.get() + ", 用户输入为: " + code);
+		if(!StringUtils.CompareIgnoreCase(ss, code)) {
+			log.info("验证码错误, 服务器端验证码为: " + ss + ", 用户输入为: " + code);
 			return Result.fail().add(EXCEPTION, CODE_ERROR);
 		}
 		log.info("验证码: " + code + "正确");
@@ -1125,7 +1032,7 @@ public class UserHandler extends ParentHandler {
 					   WebFileService webFileService,
 					   SystemNotificationService systemNotificationService,
 					   UserRoleService userRoleService,
-					   CacheManager cacheManager) {
+					   RedisUtils redisUtils) {
 		this.userInformationService = userInformationService;
 		this.myEmailService = myEmailService;
 		this.myLikeService = myLikeService;
@@ -1136,6 +1043,6 @@ public class UserHandler extends ParentHandler {
 		this.webFileService = webFileService;
 		this.systemNotificationService = systemNotificationService;
 		this.userRoleService = userRoleService;
-		this.cacheManager = cacheManager;
+		this.redisUtils = redisUtils;
 	}
 }

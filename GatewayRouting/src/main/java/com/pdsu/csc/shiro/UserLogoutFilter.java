@@ -1,22 +1,18 @@
 package com.pdsu.csc.shiro;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-
-import javax.servlet.ServletRequest;
-import javax.servlet.ServletResponse;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.ShiroUtils;
-import org.activiti.engine.impl.util.json.JSONObject;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.filter.authc.LogoutFilter;
 import org.apache.shiro.web.util.WebUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * @author 半梦
