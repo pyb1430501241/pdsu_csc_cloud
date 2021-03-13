@@ -6,8 +6,10 @@ import com.pdsu.csc.config.dao.impl.PropertiesDefinition;
 import com.pdsu.csc.exception.web.user.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -18,7 +20,7 @@ import java.util.Objects;
  * 该类用于提供子类一些常用的常量, 错误提示
  */
 @SuppressWarnings("all")
-public abstract class ParentHandler implements AbstractHandler {
+public abstract class ParentHandler implements AbstractHandler, LoginHandler {
 
     /**
      * 日志
@@ -67,11 +69,20 @@ public abstract class ParentHandler implements AbstractHandler {
      * @throws UserNotLoginException
      *  用户未登录时抛出对应异常
      */
+    @Override
      public void loginOrNotLogin(@Nullable UserInformation user) throws UserNotLoginException {
         if(Objects.isNull(user)) {
             throw new UserNotLoginException();
         }
+     }
+
+    /**
+     * 空方法
+     */
+    @Override
+    public void loginOrNotLogin(@NonNull HttpServletRequest request) throws UserNotLoginException {
     }
+
 
     static {
         InitSystem.initSystem();

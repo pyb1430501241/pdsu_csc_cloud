@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.WebInformation;
+import com.pdsu.csc.bean.WebInformationExample;
 import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.es.InsertException;
@@ -14,15 +15,9 @@ import java.util.List;
  * @author 半梦
  *
  */
-public interface WebInformationService {
+public interface WebInformationService extends
+		TemplateService<WebInformation, WebInformationExample>, WebService {
 
-	/**
-	 * 插入一个网页
-	 * @param information
-	 * @return  是否插入成功
-	 */
-	public int insert(@NonNull WebInformation information) throws InsertException;
-	
 	/**
 	 * 根据网页id删除一个网页
 	 * @param id
@@ -56,20 +51,6 @@ public interface WebInformationService {
 	 * @return
 	 */
 	public boolean updateByWebId(@NonNull WebInformation web);
-	
-	/**
-	 * 查询文章是否存在
-	 * @param webid
-	 * @return
-	 */
-	public boolean countByWebId(@NonNull Integer webid);
-	
-	/**
-	 * 查询用户是否存在
-	 * @param uid
-	 * @return
-	 */
-	public int countByUid(@NonNull Integer uid);
 	
 	/**
 	 * 获取用户原创数量

@@ -8,6 +8,15 @@
 #  application:
 #    # 自己在 eureka 里的唯一标识
 #    name: CodeSharingCommunityConsumer
+#  redis:
+#    host: localhost
+#    password: pyb***20000112
+#    port: 6379
+#    jedis:
+#      pool:
+#        max-active: 60
+#        max-wait: 60
+#        max-idle: 10
 #eureka:
 #  client:
 #    service-url:
@@ -20,6 +29,10 @@
 #    instance-id: CodeSharingCommunity_客户端
 #    prefer-ip-address: true
 #feign:
+#  httpclient:
+#    enabled: false
+#  okhttp:
+#    enabled: true
 #  hystrix:
 #    # 开启 hystrix 降级机制
 #    # 降级即为服务端宕机时, 一个备用的响应返回

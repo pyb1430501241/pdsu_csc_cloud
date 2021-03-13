@@ -8,8 +8,10 @@ import com.pdsu.csc.dao.WebCommentMapper;
 import com.pdsu.csc.dao.WebInformationMapper;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.service.WebCommentService;
+import com.pdsu.csc.service.WebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -21,7 +23,7 @@ import java.util.List;
  *
  */
 @Service("webCommentService")
-public class WebCommentServiceImpl implements WebCommentService {
+public class WebCommentServiceImpl implements WebCommentService, WebService {
 
 	@Autowired
 	private WebCommentMapper webCommentMapper;
@@ -31,29 +33,21 @@ public class WebCommentServiceImpl implements WebCommentService {
 	
 	@Override
 	public boolean insert(@NonNull WebComment webComment) throws NotFoundBlobIdException {
-		if(!countByWebid(webComment.getWid())) {
+		if(!isExistByWebId(webComment.getWid())) {
 			throw new NotFoundBlobIdException();
 		}
-		return webCommentMapper.insertSelective(webComment) != 0;
-	}
-
-	@Override
-	public boolean countByWebid(@NonNull Integer webid) {
-		WebInformationExample example = new WebInformationExample();
-		com.pdsu.csc.bean.WebInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andIdEqualTo(webid);
-		return webInformationMapper.countByExample(example) != 0;
+		return webCommentMapper.insertSelective(webComment) > 0;
 	}
 
 	@Override
 	public List<WebComment> selectCommentsByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
-		if(!countByWebid(webid)) {
+		if(!isExistByWebId(webid)) {
 			throw new NotFoundBlobIdException();
 		}
 		WebCommentExample example = new WebCommentExample();
 		WebCommentExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		return webCommentMapper.selectByExample(example);
+		return selectListByExample(example);
 	}
 
 	@Override
@@ -72,12 +66,49 @@ public class WebCommentServiceImpl implements WebCommentService {
 		WebCommentExample example2 = new WebCommentExample();
 		WebCommentExample.Criteria createCriteria = example2.createCriteria();
 		createCriteria.andWidIn(webids);
-		return (int) webCommentMapper.countByExample(example2);
+		return (int) countByExample(example2);
 	}
 
 	@Override
 	public WebComment selectCommentById(Integer cid) {
 		return webCommentMapper.selectByPrimaryKey(cid);
+	}
+
+	@Override
+	public boolean isExistByCommentId(@NonNull Integer cid) {
+		WebCommentExample example = new WebCommentExample();
+		com.pdsu.csc.bean.WebCommentExample.Criteria criteria = example.createCriteria();
+		criteria.andIdEqualTo(cid);
+		return webCommentMapper.countByExample(example) > 0;
+	}
+
+	@Override
+	public boolean deleteByExample(@Nullable WebCommentExample example) {
+		return webCommentMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull WebComment webComment, @Nullable WebCommentExample example) {
+		return webCommentMapper.updateByExampleSelective(webComment, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<WebComment> selectListByExample(@Nullable WebCommentExample example) {
+		return webCommentMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(@Nullable WebCommentExample example) {
+		return webCommentMapper.countByExample(example);
+	}
+
+	@Override
+	public boolean isExistByWebId(@NonNull Integer webId) {
+		WebInformationExample example = new WebInformationExample();
+		com.pdsu.csc.bean.WebInformationExample.Criteria criteria = example.createCriteria();
+		criteria.andIdEqualTo(webId);
+		return webInformationMapper.countByExample(example) > 0;
 	}
 
 }

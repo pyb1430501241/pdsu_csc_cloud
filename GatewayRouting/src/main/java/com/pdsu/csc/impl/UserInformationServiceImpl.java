@@ -2,11 +2,14 @@ package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.bean.UserInformationExample;
-import com.pdsu.csc.zuulDao.UserInformationMapper;
+import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.service.impl.AbstractUserInformationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 /**
  * @author 半梦
@@ -23,13 +26,13 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
      */
     @Override
     public UserInformation selectByUid(@NonNull Integer uid) {
-        if(countByUid(uid) <= 0) {
+        if(!isExistByUid(uid)) {
             return null;
         }
         UserInformationExample example = new UserInformationExample();
         UserInformationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        return userInformationMapper.selectByExample(example).get(0);
+        return selectByExample(example);
     }
 
     /**
@@ -40,7 +43,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
         UserInformationExample example = new UserInformationExample();
         UserInformationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        return (int) userInformationMapper.countByExample(example);
+        return (int) countByExample(example);
     }
 
     @Override
@@ -48,7 +51,18 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
         UserInformationExample example = new UserInformationExample();
         UserInformationExample.Criteria criteria = example.createCriteria();
         criteria.andUsernameEqualTo(username);
-        return (int) userInformationMapper.countByExample(example);
+        return (int) countByExample(example);
+    }
+
+    @Override
+    @NonNull
+    public List<UserInformation> selectListByExample(@Nullable UserInformationExample example) {
+        return userInformationMapper.selectByExample(example);
+    }
+
+    @Override
+    public long countByExample(UserInformationExample example) {
+        return userInformationMapper.countByExample(example);
     }
 
 }

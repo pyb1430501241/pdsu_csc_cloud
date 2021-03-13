@@ -20,7 +20,7 @@ import java.io.Serializable;
  *
  */
 @Log4j2
-public class WebSessionManager extends DefaultWebSessionManager{
+public class WebSessionManager extends DefaultWebSessionManager {
 	
 	private static final String REFERENCED_SESSION_ID_SOURCE  = "Stateless request";
 
@@ -38,7 +38,7 @@ public class WebSessionManager extends DefaultWebSessionManager{
 	}
 	
 	@Override
-	protected Serializable getSessionId(ServletRequest request, ServletResponse response) {
+	public Serializable getSessionId(ServletRequest request, ServletResponse response) {
 		String sessionId = HttpUtils.getSessionId(WebUtils.toHttp(request));
 		if(!StringUtils.isEmpty(sessionId)) {
 			request.setAttribute(ShiroHttpServletRequest.REFERENCED_SESSION_ID_SOURCE, REFERENCED_SESSION_ID_SOURCE);

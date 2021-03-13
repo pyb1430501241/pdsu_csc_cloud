@@ -1,5 +1,7 @@
 package com.pdsu.csc.service;
 
+import com.pdsu.csc.bean.WebLabelControl;
+import com.pdsu.csc.bean.WebLabelControlExample;
 import org.springframework.lang.NonNull;
 
 import java.util.List;
@@ -7,7 +9,8 @@ import java.util.List;
 /**
  * @author 半梦
  */
-public interface WebLabelControlService {
+public interface WebLabelControlService extends
+		TemplateService<WebLabelControl, WebLabelControlExample> {
 
 	/**
 	 * 插入文章和标签的对应

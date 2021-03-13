@@ -1,4 +1,4 @@
-package com.pdsu.csc.zuulDao;
+package com.pdsu.csc.dao;
 
 import com.pdsu.csc.bean.MyImage;
 import com.pdsu.csc.bean.MyImageExample;

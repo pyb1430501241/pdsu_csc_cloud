@@ -6,16 +6,16 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * 处理AJAX请求的数据
+ * 返回给前端的数据存储类型
  * @author Admin
- *
  */
 @ToString
 public class Result{
+
 	/**
 	 * 
 	 */
-	private Map<String, Object> json = new HashMap<String, Object>();
+	private Map<String, Object> json = new HashMap<>();
 
 	public Map<String, Object> getJson() {
 		return json;
@@ -23,7 +23,7 @@ public class Result{
 
 	public static Result success() {
 		Result result = new Result();
-		result.add("msg", "success");
+		result.add("msg", "心有所想, 日复一日, 必有精进.");
 		result.add("code", 200);
 		return result;
 	}

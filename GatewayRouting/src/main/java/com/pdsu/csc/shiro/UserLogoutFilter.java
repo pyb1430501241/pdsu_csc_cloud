@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author 半梦
  * @create 2020-12-15 13:12
  */
-public class UserLogoutFilter extends LogoutFilter{
+public class UserLogoutFilter extends LogoutFilter {
 
     private static final Logger log = LoggerFactory.getLogger("用户退出拦截器");
 
@@ -27,10 +27,7 @@ public class UserLogoutFilter extends LogoutFilter{
         Subject subject = getSubject(request, response);
         UserInformation user = null;
         try {
-            HttpServletRequest httpServletRequest = WebUtils.toHttp(request);
-            HttpServletResponse httpServletResponse = WebUtils.toHttp(response);
-            user = ShiroUtils.getUserInformation(
-                    HttpUtils.getSessionId(httpServletRequest), httpServletRequest, httpServletResponse);
+            user = ShiroUtils.getUserInformation();
             log.info("用户: " + user.getUid() + ", 退出登录");
             subject.logout();
         } catch (Exception ise) {

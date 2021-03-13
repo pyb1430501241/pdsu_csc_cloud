@@ -1,70 +1,70 @@
-server:
-  # 端口可以改成自己想要的
-  port: 8081
-  servlet:
-    context-path: /
-  max-http-header-size: 128KB
-
-spring:
-  application:
-    # 同一微服务里所有的同类提供者必须同名, 所对应的微服务名称为此值全大写
-    name: CodeSharingCommunityProvider
-  datasource:
-    type: com.zaxxer.hikari.HikariDataSource
-    hikari:
-      minimum-idle: 20
-      maximum-pool-size: 100
-      auto-commit: true
-      idle-timeout: 30000
-      pool-name: DatebookHikariCP
-      max-lifetime: 1800000
-      connection-timeout: 30000
-      connection-test-query: SELECT 1
-      username: root
-      password: pyb***20000112
-      jdbc-url: jdbc:mysql://localhost:3306/pdsu_csc?useSSL=false&serverTimezone=UTC
-      driver-class-name: com.mysql.cj.jdbc.Driver
-  redis:
-    host: localhost
-    password: pyb***20000112
-    port: 6379
-    jedis:
-      pool:
-        max-active: 60
-        max-wait: 60
-        max-idle: 10
-
-
-mybatis:
-  mapper-locations:
-    - classpath:mybatis/mapper/**/*.xml
-  type-aliases-package: com.pdsu.csc.bean
-  configuration:
-    map-underscore-to-camel-case: true
-    cache-enabled: true
-
-pagehelper:
-  helperDialect: mysql
-  reasonable: true
-  supportMethodsArguments: true
-  params: count=countSql
-
-eureka:
-  client:
-    service-url:
-      # 将自己注册到哪一个 Eureka 管理里, 如 Eureka 集群, 则需要注册到所有 Eureka 集群里
-      defaultZone: http://localhost:7001/eureka/
-  instance:
-    # 自己在 Eureka 里的名称, 不可重复
-    instance-id: CodeSharingCommunity_服务端
-    # 显示自己的 IP
-    prefer-ip-address: true
-
-info:
-  app.name: CodeSharingCommunity_服务端_01
-  company.name: www.halfdream.cn/半梦的个人网址
-  build.artifactId: ${project.artifactId}
-  build.version: ${project.version}
-
-logging:
-  config: classpath:log4j2/log4j2.xml
+#server:
+#  # 端口可以改成自己想要的
+#  port: 8081
+#  servlet:
+#    context-path: /
+#  max-http-header-size: 128KB
+#
+#spring:
+#  application:
+#    # 同一微服务里所有的同类提供者必须同名, 所对应的微服务名称为此值全大写
+#    name: CodeSharingCommunityProvider
+#  datasource:
+#    type: com.zaxxer.hikari.HikariDataSource
+#    hikari:
+#      minimum-idle: 20
+#      maximum-pool-size: 100
+#      auto-commit: true
+#      idle-timeout: 30000
+#      pool-name: DatebookHikariCP
+#      max-lifetime: 1800000
+#      connection-timeout: 30000
+#      connection-test-query: SELECT 1
+#      username: root
+#      password: pyb***20000112
+#      jdbc-url: jdbc:mysql://localhost:3306/pdsu_csc?useSSL=false&serverTimezone=UTC
+#      driver-class-name: com.mysql.cj.jdbc.Driver
+#  redis:
+#    host: localhost
+#    password: pyb***20000112
+#    port: 6379
+#    jedis:
+#      pool:
+#        max-active: 60
+#        max-wait: 60
+#        max-idle: 10
+#
+#
+#mybatis:
+#  mapper-locations:
+#    - classpath:mybatis/mapper/**/*.xml
+#  type-aliases-package: com.pdsu.csc.bean
+#  configuration:
+#    map-underscore-to-camel-case: true
+#    cache-enabled: true
+#
+#pagehelper:
+#  helperDialect: mysql
+#  reasonable: true
+#  supportMethodsArguments: true
+#  params: count=countSql
+#
+#eureka:
+#  client:
+#    service-url:
+#      # 将自己注册到哪一个 Eureka 管理里, 如 Eureka 集群, 则需要注册到所有 Eureka 集群里
+#      defaultZone: http://localhost:7001/eureka/
+#  instance:
+#    # 自己在 Eureka 里的名称, 不可重复
+#    instance-id: CodeSharingCommunity_服务端
+#    # 显示自己的 IP
+#    prefer-ip-address: true
+#
+#info:
+#  app.name: CodeSharingCommunity_服务端_01
+#  company.name: www.halfdream.cn/半梦的个人网址
+#  build.artifactId: ${project.artifactId}
+#  build.version: ${project.version}
+#
+#logging:
+#  config: classpath:log4j2/log4j2.xml

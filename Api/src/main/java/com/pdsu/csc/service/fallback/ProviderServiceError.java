@@ -8,6 +8,7 @@ import com.pdsu.csc.service.ProviderService;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 半梦
@@ -22,11 +23,6 @@ public class ProviderServiceError implements ProviderService {
 
     private static final Result RESULT = Result.fail().add(EXCEPTION, NETWORK_BUSY);
 
-//    @Override
-//    public Result login(String uid, String password, String hit, String code, Integer flag) {
-//        return RESULT;
-//    }
-
     @Override
     public Result getCodeForLogin() {
         return RESULT;
@@ -39,11 +35,6 @@ public class ProviderServiceError implements ProviderService {
 
     @Override
     public Result applyUser(UserInformation user, String token, String code) {
-        return RESULT;
-    }
-
-    @Override
-    public Result loginStatus() {
         return RESULT;
     }
 
@@ -63,12 +54,12 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result getModify() {
+    public Result getModify(UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result getCodeForModify(String email) {
+    public Result getCodeForModify(String email, UserInformation user) {
         return RESULT;
     }
 
@@ -78,47 +69,47 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result modifyForPassword(String password) {
+    public Result modifyForPassword(String password, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result like(Integer uid) {
+    public Result like(Integer uid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result disLike(Integer uid) {
+    public Result disLike(Integer uid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result getLikeStatus(Integer uid) {
+    public Result getLikeStatus(Integer uid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result updateImage(MultipartFile img) {
+    public Result updateImage(MultipartFile img, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result updateUserInformation(UserInformation user) {
+    public Result updateUserInformation(Map<String, Object> users) {
         return RESULT;
     }
 
     @Override
-    public Result getOneselfBlobsByUid(Integer p) {
+    public Result getOneselfBlobsByUid(Integer p, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result getOneselfFans(Integer p) {
+    public Result getOneselfFans(Integer p, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result getOneselfIcons(Integer p) {
+    public Result getOneselfIcons(Integer p, UserInformation user) {
         return RESULT;
     }
 
@@ -138,7 +129,7 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result getEmailByUid() {
+    public Result getEmailByUid(UserInformation user) {
         return RESULT;
     }
 
@@ -148,12 +139,12 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result getBrowsingRecord(Integer p) {
+    public Result getBrowsingRecord(Integer p, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result getOneselfNotification(Integer p) {
+    public Result getOneselfNotification(Integer p, UserInformation user) {
         return RESULT;
     }
 
@@ -163,47 +154,47 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result getBlobInformation(Integer id) {
+    public Result getBlobInformation(Integer id, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result collection(Integer bid, Integer webid) {
+    public Result collection(Integer bid, Integer webid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result deCollection(Integer webid) {
+    public Result deCollection(Integer webid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result collectionStatus(Integer webid) {
+    public Result collectionStatus(Integer webid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result insert(WebInformation web, List<Integer> labelList) {
+    public Result insert(Map<String, Object> values, Integer [] labelList) {
         return RESULT;
     }
 
     @Override
-    public Result delete(Integer webid) {
+    public Result delete(Integer webid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result update(WebInformation web, List<Integer> labelList) {
+    public Result update(Map<String, Object> values, Integer [] labelList) {
         return RESULT;
     }
 
     @Override
-    public Result postComment(Integer webid, String content) {
+    public Result postComment(Integer webid, String content, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result postCommentReply(Integer webid, Integer cid, Integer bid, String content) {
+    public Result postCommentReply(Integer webid, Integer cid, Integer bid, String content, UserInformation user) {
         return RESULT;
     }
 
@@ -214,21 +205,21 @@ public class ProviderServiceError implements ProviderService {
 
     @Override
     public Result getCollectionByUid(Integer uid, Integer p) {
-        return null;
-    }
-
-    @Override
-    public Result thumbs(Integer webid, Integer bid) {
         return RESULT;
     }
 
     @Override
-    public Result dethumbs(Integer webid) {
+    public Result thumbs(Integer webid, Integer bid, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result thumbsStatus(Integer webid) {
+    public Result dethumbs(Integer webid, UserInformation user) {
+        return RESULT;
+    }
+
+    @Override
+    public Result thumbsStatus(Integer webid, UserInformation user) {
         return RESULT;
     }
 
@@ -248,12 +239,12 @@ public class ProviderServiceError implements ProviderService {
     }
 
     @Override
-    public Result upload(MultipartFile file, String title, String description) {
+    public Result upload(MultipartFile file, String title, String description, UserInformation user) {
         return RESULT;
     }
 
     @Override
-    public Result download(Integer uid, String title) {
+    public Result download(Integer uid, String title, UserInformation user) {
         return RESULT;
     }
 
@@ -272,8 +263,10 @@ public class ProviderServiceError implements ProviderService {
         return RESULT;
     }
 
-    @Override
-    public Result logout() {
-        return RESULT;
-    }
+//    @Override
+//    public Result login(String uid, String password, String hit, String code, Integer flag) {
+//        return RESULT;
+//    }
+
+
 }

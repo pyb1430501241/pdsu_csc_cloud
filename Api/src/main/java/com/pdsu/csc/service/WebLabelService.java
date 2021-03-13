@@ -3,12 +3,13 @@ package com.pdsu.csc.service;
 import java.util.List;
 
 import com.pdsu.csc.bean.WebLabel;
+import com.pdsu.csc.bean.WebLabelExample;
 import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
  */
-public interface WebLabelService {
+public interface WebLabelService extends TemplateService<WebLabel, WebLabelExample>{
 	
 	/**
 	 * 获取所有标签

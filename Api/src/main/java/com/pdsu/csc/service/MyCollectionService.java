@@ -3,6 +3,7 @@ package com.pdsu.csc.service;
 import java.util.List;
 
 import com.pdsu.csc.bean.MyCollection;
+import com.pdsu.csc.bean.MyCollectionExample;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.user.UidAndWebIdRepetitionException;
 import org.springframework.lang.NonNull;
@@ -13,7 +14,7 @@ import org.springframework.lang.Nullable;
  * @author 半梦
  *
  */
-public interface MyCollectionService {
+public interface MyCollectionService extends TemplateService<MyCollection, MyCollectionExample>{
 	
 	/**
 	 * 插入一个收藏记录
@@ -34,7 +35,7 @@ public interface MyCollectionService {
 	 * @param webids
 	 * @return
 	 */
-	public List<Integer> selectCollectionssByWebIds(@NonNull List<Integer> webids);
+	public List<Integer> selectCollectionsByWebIds(@NonNull List<Integer> webids);
 
 	/**
 	 * 删除一个收藏记录
@@ -51,13 +52,6 @@ public interface MyCollectionService {
 	 * @return
 	 */
 	public boolean countByUidAndWebId(@NonNull Integer uid, @NonNull Integer webid);
-
-	/**
-	 * 查询文章是否存在
-	 * @param webid
-	 * @return
-	 */
-	public boolean countByWebId(@NonNull Integer webid);
 
 	/**
 	 * 获取一个人的总收藏量

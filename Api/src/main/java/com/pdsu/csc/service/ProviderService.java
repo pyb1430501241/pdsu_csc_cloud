@@ -2,15 +2,15 @@ package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
-import com.pdsu.csc.bean.WebInformation;
 import com.pdsu.csc.service.fallback.ProviderServiceFallBack;
 import org.springframework.cloud.openfeign.FeignClient;
+import org.springframework.cloud.openfeign.SpringQueryMap;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.List;
+import java.util.Map;
 
 import static com.pdsu.csc.service.ProviderService.PROVIDER_NAME;
 
@@ -27,6 +27,9 @@ import static com.pdsu.csc.service.ProviderService.PROVIDER_NAME;
  * 解决方案：
  *  1. 替换 Feign 内置包
  *  2. 无需修改, 遵守 Feign 的约定
+ *
+ *  已解决
+ *      - by 半梦（庞亚彬） 2021-02-13
  *
  * @FeignClient 注解为开启服务端映射
  *  value 需要映射的微服务名称
@@ -69,13 +72,13 @@ public interface ProviderService {
      * 申请账号
      */
     @PostMapping(USER_API_PREFIX + "applynumber")
-    public Result applyUser(UserInformation user, @RequestParam("token") String token, @RequestParam("code") String code);
+    public Result applyUser(@RequestBody UserInformation user, @RequestParam("token") String token, @RequestParam("code") String code);
 
-    /**
-     * 登录状态
-     */
-    @GetMapping(USER_API_PREFIX + "loginstatus")
-    public Result loginStatus();
+//    /**
+//     * 登录状态
+//     */
+//    @GetMapping(USER_API_PREFIX + "loginstatus")
+//    public Result loginStatus();
 
     /**
      * 根据账号获取邮箱
@@ -102,13 +105,13 @@ public interface ProviderService {
      * 获取修改密码页面数据
      */
     @GetMapping(USER_API_PREFIX + "getmodify")
-    public Result getModify();
+    public Result getModify(@SpringQueryMap UserInformation user);
 
     /**
      * 获取修改密码的验证码
      */
     @GetMapping(USER_API_PREFIX + "getcodeformodify")
-    public Result getCodeForModify(@RequestParam("email") String email);
+    public Result getCodeForModify(@RequestParam("email") String email, @SpringQueryMap UserInformation user);
 
     /**
      * 验证验证码
@@ -120,55 +123,55 @@ public interface ProviderService {
      * 修改密码
      */
     @PostMapping(USER_API_PREFIX + "modify")
-    public Result modifyForPassword(@RequestParam("password") String password);
+    public Result modifyForPassword(@RequestParam("password") String password, @RequestBody UserInformation user);
 
     /**
      * 关注
      */
     @PostMapping(USER_API_PREFIX + "like")
-    public Result like(@RequestParam("uid") Integer uid);
+    public Result like(@RequestParam("uid") Integer uid, @RequestBody UserInformation user);
 
     /**
      * 取消关注
      */
     @PostMapping(USER_API_PREFIX + "dislike")
-    public Result disLike(@RequestParam("uid") Integer uid);
+    public Result disLike(@RequestParam("uid") Integer uid, @RequestBody UserInformation user);
 
     /**
      * 关注状态
      */
     @GetMapping(USER_API_PREFIX + "likestatus")
-    public Result getLikeStatus(@RequestParam("uid") Integer uid);
+    public Result getLikeStatus(@RequestParam("uid") Integer uid, @SpringQueryMap UserInformation user);
 
     /**
      * 更换头像
      */
-    @PostMapping(USER_API_PREFIX + "changeavatar")
-    public Result updateImage(@RequestParam("img") MultipartFile img);
+    @PostMapping(value = USER_API_PREFIX + "changeavatar", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public Result updateImage(@RequestPart("img") MultipartFile img, @RequestBody UserInformation user);
 
     /**
      * 更新用户信息
      */
     @PostMapping(USER_API_PREFIX + "changeinfor")
-    public Result updateUserInformation(UserInformation user);
+    public Result updateUserInformation(@RequestBody Map<String, Object> users);
 
     /**
      * 获取自己的博客
      */
     @GetMapping(USER_API_PREFIX + "getoneselfblobs")
-    public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p);
+    public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, @SpringQueryMap UserInformation user);
 
     /**
      * 获取自己的粉丝
      */
     @GetMapping(USER_API_PREFIX + "getoneselffans")
-    public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p);
+    public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @SpringQueryMap UserInformation user);
 
     /**
      * 获取自己的关注
      */
     @GetMapping(USER_API_PREFIX + "getoneselficons")
-    public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p);
+    public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @SpringQueryMap UserInformation user);
 
     /**
      * 根据账号获取文章
@@ -192,7 +195,7 @@ public interface ProviderService {
      * 获取登录状态的邮箱
      */
     @GetMapping(USER_API_PREFIX + "loginemail")
-    public Result getEmailByUid();
+    public Result getEmailByUid(@SpringQueryMap UserInformation user);
 
     /**
      * 数据校验
@@ -204,13 +207,13 @@ public interface ProviderService {
      * 获取用户浏览记录
      */
     @GetMapping(USER_API_PREFIX + "getoneselfbrowsingrecord")
-    public Result getBrowsingRecord(@RequestParam(value = "p", defaultValue = "1") Integer p);
+    public Result getBrowsingRecord(@RequestParam(value = "p", defaultValue = "1") Integer p, @SpringQueryMap UserInformation user);
 
     /**
      * 获取用户通知
      */
     @GetMapping(USER_API_PREFIX + "getnotification")
-    public Result getOneselfNotification(@RequestParam(value = "p", defaultValue = "1") Integer p);
+    public Result getOneselfNotification(@RequestParam(value = "p", defaultValue = "1") Integer p, @SpringQueryMap UserInformation user);
 
     /**
      * 获取博客首页
@@ -223,49 +226,50 @@ public interface ProviderService {
      * 获取博客页面信息
      */
     @GetMapping(BLOB_API_PREFIX + "{webid}")
-    public Result getBlobInformation(@PathVariable("webid")Integer id);
+    public Result getBlobInformation(@PathVariable("webid")Integer id, @SpringQueryMap UserInformation user);
 
     /**
      * 收藏文章
      */
     @PostMapping(BLOB_API_PREFIX + "collection")
-    public Result collection(@RequestParam("bid") Integer bid, @RequestParam("webid") Integer webid);
+    public Result collection(@RequestParam("bid") Integer bid, @RequestParam("webid") Integer webid, @RequestBody UserInformation user);
 
     /**
      * 取消收藏
      */
     @PostMapping(BLOB_API_PREFIX + "decollection")
-    public Result deCollection(@RequestParam("webid") Integer webid);
+    public Result deCollection(@RequestParam("webid") Integer webid, @RequestBody UserInformation user);
 
     /**
      *  收藏状态
      */
     @GetMapping(BLOB_API_PREFIX + "collectionstatuts")
-    public Result collectionStatus(@RequestParam("webid") Integer webid);
+    public Result collectionStatus(@RequestParam("webid") Integer webid, @SpringQueryMap UserInformation user);
 
     /**
      * 发布文章
      */
     @PostMapping(BLOB_API_PREFIX + "contribution")
-    public Result insert(WebInformation web, @RequestParam(value = "labelList", required = false) List<Integer> labelList);
+    public Result insert(@RequestBody Map<String, Object> values, @RequestParam(value = "labelList", required = false) Integer [] labelList);
 
     /**
      * 删除文章
      */
     @PostMapping(BLOB_API_PREFIX + "delete")
-    public Result delete(@RequestParam("webid") Integer webid);
+    public Result delete(@RequestParam("webid") Integer webid, @RequestBody UserInformation user);
 
     /**
      * 更新文章
      */
     @PostMapping(BLOB_API_PREFIX + "update")
-    public Result update(WebInformation web, @RequestParam(value = "labelList", required = false)List<Integer> labelList);
+    public Result update(@RequestBody Map<String, Object> values, @RequestParam(value = "labelList", required = false)Integer [] labelList);
 
     /**
      * 发布评论
      */
     @PostMapping(BLOB_API_PREFIX + "comment")
-    public Result postComment(@RequestParam("webid") Integer webid, @RequestParam("content") String content);
+    public Result postComment(@RequestParam("webid") Integer webid, @RequestParam("content") String content,
+                              @RequestBody UserInformation user);
 
     /**
      * 回复评论
@@ -274,7 +278,8 @@ public interface ProviderService {
     public Result postCommentReply(@RequestParam("webid") Integer webid,
                                    @RequestParam("cid") Integer cid,
                                    @RequestParam("bid") Integer bid,
-                                   @RequestParam("content") String content);
+                                   @RequestParam("content") String content,
+                                   @RequestBody UserInformation user);
 
     /**
      * 获取作者信息
@@ -292,25 +297,25 @@ public interface ProviderService {
      * 点赞
      */
     @PostMapping(BLOB_API_PREFIX + "thumbs")
-    public Result thumbs(@RequestParam("webid") Integer webid, @RequestParam("bid") Integer bid);
+    public Result thumbs(@RequestParam("webid") Integer webid, @RequestParam("bid") Integer bid, @RequestBody UserInformation user);
 
     /**
      * 取消点赞
      */
     @PostMapping(BLOB_API_PREFIX + "dethumbs")
-    public Result dethumbs(@RequestParam("webid") Integer webid);
+    public Result dethumbs(@RequestParam("webid") Integer webid, @RequestBody UserInformation user);
 
     /**
      * 点赞状态
      */
     @GetMapping(BLOB_API_PREFIX + "thumbsstatus")
-    public Result thumbsStatus(@RequestParam("webid") Integer webid);
+    public Result thumbsStatus(@RequestParam("webid") Integer webid, @SpringQueryMap UserInformation user);
 
     /**
      * 博客页面上传图片
      */
     @PostMapping(value = BLOB_API_PREFIX + "blobimg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Result postBlobImg(@RequestParam("img") MultipartFile img);
+    public Result postBlobImg(@RequestPart("img") MultipartFile img);
 
     /**
      * 获取文章标签
@@ -328,14 +333,15 @@ public interface ProviderService {
      * 上传文件
      */
     @PostMapping(value = FILE_API_PREFIX + "upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Result upload(@RequestParam("file") MultipartFile file, @RequestParam("title") String title,
-                         @RequestParam("description") String description);
+    public Result upload(@RequestPart("file") MultipartFile file, @RequestParam("title") String title,
+                         @RequestParam("description") String description, @RequestBody UserInformation user);
 
     /**
      * 下载文件
      */
     @GetMapping(FILE_API_PREFIX + "download")
-    public Result download(@RequestParam("uid") Integer uid, @RequestParam("title") String title);
+    public Result download(@RequestParam("uid") Integer uid, @RequestParam("title") String title,
+                           @SpringQueryMap UserInformation user);
 
     /**
      *  获取文件首页
@@ -351,8 +357,5 @@ public interface ProviderService {
      */
     @GetMapping("/search")
     public Result searchByText(@RequestParam(value = "p")String text);
-
-    @RequestMapping(USER_API_PREFIX + "logout")
-    public Result logout();
 
 }

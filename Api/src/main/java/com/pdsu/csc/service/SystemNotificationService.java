@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.SystemNotification;
+import com.pdsu.csc.bean.SystemNotificationExample;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -10,7 +11,8 @@ import java.util.List;
  * @author 半梦
  * @create 2020-08-13 14:09
  */
-public interface SystemNotificationService {
+public interface SystemNotificationService extends
+        TemplateService<SystemNotification, SystemNotificationExample>{
 
     /**
      * 插入系统通知

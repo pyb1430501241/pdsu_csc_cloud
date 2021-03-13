@@ -3,12 +3,14 @@ package com.pdsu.csc.config;
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.pdsu.csc.bean.CrossConfig;
 import com.pdsu.csc.bean.EncryptConfig;
 import com.pdsu.csc.cache.MybatisRedisCacheTransfer;
 import com.pdsu.csc.shiro.LoginRealm;
 import com.pdsu.csc.shiro.UserLogoutFilter;
 import com.pdsu.csc.shiro.WebCookieRememberMeManager;
 import com.pdsu.csc.shiro.WebSessionManager;
+import com.pdsu.csc.utils.StringUtils;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.extern.log4j.Log4j2;
@@ -30,10 +32,15 @@ import org.springframework.data.redis.connection.RedisConnectionFactory;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 
 import javax.servlet.Filter;
 import javax.sql.DataSource;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -55,11 +62,9 @@ public class ZuulConfig {
         return new HikariConfig();
     }
 
-
     /**
      *
      */
-
     @Bean
     public EhCacheManagerFactoryBean cacheManagerFactoryBean() {
         EhCacheManagerFactoryBean cacheManagerFactoryBean = new EhCacheManagerFactoryBean();
@@ -165,5 +170,34 @@ public class ZuulConfig {
         return mybatisRedisCacheTransfer;
     }
 
+    private List<String> format(String ... all) {
+        return Arrays.asList(all);
+    }
+
+    /**
+     * 跨域
+     */
+    @Bean
+    public CorsConfiguration buildConfig(CrossConfig crossConfig) {
+        CorsConfiguration corsConfiguration = new CorsConfiguration();
+        corsConfiguration.setAllowedOrigins(format(crossConfig.getAllowIpOrigin()));
+        log.info("系统初始化...允许以下 IP 进行访问: " + corsConfiguration.getAllowedOrigins());
+        corsConfiguration.setAllowedHeaders(format(crossConfig.getAllowHeaderOrigin()));
+        log.info("系统初始化...允许添加以下请求头: " + corsConfiguration.getAllowedHeaders());
+        corsConfiguration.setAllowedMethods(format(crossConfig.getAllowMethodOrigin()));
+        log.info("系统初始化...允许以下请求方式访问: " + corsConfiguration.getAllowedMethods());
+        corsConfiguration.setExposedHeaders(format(crossConfig.getExposedHeaderOrigin()));
+        log.info("系统初始化...允许以下请求头暴露: " + corsConfiguration.getExposedHeaders());
+        corsConfiguration.setAllowCredentials(true);
+        log.info("系统初始化...是否允许保持用户认证状态: " + corsConfiguration.getAllowCredentials());
+        return corsConfiguration;
+    }
+
+    @Bean
+    public CorsFilter corsFilter(CorsConfiguration configuration) {
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration); //注册
+        return new CorsFilter(source);
+    }
 
 }

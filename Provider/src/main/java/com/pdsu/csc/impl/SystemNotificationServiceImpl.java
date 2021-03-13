@@ -4,10 +4,12 @@ import com.github.pagehelper.PageHelper;
 import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.bean.SystemNotificationExample;
 import com.pdsu.csc.dao.SystemNotificationMapper;
+import com.pdsu.csc.exception.CodeSharingCommunityException;
 import com.pdsu.csc.handler.ParentHandler;
 import com.pdsu.csc.service.impl.AbstractSystemNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -29,7 +31,7 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
     }
 
     @Override
-    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid, Integer p) {
+    public List<SystemNotification> selectSystemNotificationsByUid(@NonNull Integer uid, @Nullable Integer p) {
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
@@ -37,7 +39,7 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         if(p != null) {
             PageHelper.startPage(p, 10);
         }
-        return systemNotificationMapper.selectByExample(example);
+        return selectListByExample(example);
     }
 
     @Override
@@ -45,7 +47,7 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        return systemNotificationMapper.countByExample(example) == systemNotificationMapper.deleteByExample(example);
+        return countByExample(example) > 0 == deleteByExample(example);
     }
 
     @Override
@@ -55,8 +57,7 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         SystemNotification systemNotification = new SystemNotification();
         systemNotification.setUnread(ParentHandler.SYSTEM_NOTIFICATION_READ);
         criteria.andUidEqualTo(uid);
-        return systemNotificationMapper.countByExample(example)
-                       == systemNotificationMapper.updateByExampleSelective(systemNotification, example);
+        return countByExample(example) > 0  == updateByExample(systemNotification, example);
     }
 
     @Override
@@ -65,6 +66,29 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
         criteria.andUnreadEqualTo(ParentHandler.SYSTEM_NOTIFICATION_UNREAD);
-        return (int) systemNotificationMapper.countByExample(example);
+        return (int)countByExample(example);
     }
+
+    @Override
+    public boolean deleteByExample(@Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.deleteByExample(example) > 0;
+    }
+
+    @Override
+    public boolean updateByExample(@NonNull SystemNotification systemNotification
+            , @Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.updateByExample(systemNotification, example) > 0;
+    }
+
+    @Override
+    @NonNull
+    public List<SystemNotification> selectListByExample(@Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.selectByExample(example);
+    }
+
+    @Override
+    public long countByExample(@Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.countByExample(example);
+    }
+
 }

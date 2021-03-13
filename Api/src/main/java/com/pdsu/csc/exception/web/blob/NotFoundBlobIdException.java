@@ -7,7 +7,7 @@ package com.pdsu.csc.exception.web.blob;
  */
 public class NotFoundBlobIdException extends BlobException {
 
-	public static final String NOTFOUND_BLOB = "该文章不存在";
+	private static final String NOTFOUND_BLOB = "该文章不存在";
 
 	/**
 	 * 

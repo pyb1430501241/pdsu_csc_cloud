@@ -1,7 +1,10 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
+import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.exception.web.user.UserNotLoginException;
 import com.pdsu.csc.service.ProviderService;
+import com.pdsu.csc.utils.RedisUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -15,10 +18,13 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("/file")
-public class FileHandler {
+public class FileHandler extends AuthenticatedStorageHandler{
 
     @Autowired
     private ProviderService providerService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     /**
      *
@@ -28,11 +34,11 @@ public class FileHandler {
      * @return
      */
     @RequestMapping(value = "/upload", method = RequestMethod.POST)
-    @CrossOrigin
     public Result upload(@RequestParam("file") MultipartFile file, @RequestParam String title,
                          @RequestParam String description,
-                         HttpServletRequest request) {
-        return providerService.upload(file, title, description);
+                         HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.upload(file, title, description, compulsionGet(request));
     }
 
     /**
@@ -41,10 +47,10 @@ public class FileHandler {
      * @param title 文件名
      */
     @RequestMapping(value = "/download", method = RequestMethod.GET)
-    @CrossOrigin
     public Result download(@RequestParam Integer uid, @RequestParam String title,
-                           HttpServletRequest request) {
-        return providerService.download(uid, title);
+                           HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.download(uid, title, compulsionGet(request));
     }
 
     /**
@@ -53,9 +59,17 @@ public class FileHandler {
      * @return
      */
     @GetMapping("/getfileindex")
-    @CrossOrigin
     public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p, HttpServletRequest request) {
         return providerService.getFileIndex(p);
+    }
+
+    @Override
+    public UserInformation compulsionGet(String sessionId) {
+        if(!contains(sessionId)) {
+            UserInformation user = (UserInformation) redisUtils.get(sessionId);
+            add(sessionId, user);
+        }
+        return get(sessionId);
     }
 
 }

@@ -52,7 +52,6 @@ public class SearchHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
-	@CrossOrigin
 	public Result searchByText(@RequestParam(value = "p")String text, @RequestParam(required = false) String type) throws Exception{
 		log.info("用户查询: " + text + " 开始");
 		if(StringUtils.isBlank(type)) {

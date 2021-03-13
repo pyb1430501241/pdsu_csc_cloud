@@ -1,9 +1,12 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
+import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.bean.WebInformation;
+import com.pdsu.csc.exception.web.user.UserNotLoginException;
 import com.pdsu.csc.service.ProviderService;
 import com.pdsu.csc.utils.HttpUtils;
+import com.pdsu.csc.utils.RedisUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
@@ -12,7 +15,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author 半梦
@@ -21,21 +26,25 @@ import java.util.List;
 @RestController
 @RequestMapping("/blob")
 @Log4j2
-public class BlobHandler {
+public class BlobHandler extends AuthenticatedStorageHandler {
 
     @Autowired
     private ProviderService providerService;
+
+    @Autowired
+    private RedisUtils redisUtils;
 
     /**
      * 获取首页的数据
      * @return
      */
     @RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
-    @CrossOrigin
     public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p,
                               @RequestParam(defaultValue = "0") Integer lid, HttpServletRequest request) {
         return providerService.getWebIndex(p, lid);
     }
+
+    private static final UserInformation DEFAULT_VISITOR = new UserInformation(181360226);
 
     /**
      * 获取博客的相关信息
@@ -43,9 +52,12 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/{webid}", method = RequestMethod.GET)
-    @CrossOrigin
     public Result toBlob(@PathVariable("webid")Integer id, HttpServletRequest request) {
-        return providerService.getBlobInformation(id);
+        UserInformation user = compulsionGet(request);
+        if(user == null) {
+            user = DEFAULT_VISITOR;
+        }
+        return providerService.getBlobInformation(id, user);
     }
 
     /**
@@ -55,9 +67,9 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/collection", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result collection(@RequestParam Integer bid, @RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.collection(bid, webid);
+    public Result collection(@RequestParam Integer bid, @RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.collection(bid, webid, compulsionGet(request));
     }
 
     /**
@@ -66,9 +78,9 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/decollection", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result deCollection(@RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.deCollection(webid);
+    public Result deCollection(@RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.deCollection(webid, compulsionGet(request));
     }
 
     /**
@@ -77,9 +89,9 @@ public class BlobHandler {
      * @return
      */
     @GetMapping("/collectionstatuts")
-    @ResponseBody
-    public Result collectionStatus(@RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.collectionStatus(webid);
+    public Result collectionStatus(@RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.collectionStatus(webid, compulsionGet(request));
     }
 
     /**
@@ -88,10 +100,13 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/contribution", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result insert(@Valid WebInformation web, @RequestParam(required = false) List<Integer> labelList,
-                         HttpServletRequest request) {
-        return providerService.insert(web, labelList);
+    public Result insert(@Valid WebInformation web, @RequestParam(required = false) Integer[] labelList,
+                         HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        Map<String, Object> values = new HashMap<>();
+        values.put("user", compulsionGet(request));
+        values.put("web", web);
+        return providerService.insert(values, labelList);
     }
 
     /**
@@ -100,9 +115,9 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/delete", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result delete(@RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.delete(webid);
+    public Result delete(@RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.delete(webid, compulsionGet(request));
     }
 
     /**
@@ -111,10 +126,13 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/update", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result update(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList,
-                         HttpServletRequest request) {
-        return providerService.update(web, labelList);
+    public Result update(@Valid WebInformation web, @RequestParam(required = false) Integer [] labelList,
+                         HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        Map<String, Object> values = new HashMap<>();
+        values.put("web", web);
+        values.put("user", compulsionGet(request));
+        return providerService.update(values, labelList);
     }
 
     /**
@@ -124,9 +142,9 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/comment", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result postComment(@RequestParam Integer webid, @RequestParam String content, HttpServletRequest request) {
-        return providerService.postComment(webid, content);
+    public Result postComment(@RequestParam Integer webid, @RequestParam String content, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.postComment(webid, content, compulsionGet(request));
     }
 
     /**
@@ -137,13 +155,13 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/commentreply", method = RequestMethod.POST)
-    @CrossOrigin
     public Result postCommentReply(@RequestParam Integer webid,
                                    @RequestParam Integer cid,
                                    @RequestParam Integer bid,
                                    @RequestParam String content,
-                                   HttpServletRequest request) {
-        return providerService.postCommentReply(webid, cid, bid, content);
+                                   HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.postCommentReply(webid, cid, bid, content, compulsionGet(request));
     }
 
     /**
@@ -152,7 +170,6 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/getauthor", method = RequestMethod.GET)
-    @CrossOrigin
     public Result getAuthorByUid(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.getAuthorByUid(uid);
     }
@@ -163,7 +180,6 @@ public class BlobHandler {
      * @return
      */
     @GetMapping("/getcollection")
-    @CrossOrigin
     public Result getCollectionByUid(@RequestParam Integer uid,
                                      @RequestParam(value = "p", defaultValue = "1")Integer p,
                                      HttpServletRequest request) {
@@ -174,18 +190,18 @@ public class BlobHandler {
      * 处理点赞请求
      */
     @RequestMapping(value = "/thumbs", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid, HttpServletRequest request) {
-        return providerService.thumbs(webid, bid);
+    public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.thumbs(webid, bid, compulsionGet(request));
     }
 
     /**
      * 处理取消点赞请求
      */
     @RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result dethumbs(@RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.dethumbs(webid);
+    public Result dethumbs(@RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.dethumbs(webid, compulsionGet(request));
     }
 
     /**
@@ -194,9 +210,9 @@ public class BlobHandler {
      * @return
      */
     @RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
-    @CrossOrigin
-    public Result thumbsStatus(@RequestParam Integer webid, HttpServletRequest request) {
-        return providerService.thumbsStatus(webid);
+    public Result thumbsStatus(@RequestParam Integer webid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.thumbsStatus(webid, compulsionGet(request));
     }
 
     /**
@@ -205,7 +221,6 @@ public class BlobHandler {
      * @return
      */
     @PostMapping(value = "/blobimg", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @CrossOrigin
     public Result postBlobImg(@RequestParam MultipartFile img, HttpServletRequest request) {
         return providerService.postBlobImg(img);
     }
@@ -214,7 +229,6 @@ public class BlobHandler {
      * 获取文章标签
      * @return
      */
-    @ResponseBody
     @GetMapping("/getlabel")
     public Result getLabel(@RequestParam(defaultValue = "1") Integer p, HttpServletRequest request) {
         return providerService.getLabel(p);
@@ -225,9 +239,18 @@ public class BlobHandler {
      * @return
      */
     @GetMapping("/getcontype")
-    @CrossOrigin
     public Result getContype(HttpServletRequest request) {
         return providerService.getContype();
+    }
+
+
+    @Override
+    public UserInformation compulsionGet(String sessionId) {
+        if(!contains(sessionId)) {
+            UserInformation user = (UserInformation) redisUtils.get(sessionId);
+            add(sessionId, user);
+        }
+        return get(sessionId);
     }
 
 }

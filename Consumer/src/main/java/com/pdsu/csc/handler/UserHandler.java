@@ -2,18 +2,22 @@ package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.exception.web.user.UserNotLoginException;
 import com.pdsu.csc.service.ProviderService;
-import com.pdsu.csc.utils.CookieUtils;
+import com.pdsu.csc.utils.DateUtils;
 import com.pdsu.csc.utils.HttpUtils;
-import com.pdsu.csc.utils.StringUtils;
+import com.pdsu.csc.utils.RedisUtils;
+import org.apache.shiro.web.session.HttpServletSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author 半梦
@@ -21,28 +25,23 @@ import javax.validation.Valid;
  */
 @RestController
 @RequestMapping("/user")
-public class UserHandler {
+public class UserHandler extends AuthenticatedStorageHandler{
 
     @Autowired
     private ProviderService providerService;
 
+    @Autowired
+    private RedisUtils redisUtils;
+
     private static final String CODE = "code";
     private static final Integer SUCCESS_CODE = 200;
-
-
-
-    @RequestMapping("/logout")
-    public Result logout(HttpServletRequest request) {
-        providerService.logout();
-        return Result.success();
-    }
 
     private boolean isHttpSuccess(Result result) {
         return result.getJson().get(CODE).equals(SUCCESS_CODE);
     }
 
 //    @PostMapping("/login")
-//    @CrossOrigin
+//    
 //    public Result login(@RequestParam String uid, @RequestParam String password,
 //                        @RequestParam String hit, @RequestParam String code,
 //                        @RequestParam(value = "flag", defaultValue = "0")Integer flag,
@@ -75,47 +74,45 @@ public class UserHandler {
 //    }
 
     @GetMapping("/getcodeforlogin")
-    @CrossOrigin
     public Result getCodeForLogin(HttpServletRequest request) {
         return providerService.getCodeForLogin();
     }
 
-    @RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
-    @CrossOrigin
-    public Result getLoginStatus(HttpServletRequest request, HttpServletResponse response){
-        Result result = providerService.loginStatus();
-        // 如果请求成功, 由于用户未登录时, 返回值 code 为500, 即代表请求成功时
-        // cookie 中必有 Authorization 或 rememberMe
-        if(isHttpSuccess(result)) {
-            // 由于 rememberMe 认证的用户, sessionId 丢失, 故在第一个请求中加入 sessionId
-            Cookie[] cookies = request.getCookies();
-            boolean f = true;
-            // 查询用户是否已认证, 即为已登录状态
-            for(Cookie cookie : cookies) {
-                // 如果 cookie 里有 Authorization, 则 f 为 false
-                if(cookie.getName().equals(HttpUtils.getSessionHeader())) {
-                    f = false;
-                    break;
-                }
-            }
-            String sessionHeader = HttpUtils.getSessionHeader();
-            // 如果有 cookie 中没有 Authorization, 则获取并添加进 cookie
-            if(f) {
-                String setCookieName = HttpUtils.getSetCookieName();
-                String sessionIdValue = (String) result.getJson().get(sessionHeader);
-                // Authorization 不为空时
-                if(!StringUtils.isBlank(sessionIdValue)) {
-                    String path = "/";
-                    String endValue = CookieUtils.buildHeaderValue(sessionHeader, sessionIdValue, null,
-                            null, path, -1, CookieUtils.DEFAULT_VERSION, false, false,
-                            org.apache.shiro.web.servlet.Cookie.SameSiteOptions.LAX);
-                    response.addHeader(setCookieName, endValue);
-                }
-            }
-            result.getJson().remove(sessionHeader);
-        }
-        return result;
-    }
+//    @RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
+//    public Result getLoginStatus(HttpServletRequest request, HttpServletResponse response){
+//        Result result = providerService.loginStatus();
+//        // 如果请求成功, 由于用户未登录时, 返回值 code 为500, 即代表请求成功时
+//        // cookie 中必有 Authorization 或 rememberMe
+//        if(isHttpSuccess(result)) {
+//            // 由于 rememberMe 认证的用户, sessionId 丢失, 故在第一个请求中加入 sessionId
+//            Cookie[] cookies = request.getCookies();
+//            boolean f = true;
+//            // 查询用户是否已认证, 即为已登录状态
+//            for(Cookie cookie : cookies) {
+//                // 如果 cookie 里有 Authorization, 则 f 为 false
+//                if(cookie.getName().equals(HttpUtils.getSessionHeader())) {
+//                    f = false;
+//                    break;
+//                }
+//            }
+//            String sessionHeader = HttpUtils.getSessionHeader();
+//            // 如果有 cookie 中没有 Authorization, 则获取并添加进 cookie
+//            if(f) {
+//                String setCookieName = HttpUtils.getSetCookieName();
+//                String sessionIdValue = (String) result.getJson().get(sessionHeader);
+//                // Authorization 不为空时
+//                if(!StringUtils.isBlank(sessionIdValue)) {
+//                    String path = "/";
+//                    String endValue = CookieUtils.buildHeaderValue(sessionHeader, sessionIdValue, null,
+//                            null, path, -1, CookieUtils.DEFAULT_VERSION, false, false,
+//                            org.apache.shiro.web.servlet.Cookie.SameSiteOptions.LAX);
+//                    response.addHeader(setCookieName, endValue);
+//                }
+//            }
+//            result.getJson().remove(sessionHeader);
+//        }
+//        return result;
+//    }
 
     /**
      * 申请账号时发送邮箱验证码
@@ -125,7 +122,6 @@ public class UserHandler {
      * 	邮箱验证码所对应的 token
      */
     @RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
-    @CrossOrigin
     public Result sendEmailforApply(@RequestParam("email")String email,
                                     @RequestParam("name")String name,
                                     HttpServletRequest request) throws Exception {
@@ -140,7 +136,6 @@ public class UserHandler {
      * @return json字符串
      */
     @RequestMapping(value = "/applynumber", method = RequestMethod.POST)
-    @CrossOrigin
     public Result applyforAccountNumber(@Valid UserInformation user,
                                         @RequestParam String token,
                                         @RequestParam String code,
@@ -149,7 +144,6 @@ public class UserHandler {
     }
 
     @RequestMapping(value = "/isexist", method = RequestMethod.GET)
-    @CrossOrigin
     public Result getEmail(@RequestParam Integer uid, HttpServletRequest request) {
         return providerService.getEmailByUid(uid);
     }
@@ -161,7 +155,6 @@ public class UserHandler {
      * 	验证码所对应的 token
      */
     @RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
-    @CrossOrigin
     public Result sendEmailForRetrieve(@RequestParam String token, HttpServletRequest request) {
         return providerService.getCodeForRetrieve(token);
     }
@@ -176,7 +169,6 @@ public class UserHandler {
      * 	是否修改成功
      */
     @RequestMapping(value = "/retrieve", method = RequestMethod.POST)
-    @CrossOrigin
     public Result retrieveThePassword(@RequestParam Integer uid,
                                       @RequestParam String password,
                                       @RequestParam String token,
@@ -191,9 +183,9 @@ public class UserHandler {
      * 	邮箱
      */
     @RequestMapping(value = "/getmodify", method = RequestMethod.GET)
-    @CrossOrigin
-    public Result getModify(HttpServletRequest request) {
-        return providerService.getModify();
+    public Result getModify(HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getModify(compulsionGet(request));
     }
 
     /**
@@ -203,9 +195,9 @@ public class UserHandler {
      * 	验证码的 key
      */
     @RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
-    @CrossOrigin
-    public Result sendEmailForModify(@RequestParam String email, HttpServletRequest request) {
-        return providerService.getCodeForModify(email);
+    public Result sendEmailForModify(@RequestParam String email, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getCodeForModify(email, compulsionGet(request));
     }
 
     /**
@@ -216,7 +208,6 @@ public class UserHandler {
      * 	验证码是否正确
      */
     @RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
-    @CrossOrigin
     public Result modifyBefore(@RequestParam String token,
                                @RequestParam String code,
                                HttpServletRequest request) {
@@ -230,9 +221,9 @@ public class UserHandler {
      * 	密码是否修改成功
      */
     @RequestMapping(value = "/modify", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result modifyForPassword(@RequestParam String password, HttpServletRequest request) {
-        return providerService.modifyForPassword(password);
+    public Result modifyForPassword(@RequestParam String password, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.modifyForPassword(password, compulsionGet(request));
     }
 
     /**
@@ -243,9 +234,9 @@ public class UserHandler {
      * 	是否关注成功
      */
     @RequestMapping(value = "/like", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result like(@RequestParam Integer uid, HttpServletRequest request) {
-        return providerService.like(uid);
+    public Result like(@RequestParam Integer uid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.like(uid, compulsionGet(request));
     }
 
     /**
@@ -255,9 +246,9 @@ public class UserHandler {
      * 	是否取消成功
      */
     @RequestMapping(value = "/delike", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result disLike(@RequestParam Integer uid, HttpServletRequest request) {
-        return providerService.disLike(uid);
+    public Result disLike(@RequestParam Integer uid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.disLike(uid, compulsionGet(request));
     }
 
     /**
@@ -267,9 +258,9 @@ public class UserHandler {
      * 	是否关注
      */
     @GetMapping("/likestatus")
-    @CrossOrigin
-    public Result getLikeStatus(@RequestParam Integer uid, HttpServletRequest request) {
-        return providerService.getLikeStatus(uid);
+    public Result getLikeStatus(@RequestParam Integer uid, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getLikeStatus(uid, compulsionGet(request));
     }
 
     /**
@@ -280,9 +271,9 @@ public class UserHandler {
      * 	修改失败：返回原因
      */
     @RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result updateImage(@RequestParam("img") MultipartFile img, HttpServletRequest request) {
-        return providerService.updateImage(img);
+    public Result updateImage(@RequestParam("img") MultipartFile img, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.updateImage(img, compulsionGet(request));
     }
 
     /**
@@ -292,9 +283,29 @@ public class UserHandler {
      * 	是否修改成功
      */
     @RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
-    @CrossOrigin
-    public Result updateUserInformation(UserInformation user, HttpServletRequest request) {
-        return providerService.updateUserInformation(user);
+    public Result updateUserInformation(UserInformation user, HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        Map<String, Object> map = new HashMap<>();
+        map.put("oldUser", user);
+        map.put("newUser", compulsionGet(request));
+        Result result = providerService.updateUserInformation(map);
+        UserInformation newUser = (UserInformation) result.getJson().get("user");
+        replaceUserInformation(HttpUtils.getSessionId(request), newUser);
+        return result;
+    }
+
+    /**
+     * 修改用户认证信息
+     */
+    private void replaceUserInformation(String sessionId, UserInformation user) {
+        // 从本地缓存删除
+        remove(sessionId);
+        // 从 redis 删除
+        redisUtils.del(sessionId);
+        // 添加新的到 redis
+        redisUtils.set(sessionId, user, DateUtils.CSC_DAY);
+        // 添加到本地缓存
+        compulsionGet(sessionId);
     }
 
     /**
@@ -304,10 +315,10 @@ public class UserHandler {
      * 	对应页面的文章信息
      */
     @RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
-    @CrossOrigin
     public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p,
-                                       HttpServletRequest request) {
-        return providerService.getOneselfBlobsByUid(p);
+                                       HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getOneselfBlobsByUid(p, compulsionGet(request));
     }
 
     /**
@@ -316,11 +327,11 @@ public class UserHandler {
      * @return
      * 	对应页面的粉丝信息
      */
-    @CrossOrigin
     @GetMapping("/getoneselffans")
     public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p,
-                                 HttpServletRequest request) {
-        return providerService.getOneselfFans(p);
+                                 HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getOneselfFans(p, compulsionGet(request));
     }
 
     /**
@@ -329,11 +340,11 @@ public class UserHandler {
      * @return
      * 	对应页面的关注人信息
      */
-    @CrossOrigin
     @GetMapping("/getoneselficons")
     public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p,
-                                  HttpServletRequest request) {
-        return providerService.getOneselfIcons(p);
+                                  HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getOneselfIcons(p, compulsionGet(request));
     }
 
     /**
@@ -344,7 +355,6 @@ public class UserHandler {
      * 	对应用户对应页面的文章信息
      */
     @RequestMapping(value = "/getblobs", method = RequestMethod.GET)
-    @CrossOrigin
     public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p,
                                 @RequestParam Integer uid,
                                 HttpServletRequest request) {
@@ -358,7 +368,6 @@ public class UserHandler {
      * @return
      * 	对应用户对应页面的粉丝信息
      */
-    @CrossOrigin
     @GetMapping("/getfans")
     public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p,
                           @RequestParam Integer uid,
@@ -373,7 +382,6 @@ public class UserHandler {
      * @return
      * 	对应页面对应用户的关注人信息
      */
-    @CrossOrigin
     @GetMapping("/geticons")
     public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p,
                            @RequestParam Integer uid,
@@ -387,9 +395,9 @@ public class UserHandler {
      * 	当前登录用户的邮箱（已加密）
      */
     @RequestMapping("/loginemail")
-    @CrossOrigin
-    public Result getEmailByUid(HttpServletRequest request) {
-        return providerService.getEmailByUid();
+    public Result getEmailByUid(HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getEmailByUid(compulsionGet(request));
     }
 
     /**
@@ -404,9 +412,7 @@ public class UserHandler {
      * @return
      * 	是否通过校验
      */
-    @ResponseBody
     @GetMapping("/datacheck")
-    @CrossOrigin
     public Result dataCheck(@RequestParam("data") String data,
                             @RequestParam("type") String type,
                             HttpServletRequest request) {
@@ -419,12 +425,11 @@ public class UserHandler {
      * @return
      * 	浏览记录
      */
-    @ResponseBody
     @GetMapping("/getoneselfbrowsingrecord")
-    @CrossOrigin
     public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p,
-                                    HttpServletRequest request) {
-        return providerService.getBrowsingRecord(p);
+                                    HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getBrowsingRecord(p, compulsionGet(request));
     }
 
     /**
@@ -434,12 +439,20 @@ public class UserHandler {
      * 	通知信息
      */
     @GetMapping("/getnotification")
-    @ResponseBody
-    @CrossOrigin
     public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p,
-                                         HttpServletRequest request) {
-        return providerService.getOneselfNotification(p);
+                                         HttpServletRequest request) throws UserNotLoginException {
+        loginOrNotLogin(request);
+        return providerService.getOneselfNotification(p, compulsionGet(request));
     }
 
+
+    @Override
+    public UserInformation compulsionGet(@NonNull String sessionId) {
+        if(!contains(sessionId)) {
+            UserInformation user = (UserInformation) redisUtils.get(sessionId);
+            add(sessionId, user);
+        }
+        return get(sessionId);
+    }
 
 }

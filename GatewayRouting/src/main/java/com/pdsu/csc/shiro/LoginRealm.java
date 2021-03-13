@@ -15,6 +15,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.util.ByteSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.lang.NonNull;
 
 /**
  * @author 半梦
@@ -58,7 +59,7 @@ public class LoginRealm extends AuthorizingRealm {
         return new SimpleAuthenticationInfo(user, credentials, credentialsSalt, realmName);
     }
 
-    private UserInformation getUserInformation(Integer uid) {
+    private UserInformation getUserInformation(@NonNull Integer uid) {
         if(userInformationService.countByUid(uid) == 0) {
             throw new UnknownAccountException("账号不存在");
         }

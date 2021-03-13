@@ -11,6 +11,7 @@ import com.pdsu.csc.utils.ElasticsearchUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -40,7 +41,7 @@ public class MyImageServiceImpl extends AbstractMyImageService {
 		List<Integer> ids = new ArrayList<>();
 		// 判断当前用户是否存在, 如不存在这舍弃
 		for(Integer id : uids) {
-			if(countByUid(id)) {
+			if(isExistByUid(id)) {
 				ids.add(id);
 			}
 		}
@@ -50,29 +51,26 @@ public class MyImageServiceImpl extends AbstractMyImageService {
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidIn(ids);
-		List<MyImage> list = myImageMapper.selectByExample(example);
-		if(list == null) {
-			return new ArrayList<>();
-		}
-		return list;
+		return selectListByExample(example);
 	}
 
 	@Override
 	public MyImage selectImagePathByUid(@NonNull Integer uid) throws NotFoundUidException {
-		if(!countByUid(uid)) {
+		if(!isExistByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return myImageMapper.selectByExample(example).size() == 0 ? new MyImage(uid, UserHandler.userImgName) : myImageMapper.selectByExample(example).get(0);
+		MyImage myImage = selectByExample(example);
+		return myImage == null ? new MyImage(uid, UserHandler.userImgName) : myImage;
 	}
 	
 	/**
 	 * 查询是否有此账号
 	 */
 	@Override
-	public boolean countByUid(@NonNull Integer uid) {
+	public boolean isExistByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -81,7 +79,7 @@ public class MyImageServiceImpl extends AbstractMyImageService {
 
 	@Override
 	public boolean insert(@NonNull MyImage myImage) throws NotFoundUidException {
-		if(!countByUid(myImage.getUid())) {
+		if(!isExistByUid(myImage.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		return myImageMapper.insertSelective(myImage) != 0;
@@ -89,13 +87,13 @@ public class MyImageServiceImpl extends AbstractMyImageService {
 
 	@Override
 	public boolean update(@NonNull MyImage myImage) throws NotFoundUidException {
-		if(!countByUid(myImage.getUid())) {
+		if(!isExistByUid(myImage.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		MyImageExample example = new MyImageExample();
 		MyImageExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(myImage.getUid());
-		boolean b = myImageMapper.updateByExampleSelective(myImage, example) != 0;
+		boolean b = updateByExample(myImage, example);
 		if(b) {
 			new Thread(()->{
 				try {
@@ -112,4 +110,26 @@ public class MyImageServiceImpl extends AbstractMyImageService {
 		}
 		return b;
 	}
+
+	@Override
+	public boolean deleteByExample(@Nullable MyImageExample example) {
+		return myImageMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull MyImage myImage, @Nullable MyImageExample example) {
+		return myImageMapper.updateByExampleSelective(myImage, example) != 0;
+	}
+
+	@Override
+	@NonNull
+	public List<MyImage> selectListByExample(@Nullable MyImageExample example) {
+		return myImageMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(MyImageExample example) {
+		return myImageMapper.countByExample(example);
+	}
+
 }

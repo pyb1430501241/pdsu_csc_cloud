@@ -7,6 +7,7 @@ import com.pdsu.csc.es.dao.EsDao;
 import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.es.InsertException;
+import com.pdsu.csc.service.UserService;
 import com.pdsu.csc.service.WebInformationService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
 import lombok.extern.log4j.Log4j2;
@@ -15,10 +16,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -29,33 +27,25 @@ import java.util.regex.Pattern;
  */
 @Log4j2
 @Service("webInformationService")
-public class WebInformationServiceImpl implements WebInformationService {
+public class WebInformationServiceImpl implements
+		WebInformationService, UserService {
 
-	@Autowired
 	private WebInformationMapper webInformationMapper;
 	
-	@Autowired
 	private UserInformationMapper userInformationMapper;
 	
-	@Autowired
 	private WebThumbsMapper webThumbsMapper;
 	
-	@Autowired
 	private MyCollectionMapper myCollectionMapper;
 	
-	@Autowired
 	private VisitInformationMapper visitInformationMapper;
 	
-	@Autowired
 	private WebCommentMapper webCommentMapper;
 	
-	@Autowired
 	private WebCommentReplyMapper webCommentReplyMapper;
 	
-	@Autowired
 	private WebLabelControlMapper webLabelControlMapper;
 	
-	@Autowired
 	private EsDao esDao;
 	
 	
@@ -79,7 +69,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 * 	的方法。
 	 */
 	@Override
-	public int insert(@NonNull WebInformation information) throws InsertException {
+	public boolean insert(@NonNull WebInformation information) throws InsertException {
 		if(webInformationMapper.insertSelective(information) > 0) {
 			EsBlobInformation blob = new EsBlobInformation(information.getId(),
 						getDescriptionByWebData(information.getWebDataString()), information.getTitle());
@@ -97,9 +87,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 					}
 				}).start();
 			}
-			return information.getId();
+			return true;
 		}
-		return -1;
+		return false;
 	}
 
 	/*
@@ -107,11 +97,11 @@ public class WebInformationServiceImpl implements WebInformationService {
 	 */
 	@Override
 	public boolean deleteById(@NonNull Integer id) throws NotFoundBlobIdException, DeleteInforException {
-		if(!countByWebId(id)) {
+		if(!isExistByWebId(id)) {
 			throw new NotFoundBlobIdException();
 		}
 		
-		/**
+		/*
 		 * 删除文章对应的标签信息
 		 */
 		WebLabelControlExample webLabelControlExample = new WebLabelControlExample();
@@ -122,7 +112,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 			throw new DeleteInforException("删除网页标签信息失败");
 		}
 		
-		/**
+		/*
 		 * 删除网页相关的评论信息
 		 */
 		WebCommentReplyExample webCommentReplyExample = new WebCommentReplyExample();
@@ -141,7 +131,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 			throw new DeleteInforException("删除网页评论信息失败");
 		}
 		
-		/**
+		/*
 		 * 删除和网页相关的收藏信息 
 		 */
 		MyCollectionExample myCollectionExample = new MyCollectionExample();
@@ -151,9 +141,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 		if(myCollectionMapper.deleteByExample(myCollectionExample) != mycollectionCount) {
 			throw new DeleteInforException("删除网页收藏信息失败");
 		}
-		
-		/**
-		 *删除和网页相关的访问信息 
+
+		/*
+		 *删除和网页相关的访问信息
 		 */
 		VisitInformationExample visitInformationExample = new VisitInformationExample();
 		com.pdsu.csc.bean.VisitInformationExample.Criteria visitInformationCriteria1 = visitInformationExample.createCriteria();
@@ -173,7 +163,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 		}
 		WebInformation information = webInformationMapper.selectByPrimaryKey(id);
 		int i = webInformationMapper.deleteByPrimaryKey(id);
-		if(i >= 0) {
+		if(i > 0) {
 			new Thread(()->{
 				try {
 					UserInformation user = userInformationMapper.selectUserByUid(information.getUid());
@@ -187,7 +177,7 @@ public class WebInformationServiceImpl implements WebInformationService {
 				}
 			}).start();
 			return true;
-		}else {
+		} else {
 			throw new DeleteInforException("删除网页失败");
 		}
 	}
@@ -204,13 +194,9 @@ public class WebInformationServiceImpl implements WebInformationService {
 	@Override
 	public List<WebInformation> selectWebInformationOrderByTimetest(Integer p) {
 		WebInformationExample example = new WebInformationExample();
-		example.setOrderByClause("sub_time DESC");
+		example.setOrderByClause(splicing("sub_time", ORDER_INCREMENTAL));
 		PageHelper.startPage(p, 10);
-		List<WebInformation> list = webInformationMapper.selectByExample(example);
-		if(Objects.isNull(list)) {
-			return new ArrayList<>();
-		}
-		return list;
+		return selectListByExample(example);
 	}
 
 	@Override
@@ -218,12 +204,11 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		example.setOrderByClause("sub_time DESC");
+		example.setOrderByClause(splicing("sub_time", ORDER_INCREMENTAL));
 		if(p != null) {
 			PageHelper.startPage(p, 15);
 		}
-		List<WebInformation> list = webInformationMapper.selectByExample(example);
-		return list == null ? new ArrayList<>() : list;
+		return selectListByExample(example);
 	}
 
 	/*
@@ -234,45 +219,21 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample example = new WebInformationExample();
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdEqualTo(web.getId());
-		int i = webInformationMapper.updateByExampleSelective(web, example);
-		if(i > 0) {
+		boolean b = updateByExample(web, example);
+		if(b) {
 			new Thread(()->{
 				try {
 					Map<String, Object> map = esDao.queryByTableNameAndId(EsIndex.BLOB, web.getId());
 					EsBlobInformation blob = ElasticsearchUtils
 							.getObjectByMapAndClass(map, EsBlobInformation.class);
 					blob.setDescription(getDescriptionByWebData(web.getWebDataString()));
-					System.out.println(blob);
 					esDao.update(blob, blob.getWebid());
 				} catch (Exception e) {
 					log.error("es相关操作出现异常", e);
 				}
 			}).start();
 		}
-		return i > 0;
-	}
-
-	/**
-	 * 查询博客是否存在
-	 */
-	@Override
-	public boolean countByWebId(@NonNull Integer webid) {
-		WebInformationExample example = new WebInformationExample();
-		WebInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andIdEqualTo(webid);
-		long l = webInformationMapper.countByExample(example);
-		return l > 0;
-	}
-	
-	/**
-	 * 查询是否有此账号
-	 */
-	@Override
-	public int countByUid(@NonNull Integer uid) {
-		UserInformationExample example = new UserInformationExample();
-		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andUidEqualTo(uid);
-		return (int) userInformationMapper.countByExample(example);
+		return b;
 	}
 
 	@Override
@@ -281,24 +242,73 @@ public class WebInformationServiceImpl implements WebInformationService {
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andContypeEqualTo(contype);
 		criteria.andUidEqualTo(uid);
-		return (int) webInformationMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
 	public List<WebInformation> selectWebInformationsByIds(@Nullable List<Integer> webids, boolean flag, Integer p) {
 		if(Objects.isNull(webids) || webids.size() == 0) {
-			return new ArrayList<>();
+			return Collections.emptyList();
 		}
 		WebInformationExample example = new WebInformationExample();
 		WebInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andIdIn(webids);
 		if(flag) {
-			example.setOrderByClause("sub_time DESC");
+			example.setOrderByClause(splicing("sub_time", ORDER_INCREMENTAL));
 		}
 		if(p != null) {
 			PageHelper.startPage(p, 10);
 		}
+		return selectListByExample(example);
+	}
+
+	@Override
+	public boolean deleteByExample(@Nullable WebInformationExample example) {
+		return webInformationMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull WebInformation webInformation, @Nullable WebInformationExample example) {
+		return webInformationMapper.updateByExampleSelective(webInformation, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<WebInformation> selectListByExample(@Nullable WebInformationExample example) {
 		return webInformationMapper.selectByExample(example);
 	}
 
+	@Override
+	public long countByExample(@Nullable WebInformationExample example) {
+		return webInformationMapper.countByExample(example);
+	}
+
+	@Override
+	public boolean isExistByWebId(@NonNull Integer webId) {
+		WebInformationExample example = new WebInformationExample();
+		WebInformationExample.Criteria criteria = example.createCriteria();
+		criteria.andIdEqualTo(webId);
+		return webInformationMapper.countByExample(example) > 0;
+	}
+
+	@Override
+	public boolean isExistByUid(@NonNull Integer uid) {
+		UserInformationExample example = new UserInformationExample();
+		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
+		criteria.andUidEqualTo(uid);
+		return userInformationMapper.countByExample(example) > 0;
+	}
+
+	@Autowired
+	public WebInformationServiceImpl(WebInformationMapper webInformationMapper, UserInformationMapper userInformationMapper, WebThumbsMapper webThumbsMapper, MyCollectionMapper myCollectionMapper, VisitInformationMapper visitInformationMapper, WebCommentMapper webCommentMapper, WebCommentReplyMapper webCommentReplyMapper, WebLabelControlMapper webLabelControlMapper, EsDao esDao) {
+		this.webInformationMapper = webInformationMapper;
+		this.userInformationMapper = userInformationMapper;
+		this.webThumbsMapper = webThumbsMapper;
+		this.myCollectionMapper = myCollectionMapper;
+		this.visitInformationMapper = visitInformationMapper;
+		this.webCommentMapper = webCommentMapper;
+		this.webCommentReplyMapper = webCommentReplyMapper;
+		this.webLabelControlMapper = webLabelControlMapper;
+		this.esDao = esDao;
+	}
 }

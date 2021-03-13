@@ -11,8 +11,10 @@ import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
 import com.pdsu.csc.service.WebFileService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
+import javax.validation.constraints.Null;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -59,11 +61,7 @@ public class WebFileServiceImpl implements WebFileService {
 		WebFileExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		criteria.andTitleEqualTo(title);
-		List<WebFile> list = webFileMapper.selectByExample(example);
-		if(list == null || list.size() == 0) {
-			return null;
-		}
-		return list.get(0);
+		return selectByExample(example);
 	}
 
 	/**
@@ -78,7 +76,7 @@ public class WebFileServiceImpl implements WebFileService {
 		WebFileExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		criteria.andTitleEqualTo(title);
-		return webFileMapper.countByExample(example) > 0;
+		return countByExample(example) > 0;
 	}
 
 	@Override
@@ -86,7 +84,7 @@ public class WebFileServiceImpl implements WebFileService {
 		WebFileExample example = new WebFileExample();
 		WebFileExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return (int) webFileMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
@@ -96,7 +94,7 @@ public class WebFileServiceImpl implements WebFileService {
 		if(p != null) {
 			PageHelper.startPage(p, 15);
 		}
-		return webFileMapper.selectByExample(example);
+		return selectListByExample(example);
 	}
 
 	@Override
@@ -107,7 +105,28 @@ public class WebFileServiceImpl implements WebFileService {
 		WebFileExample example = new WebFileExample();
 		WebFileExample.Criteria criteria = example.createCriteria();
 		criteria.andIdIn(fileids);
+		return selectListByExample(example);
+	}
+
+	@Override
+	public boolean deleteByExample(@Nullable WebFileExample example) {
+		return webFileMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull WebFile webFile, @Nullable WebFileExample example) {
+		return webFileMapper.updateByExampleSelective(webFile, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<WebFile> selectListByExample(@Nullable WebFileExample example) {
 		return webFileMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(@Nullable WebFileExample example) {
+		return webFileMapper.countByExample(example);
 	}
 
 }

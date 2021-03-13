@@ -28,40 +28,28 @@ import java.util.Map;
 @Service("userInformationService")
 public class UserInformationServiceImpl extends AbstractUserInformationService {
 	
-	@Autowired
 	private UserInformationMapper userInformationMapper;
 	
-	@Autowired
 	private MyLikeMapper myLikeMapper;
 	
-	@Autowired
 	private MyCollectionMapper myCollectionMapper;
 	
-	@Autowired
 	private VisitInformationMapper visitInformationMapper;
 	
-	@Autowired
 	private MyEmailMapper myEmailMapper;
 	
-	@Autowired
 	private MyImageMapper myImageMapper;
 	
-	@Autowired
 	private WebThumbsMapper webThumbsMapper;
 	
-	@Autowired
 	private WebFileMapper webFileMapper;
 	
-	@Autowired
 	private WebInformationMapper webInformationMapper;
 	
-	@Autowired
 	private WebCommentMapper webCommentMapper;
 	
-	@Autowired
 	private WebCommentReplyMapper webCommentReplyMapper;
 	
-	@Autowired
 	private EsDao esDao;
 	
 	/**
@@ -92,19 +80,19 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 	}
 
 	/**
-	 * 该方法不提供使用
+	 * <p>该方法不提供使用</p>
 	 * 删除一个用户信息
 	 * 由于用户信息绑定了自身发布的博客页面
 	 * 以及自身的访问量，头像，实名认证，邮箱绑定
 	 * 上传文件，下载量， 收藏量，关注以及被关注等等，所以要先删除
 	 * 所依赖于它的相关信息
-	 * 实际上不应该删除，应只删除 es 里的信息，并对数据库信息进行不可见
+	 * 实际上不应该删除，应只隐藏 es 里的信息，并对数据库信息进行不可见
 	 * @throws NotFoundUidException 未找到学号
 	 * @throws DeleteInforException 删除信息失败
 	 */
 	@Override
 	public boolean deleteByUid(@NonNull Integer uid) throws NotFoundUidException, DeleteInforException {
-		if(countByUid(uid) == 0) {
+		if(!isExistByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		
@@ -234,7 +222,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		if(userInformationMapper.deleteByExample(example) > 0) {
+		if(deleteByExample(example)) {
 			return true;
 		}
 		throw new DeleteInforException("删除用户失败");
@@ -245,13 +233,13 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 	 */
 	@Override
 	public UserInformation selectByUid(@NonNull Integer uid) {
-		if(countByUid(uid) <= 0) {
+		if(!isExistByUid(uid)) {
 			return null;
 		}
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return userInformationMapper.selectByExample(example).get(0);
+		return selectByExample(example);
 	}
 	
 	/**
@@ -260,9 +248,9 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 	 */
 	@Override
 	public List<UserInformation> selectUsersByUid(@NonNull Integer uid, Integer p) throws NotFoundUidException {
-//		if(countByUid(uid) == 0) {
-//			throw new NotFoundUidException("该用户不存在");
-//		}
+		if(!isExistByUid(uid)) {
+			throw new NotFoundUidException("该用户不存在");
+		}
 		if(p != null) {
 			PageHelper.startPage(p, 20);
 		}
@@ -273,7 +261,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidIn(likeids);
-		return userInformationMapper.selectByExample(example);
+		return selectListByExample(example);
 	}
 	
 	/**
@@ -292,8 +280,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidIn(uids);
-		List<UserInformation> list = userInformationMapper.selectByExample(example);
-		return list == null ? new ArrayList<>() : list;
+		return selectListByExample(example);
 	}
 
 	/**
@@ -326,7 +313,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return (int) userInformationMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 	
 	/**
@@ -339,8 +326,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		int updateByExample = userInformationMapper.updateByExample(user, example);
-		return updateByExample != 0;
+		return updateByExample(user, example);
 	}
 
 	@Override
@@ -348,7 +334,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUsernameEqualTo(username);
-		return (int) userInformationMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
@@ -359,7 +345,7 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 		UserInformationExample example = new UserInformationExample();
 		UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		boolean b = userInformationMapper.updateByExampleSelective(user, example) != 0;
+		boolean b = updateByExample(user, example);
 		if(b) {
 			new Thread(()->{
 				try {
@@ -377,7 +363,40 @@ public class UserInformationServiceImpl extends AbstractUserInformationService {
 	}
 
 	@Override
-	public List<UserInformation> selectUserInformations() {
-		return userInformationMapper.selectByExample(new UserInformationExample());
+	public boolean deleteByExample(@Nullable UserInformationExample example) {
+		return userInformationMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull UserInformation userInformation, @Nullable UserInformationExample example) {
+		return userInformationMapper.updateByExample(userInformation, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<UserInformation> selectListByExample(@Nullable UserInformationExample example) {
+		return userInformationMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(@Nullable UserInformationExample example) {
+		return userInformationMapper.countByExample(example);
+	}
+
+
+	@Autowired
+	public UserInformationServiceImpl(UserInformationMapper userInformationMapper, MyLikeMapper myLikeMapper, MyCollectionMapper myCollectionMapper, VisitInformationMapper visitInformationMapper, MyEmailMapper myEmailMapper, MyImageMapper myImageMapper, WebThumbsMapper webThumbsMapper, WebFileMapper webFileMapper, WebInformationMapper webInformationMapper, WebCommentMapper webCommentMapper, WebCommentReplyMapper webCommentReplyMapper, EsDao esDao) {
+		this.userInformationMapper = userInformationMapper;
+		this.myLikeMapper = myLikeMapper;
+		this.myCollectionMapper = myCollectionMapper;
+		this.visitInformationMapper = visitInformationMapper;
+		this.myEmailMapper = myEmailMapper;
+		this.myImageMapper = myImageMapper;
+		this.webThumbsMapper = webThumbsMapper;
+		this.webFileMapper = webFileMapper;
+		this.webInformationMapper = webInformationMapper;
+		this.webCommentMapper = webCommentMapper;
+		this.webCommentReplyMapper = webCommentReplyMapper;
+		this.esDao = esDao;
 	}
 }

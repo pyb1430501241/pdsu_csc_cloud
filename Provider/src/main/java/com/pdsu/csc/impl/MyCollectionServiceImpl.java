@@ -12,18 +12,18 @@ import com.pdsu.csc.dao.WebInformationMapper;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.user.UidAndWebIdRepetitionException;
 import com.pdsu.csc.service.MyCollectionService;
+import com.pdsu.csc.service.WebService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
-
 
 /**
  *
  * @author 半梦
- *
  */
 @Service("myCollectionService")
-public class MyCollectionServiceImpl implements MyCollectionService {
+public class MyCollectionServiceImpl implements MyCollectionService, WebService {
 
 	@Autowired
 	private MyCollectionMapper myCollectionMapper;
@@ -36,25 +36,44 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 		if(countByUidAndWebId(con.getUid(), con.getWid())) {
 			throw new UidAndWebIdRepetitionException("不可重复收藏同一篇博客");
 		}
-		if(myCollectionMapper.insertSelective(con) > 0) {
-			return true;
-		}
-		return false;
+		return myCollectionMapper.insertSelective(con) > 0;
+	}
+
+	@Override
+	public boolean deleteByExample(@Nullable MyCollectionExample example) {
+		return myCollectionMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull MyCollection myCollection, @Nullable MyCollectionExample example) {
+		return myCollectionMapper.updateByExampleSelective(myCollection, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<MyCollection> selectListByExample(@Nullable MyCollectionExample example) {
+		return myCollectionMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(@Nullable MyCollectionExample example) {
+		return myCollectionMapper.countByExample(example);
 	}
 
 	@Override
 	public Integer selectCollectionsByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
-		if(!countByWebId(webid)) {
+		if(!isExistByWebId(webid)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
 		MyCollectionExample example = new MyCollectionExample();
 		MyCollectionExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		return (int) myCollectionMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
-	public List<Integer> selectCollectionssByWebIds(@NonNull List<Integer> webids){
+	@NonNull
+	public List<Integer> selectCollectionsByWebIds(@NonNull List<Integer> webids){
 		List<Integer> collectionss = new ArrayList<Integer>();
 		for(Integer webid : webids) {
 			try {
@@ -74,10 +93,7 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 		MyCollectionExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		criteria.andWidEqualTo(webid);
-		if(myCollectionMapper.deleteByExample(example) > 0) {
-			return true;
-		}
-		return false;
+		return deleteByExample(example);
 	}
 
 	@Override
@@ -86,20 +102,18 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 		MyCollectionExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
 		criteria.andUidEqualTo(uid);
-		return myCollectionMapper.countByExample(example) > 0 ? true : false;
+		return countByExample(example) > 0;
 	}
-	
 
 	/**
 	 * 查询博客是否存在
 	 */
 	@Override
-	public boolean countByWebId(@NonNull Integer webid) {
+	public boolean isExistByWebId(@NonNull Integer webId) {
 		WebInformationExample example = new WebInformationExample();
 		com.pdsu.csc.bean.WebInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andIdEqualTo(webid);
-		long l = webInformationMapper.countByExample(example);
-		return l <= 0 ? false : true;
+		criteria.andIdEqualTo(webId);
+		return webInformationMapper.countByExample(example) > 0;
 	}
 
 	@Override
@@ -107,7 +121,7 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 		MyCollectionExample example = new MyCollectionExample();
 		MyCollectionExample.Criteria criteria = example.createCriteria();
 		criteria.andBidEqualTo(uid);
-		return (int) myCollectionMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
@@ -118,6 +132,6 @@ public class MyCollectionServiceImpl implements MyCollectionService {
 		if(p != null) {
 			PageHelper.startPage(p, 10);
 		}
-		return myCollectionMapper.selectByExample(example);
+		return selectListByExample(example);
 	}
 }

@@ -3,6 +3,7 @@ package com.pdsu.csc.service;
 import java.util.List;
 
 import com.pdsu.csc.bean.MyImage;
+import com.pdsu.csc.bean.MyImageExample;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import org.springframework.lang.NonNull;
 
@@ -11,7 +12,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  *
  */
-public interface MyImageService {
+public interface MyImageService extends TemplateService<MyImage, MyImageExample> {
 
 	/**
 	 * 根据一组 UID 获取对应头像
@@ -25,10 +26,6 @@ public interface MyImageService {
 	 */
 	public MyImage selectImagePathByUid(@NonNull Integer uid) throws NotFoundUidException;
 	
-	public boolean countByUid(@NonNull Integer uid);
-
-	public boolean insert(@NonNull MyImage myImage) throws NotFoundUidException;
-
 	public boolean update(@NonNull MyImage myImage) throws NotFoundUidException;
 	
 }

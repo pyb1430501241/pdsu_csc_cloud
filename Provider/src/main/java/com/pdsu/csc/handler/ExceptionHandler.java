@@ -290,7 +290,7 @@ public class ExceptionHandler extends ParentHandler {
     }
 
     /**
-     * 处理 BindException 异常
+     * 处理 MissingServletRequestParameterException 异常
      * @param e
      * @return
      */

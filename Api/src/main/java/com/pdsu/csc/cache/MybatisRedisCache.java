@@ -14,6 +14,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * @author 半梦
  * @create 2021-02-20 17:32
+ * mybatis redis 缓存
  */
 @Log4j2
 public class MybatisRedisCache implements Cache {

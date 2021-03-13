@@ -3,6 +3,7 @@ package com.pdsu.csc.service;
 import java.util.List;
 
 import com.pdsu.csc.bean.VisitInformation;
+import com.pdsu.csc.bean.VisitInformationExample;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import org.springframework.lang.NonNull;
@@ -12,7 +13,8 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  *
  */
-public interface VisitInformationService {
+public interface VisitInformationService extends
+		TemplateService<VisitInformation, VisitInformationExample>{
 	
 	/**
 	 * 根据网页id集获取该网页的访问量集
@@ -30,32 +32,11 @@ public interface VisitInformationService {
 	public Integer selectVisitsByVid(@NonNull Integer id) throws NotFoundUidException;
 	
 	/**
-	 * 插入一条记录
-	 * @param visit
-	 * @return
-	 */
-	public boolean insert(@NonNull VisitInformation visit);
-	
-	/**
 	 * 根据网页id获取该网页访问量
 	 * @param webid
 	 * @return
 	 * @throws NotFoundBlobIdException
 	 */
 	public Integer selectvisitByWebId(@NonNull Integer webid) throws NotFoundBlobIdException;
-	
-	/**
-	 * 查询页面是否存在
-	 * @param webid
-	 * @return
-	 */
-	public boolean countByWebId(@NonNull Integer webid);
-	
-	/**
-	 * 查询用户是否存在
-	 * @param uid
-	 * @return
-	 */
-	public boolean countByUid(@NonNull Integer uid);
 
 }

@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.WebFile;
+import com.pdsu.csc.bean.WebFileExample;
 import com.pdsu.csc.exception.web.es.InsertException;
 import com.pdsu.csc.exception.web.file.UidAndTitleRepetitionException;
 import org.springframework.lang.NonNull;
@@ -13,21 +14,13 @@ import java.util.List;
  * @author 半梦
  *
  */
-public interface WebFileService {
-
-	/**
-	 * 插入一个文件记录
-	 * @param webFile
-	 * @return  true false
-	 */
-	public boolean insert(@NonNull WebFile webFile) throws UidAndTitleRepetitionException, InsertException;
+public interface WebFileService extends TemplateService<WebFile, WebFileExample> {
 
 	/**
 	 * 查询所有文件
 	 * @param uid
 	 * @param title
 	 * @return
-	 * @throws FileException
 	 */
 	public WebFile selectFileByUidAndTitle(@NonNull Integer uid, @NonNull String title);
 	

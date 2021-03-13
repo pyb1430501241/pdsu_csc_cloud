@@ -39,15 +39,15 @@ public class Role implements Serializable {
         Role role;
     }
 
-    public Role getUser() {
+    public static Role getUser() {
         return RoleFactory.USER.getRole();
     }
 
-    public Role getTeacher() {
+    public static Role getTeacher() {
         return RoleFactory.TEACHER.getRole();
     }
 
-    public Role getAdmin() {
+    public static Role getAdmin() {
         return RoleFactory.ADMIN.getRole();
     }
 

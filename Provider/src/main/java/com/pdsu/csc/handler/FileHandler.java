@@ -62,10 +62,8 @@ public class FileHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
-	@CrossOrigin
 	public Result upload(@RequestParam("file")MultipartFile file, @RequestParam String title,
-						 @RequestParam String description) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+						 @RequestParam String description, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		Integer uid = user.getUid();
 		log.info("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
@@ -91,11 +89,10 @@ public class FileHandler extends ParentHandler {
 	 * @param response HttpServletResponse
 	 */
 	@RequestMapping(value = "/download", method = RequestMethod.GET)
-	@CrossOrigin
-	public Result download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response) throws Exception{
+	public Result download(@RequestParam Integer uid, @RequestParam String title, HttpServletResponse response,
+						   UserInformation user) throws Exception{
 		OutputStream out = null;
 		InputStream in = null;
-		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		try {
 			log.info("开始下载文件, 下载人 UID 为: " + user.getUid());
@@ -139,7 +136,6 @@ public class FileHandler extends ParentHandler {
 	 * @return
 	 */
 	@GetMapping("/getfileindex")
-	@CrossOrigin
 	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) throws Exception{
 		log.info("获取首页文件");
 		List<WebFile> list = webFileService.selectFilesOrderByTime(p);

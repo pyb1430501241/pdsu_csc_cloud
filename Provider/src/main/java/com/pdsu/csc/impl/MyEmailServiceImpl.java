@@ -8,11 +8,13 @@ import com.pdsu.csc.bean.UserInformationExample;
 import com.pdsu.csc.dao.MyEmailMapper;
 import com.pdsu.csc.dao.UserInformationMapper;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
+import com.pdsu.csc.exception.web.user.UserException;
 import com.pdsu.csc.exception.web.user.email.EmailRepetitionException;
 import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
 import com.pdsu.csc.service.impl.AbstractMyEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 
@@ -35,7 +37,7 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 		MyEmailExample example = new MyEmailExample();
 		MyEmailExample.Criteria criteria = example.createCriteria();
 		criteria.andEmailEqualTo(email);
-		return myEmailMapper.countByExample(example) != 0;
+		return countByExample(example) > 0;
 	}
 
 	@Override
@@ -46,7 +48,7 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 		MyEmailExample example = new MyEmailExample();
 		MyEmailExample.Criteria criteria = example.createCriteria();
 		criteria.andEmailEqualTo(email);
-		return myEmailMapper.selectByExample(example).get(0);
+		return selectByExample(example);
 	}
 
 	@Override
@@ -54,13 +56,12 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 		MyEmailExample example = new MyEmailExample();
 		MyEmailExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		List<MyEmail> list = myEmailMapper.selectByExample(example);
-		return list.size() == 0 ? null : list.get(0);
+		return selectByExample(example);
 	}
 
 	@Override
-	public boolean insert(@NonNull MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException {
-		if(!countByUid(myEmail.getUid())) {
+	public boolean insert(@NonNull MyEmail myEmail) throws UserException {
+		if(!isExistByUid(myEmail.getUid())) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		if(countByEmail(myEmail.getEmail())) {
@@ -70,10 +71,32 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 	}
 
 	@Override
-	public boolean countByUid(@NonNull Integer uid) {
+	public boolean isExistByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		return userInformationMapper.countByExample(example) != 0;
 	}
+
+	@Override
+	public boolean deleteByExample(@Nullable MyEmailExample example) {
+		return myEmailMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull MyEmail myEmail, @Nullable MyEmailExample example) {
+		return myEmailMapper.updateByExampleSelective(myEmail, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<MyEmail> selectListByExample(@Nullable MyEmailExample example) {
+		return myEmailMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(MyEmailExample example) {
+		return myEmailMapper.countByExample(example);
+	}
+
 }

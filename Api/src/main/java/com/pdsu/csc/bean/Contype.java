@@ -14,7 +14,8 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class Contype  implements Serializable{
+@SuppressWarnings("all")
+public class Contype implements Serializable{
     /**
 	 * 
 	 */

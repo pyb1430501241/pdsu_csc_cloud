@@ -6,9 +6,11 @@ import java.util.List;
 import com.pdsu.csc.bean.WebLabelControl;
 import com.pdsu.csc.bean.WebLabelControlExample;
 import com.pdsu.csc.dao.WebLabelControlMapper;
+import com.pdsu.csc.exception.CodeSharingCommunityException;
 import com.pdsu.csc.service.WebLabelControlService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 
@@ -24,7 +26,7 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 	@Override
 	public boolean insert(@NonNull Integer webid, @NonNull List<Integer> labelList) {
 		for (Integer labelid : labelList) {
-			webLabelControlMapper.insertSelective(new WebLabelControl(webid, labelid));
+			insert(new WebLabelControl(webid, labelid));
 		}
 		return true;
 	}
@@ -34,7 +36,7 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 		WebLabelControlExample example = new WebLabelControlExample();
 		WebLabelControlExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		return webLabelControlMapper.deleteByExample(example) > 0;
+		return deleteByExample(example);
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 		WebLabelControlExample example = new WebLabelControlExample();
 		WebLabelControlExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		List<WebLabelControl> list = webLabelControlMapper.selectByExample(example);
+		List<WebLabelControl> list = selectListByExample(example);
 		List<Integer> labelIds = new ArrayList<>();
 		for (WebLabelControl label : list) {
 			labelIds.add(label.getLid());
@@ -55,11 +57,37 @@ public class WebLabelControlServiceImpl implements WebLabelControlService {
 		WebLabelControlExample example = new WebLabelControlExample();
 		WebLabelControlExample.Criteria criteria = example.createCriteria();
 		criteria.andLidEqualTo(lid);
-		List<Integer> webids = new ArrayList<Integer>();
-		for (WebLabelControl label : webLabelControlMapper.selectByExample(example)) {
+		List<Integer> webids = new ArrayList<>();
+		for (WebLabelControl label : selectListByExample(example)) {
 			webids.add(label.getWid());
 		}
 		return webids;
+	}
+
+	@Override
+	public boolean insert(@NonNull WebLabelControl webLabelControl) {
+		return webLabelControlMapper.insertSelective(webLabelControl) > 0;
+	}
+
+	@Override
+	public boolean deleteByExample(@Nullable WebLabelControlExample example) {
+		return webLabelControlMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull WebLabelControl webLabelControl, @Nullable WebLabelControlExample example) {
+		return webLabelControlMapper.updateByExampleSelective(webLabelControl, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<WebLabelControl> selectListByExample(@Nullable WebLabelControlExample example) {
+		return webLabelControlMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(WebLabelControlExample example) {
+		return webLabelControlMapper.countByExample(example);
 	}
 
 }

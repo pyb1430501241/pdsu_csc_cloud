@@ -12,9 +12,13 @@ import com.pdsu.csc.dao.VisitInformationMapper;
 import com.pdsu.csc.dao.WebInformationMapper;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
+import com.pdsu.csc.service.UserService;
 import com.pdsu.csc.service.VisitInformationService;
+import com.pdsu.csc.service.WebService;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 
@@ -24,7 +28,9 @@ import org.springframework.stereotype.Service;
  *
  */
 @Service("visitInformationService")
-public class VisitInformationServiceImpl implements VisitInformationService {
+@Log4j2
+public class VisitInformationServiceImpl implements
+		VisitInformationService, UserService, WebService {
 
 	@Autowired
 	private VisitInformationMapper visitInformationMapper;
@@ -41,11 +47,12 @@ public class VisitInformationServiceImpl implements VisitInformationService {
 	 */
 	@Override
 	public List<Integer> selectVisitsByWebIds(@NonNull List<Integer> webids) {
-		List<Integer> visits = new ArrayList<Integer>();
+		List<Integer> visits = new ArrayList<>();
 		for(Integer id : webids) {
 			try {
 				visits.add(selectvisitByWebId(id));
 			} catch (NotFoundBlobIdException e) {
+				log.debug(e.getMessage() + ": " + id);
 			}
 		}
 		return visits;
@@ -56,14 +63,13 @@ public class VisitInformationServiceImpl implements VisitInformationService {
 	 * @throws NotFoundUidException 
 	 */
 	public Integer selectVisitsByVid(@NonNull Integer id) throws NotFoundUidException {
-		if(!countByUid(id)) {
+		if(!isExistByUid(id)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		VisitInformationExample example = new VisitInformationExample();
 		VisitInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andVidEqualTo(id);
-		int i = (int) visitInformationMapper.countByExample(example);
-		return i;
+		return (int) countByExample(example);
 	}
 
 	/**
@@ -71,10 +77,7 @@ public class VisitInformationServiceImpl implements VisitInformationService {
 	 */
 	@Override
 	public boolean insert(@NonNull VisitInformation visit) {
-		if(visitInformationMapper.insert(visit) > 0) {
-			return true;
-		}
-		return false;
+		return visitInformationMapper.insertSelective(visit) > 0;
 	}
 	
 	/**
@@ -83,28 +86,49 @@ public class VisitInformationServiceImpl implements VisitInformationService {
 	 */
 	@Override
 	public Integer selectvisitByWebId(@NonNull Integer webid) throws NotFoundBlobIdException {
-		if(!countByWebId(webid)) {
+		if(!isExistByWebId(webid)) {
 			throw new NotFoundBlobIdException("该文章不存在");
 		}
 		VisitInformationExample example = new VisitInformationExample();
 		VisitInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andWidEqualTo(webid);
-		return (int)visitInformationMapper.countByExample(example);
+		return (int) countByExample(example);
 	}
 
 	@Override
-	public boolean countByWebId(@NonNull Integer webid) {
-		WebInformationExample example = new WebInformationExample();
-		com.pdsu.csc.bean.WebInformationExample.Criteria criteria = example.createCriteria();
-		criteria.andIdEqualTo(webid);
-		return webInformationMapper.countByExample(example) > 0 ? true : false;
+	public boolean deleteByExample(@Nullable VisitInformationExample example) {
+		return visitInformationMapper.deleteByExample(example) > 0;
 	}
 
 	@Override
-	public boolean countByUid(@NonNull Integer uid) {
+	public boolean updateByExample(@NonNull VisitInformation visitInformation, @Nullable VisitInformationExample example) {
+		return visitInformationMapper.updateByExample(visitInformation, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<VisitInformation> selectListByExample(@Nullable VisitInformationExample example) {
+		return visitInformationMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(@Nullable VisitInformationExample example) {
+		return visitInformationMapper.countByExample(example);
+	}
+
+	@Override
+	public boolean isExistByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return userInformationMapper.countByExample(example) > 0 ? true : false;
+		return userInformationMapper.countByExample(example) > 0;
+	}
+
+	@Override
+	public boolean isExistByWebId(@NonNull Integer webId) {
+		WebInformationExample example = new WebInformationExample();
+		com.pdsu.csc.bean.WebInformationExample.Criteria criteria = example.createCriteria();
+		criteria.andIdEqualTo(webId);
+		return webInformationMapper.countByExample(example) > 0;
 	}
 }

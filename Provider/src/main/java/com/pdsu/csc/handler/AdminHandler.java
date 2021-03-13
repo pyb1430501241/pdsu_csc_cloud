@@ -65,7 +65,6 @@ public class AdminHandler extends ParentHandler{
 	 * @return
 	 */
 	@GetMapping("/getuserinformationlist")
-	@CrossOrigin
 	public Result getUserInformationList(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
 		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
@@ -76,7 +75,7 @@ public class AdminHandler extends ParentHandler{
 		log.info("管理员: " + user.getUid() + " 获取所有用户信息");
 		PageHelper.startPage(p, 15);
 		PageInfo<UserInformation> userList = new PageInfo<>(
-				userInformationService.selectUserInformations(),5);
+				userInformationService.selectUserInformations(), 5);
 		return Result.success().add("userList", userList);
 	}
 
@@ -84,7 +83,6 @@ public class AdminHandler extends ParentHandler{
 	 *
 	 */
 	@Deprecated
-	@CrossOrigin
 	@PostMapping("/applyclass")
 	public Result createClazz(String clazzName, @RequestParam(required = false) List<Integer> uids) throws Exception{
 		UserInformation user = ShiroUtils.getUserInformation();

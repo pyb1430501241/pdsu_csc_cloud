@@ -1,6 +1,7 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
+import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.service.ProviderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,7 +14,7 @@ import javax.servlet.http.HttpServletRequest;
  * @create 2020-11-10 17:59
  */
 @RestController
-public class IndexHandler {
+public class IndexHandler extends AuthenticatedStorageHandler {
 
     @Autowired
     private ProviderService providerService;
@@ -21,6 +22,11 @@ public class IndexHandler {
     @GetMapping("/index")
     public Result index(HttpServletRequest request) {
         return providerService.index();
+    }
+
+    @Override
+    public UserInformation compulsionGet(String sessionId) {
+        return null;
     }
 
 }

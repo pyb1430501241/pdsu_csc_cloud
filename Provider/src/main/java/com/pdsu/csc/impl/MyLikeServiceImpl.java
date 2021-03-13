@@ -8,10 +8,12 @@ import com.pdsu.csc.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidAndLikeIdRepetitionException;
 import com.pdsu.csc.service.MyLikeService;
+import com.pdsu.csc.service.UserService;
 import com.pdsu.csc.utils.ElasticsearchUtils;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +27,7 @@ import java.util.Map;
  */
 @Log4j2
 @Service("myLikeService")
-public class MyLikeServiceImpl implements MyLikeService {
+public class MyLikeServiceImpl implements MyLikeService, UserService {
 
 	@Autowired
 	private MyLikeMapper myLikeMapper;
@@ -38,24 +40,24 @@ public class MyLikeServiceImpl implements MyLikeService {
 	
 	@Override
 	public long countByUid(@NonNull Integer uid) throws NotFoundUidException {
-		if(!isByUid(uid)) {
+		if(!isExistByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		MyLikeExample example = new MyLikeExample();
 		MyLikeExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		return myLikeMapper.countByExample(example);
+		return countByExample(example);
 	}
 
 	@Override
 	public long countByLikeId(@NonNull Integer likeId) throws NotFoundUidException {
-		if(!isByUid(likeId)) {
+		if(!isExistByUid(likeId)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		MyLikeExample example = new MyLikeExample();
 		MyLikeExample.Criteria criteria = example.createCriteria();
 		criteria.andLikeIdEqualTo(likeId);
-		return myLikeMapper.countByExample(example);
+		return countByExample(example);
 	}
 
 	@Override
@@ -80,10 +82,31 @@ public class MyLikeServiceImpl implements MyLikeService {
 		}
 		return false;
 	}
-	
+
+	@Override
+	public boolean deleteByExample(@Nullable MyLikeExample example) {
+		return myLikeMapper.deleteByExample(example) > 0;
+	}
+
+	@Override
+	public boolean updateByExample(@NonNull MyLike myLike, @Nullable MyLikeExample example) {
+		return myLikeMapper.updateByExampleSelective(myLike, example) > 0;
+	}
+
+	@Override
+	@NonNull
+	public List<MyLike> selectListByExample(@Nullable MyLikeExample example) {
+		return myLikeMapper.selectByExample(example);
+	}
+
+	@Override
+	public long countByExample(MyLikeExample example) {
+		return myLikeMapper.countByExample(example);
+	}
+
 	@Override
 	public List<Integer> selectLikeIdByUid(@NonNull Integer uid) throws NotFoundUidException {
-		if(!isByUid(uid)) {
+		if(!isExistByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		return myLikeMapper.selectLikeIdByUid(uid);
@@ -91,14 +114,14 @@ public class MyLikeServiceImpl implements MyLikeService {
 	
 	@Override
 	public List<Integer> selectUidByLikeId(@NonNull Integer likeId) throws NotFoundUidException {
-		if(!isByUid(likeId)) {
+		if(!isExistByUid(likeId)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		return myLikeMapper.selectUidByLikeId(likeId);
 	}
 
 	@Override
-	public boolean isByUid(@NonNull Integer uid) {
+	public boolean isExistByUid(@NonNull Integer uid) {
 		UserInformationExample example = new UserInformationExample();
 		com.pdsu.csc.bean.UserInformationExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
@@ -111,7 +134,7 @@ public class MyLikeServiceImpl implements MyLikeService {
 		MyLikeExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
 		criteria.andLikeIdEqualTo(likeId);
-		return myLikeMapper.countByExample(example) > 0 ? true : false;
+		return countByExample(example) > 0;
 	}
 	
 	@Override
@@ -123,7 +146,7 @@ public class MyLikeServiceImpl implements MyLikeService {
 		MyLikeExample.Criteria criteria = example.createCriteria();
 		criteria.andLikeIdEqualTo(uid);
 		criteria.andUidEqualTo(likeId);
-		boolean b = myLikeMapper.deleteByExample(example) > 0;
+		boolean b = deleteByExample(example);
 		if(b) {
 			new Thread(()->{
 				try {
@@ -143,7 +166,7 @@ public class MyLikeServiceImpl implements MyLikeService {
 
 	@Override
 	public List<Boolean> countByUidAndLikeId(@NonNull Integer uid, @NonNull List<Integer> uids) throws NotFoundUidException {
-		if(!isByUid(uid)) {
+		if(!isExistByUid(uid)) {
 			throw new NotFoundUidException("该用户不存在");
 		}
 		List<Boolean> islikes = new ArrayList<>();
@@ -152,6 +175,5 @@ public class MyLikeServiceImpl implements MyLikeService {
 		}
 		return islikes;
 	}
-	
-	
+
 }

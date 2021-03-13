@@ -13,7 +13,7 @@ import org.springframework.cloud.netflix.zuul.EnableZuulProxy;
  */
 @SpringBootApplication
 @EnableZuulProxy
-@MapperScan({"com.pdsu.csc.zuulDao"})
+@MapperScan({"com.pdsu.csc.dao"})
 public class CodeSharingCommunityGatewayRun {
 
     public static void main(String[] args) {

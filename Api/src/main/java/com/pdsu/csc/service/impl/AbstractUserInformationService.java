@@ -1,6 +1,7 @@
 package com.pdsu.csc.service.impl;
 
 import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.bean.UserInformationExample;
 import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidRepetitionException;
@@ -8,6 +9,7 @@ import com.pdsu.csc.service.UserInformationService;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -32,17 +34,17 @@ public abstract class AbstractUserInformationService implements UserInformationS
 
     @Override
     public List<UserInformation> selectUsersByUid(@NonNull Integer uid, @Nullable Integer p) throws NotFoundUidException {
-        return null;
+        return selectAll();
     }
 
     @Override
     public List<UserInformation> selectUsersByLikeId(@NonNull Integer likeId, @Nullable Integer p) throws NotFoundUidException {
-        return null;
+        return selectAll();
     }
 
     @Override
     public List<UserInformation> selectUsersByUids(@NonNull List<Integer> uids) {
-        return null;
+        return selectAll();
     }
 
     @Override
@@ -63,7 +65,33 @@ public abstract class AbstractUserInformationService implements UserInformationS
 
     @Override
     public List<UserInformation> selectUserInformations() {
-        return null;
+        return selectAll();
+    }
+
+    @Override
+    public boolean deleteByExample(@Nullable UserInformationExample example) {
+        return false;
+    }
+
+    @Override
+    public boolean updateByExample(@NonNull UserInformation userInformation, @Nullable UserInformationExample example) {
+        return false;
+    }
+
+    @Override
+    @NonNull
+    public List<UserInformation> selectListByExample(@Nullable UserInformationExample example) {
+        return Collections.emptyList();
+    }
+
+    @Override
+    public long countByExample(UserInformationExample example) {
+        return 0;
+    }
+
+    @Override
+    public boolean isExistByUid(@NonNull Integer uid) {
+        return countByUid(uid) > 0;
     }
 
 }

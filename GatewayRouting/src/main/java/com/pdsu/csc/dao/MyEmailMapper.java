@@ -1,4 +1,4 @@
-package com.pdsu.csc.zuulDao;
+package com.pdsu.csc.dao;
 
 import com.pdsu.csc.bean.MyEmail;
 import com.pdsu.csc.bean.MyEmailExample;

@@ -20,18 +20,11 @@ import com.pdsu.csc.utils.*;
 import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.codec.Base64;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.web.subject.WebSubject;
 import org.apache.shiro.web.util.WebUtils;
-import org.checkerframework.checker.units.qual.s;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.Cache;
-import org.springframework.cache.CacheManager;
-import org.springframework.stereotype.Controller;
-import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -48,7 +41,7 @@ import java.util.*;
  * @create 2020-04-26 09:17
  * 该类负责和用户相关的请求处理
  */
-@Controller
+@RestController
 @RequestMapping("/user")
 @Log4j2
 @SuppressWarnings({"unchecked", "null"})
@@ -108,37 +101,35 @@ public class UserHandler extends ParentHandler {
 
 	private static final Integer CODE_EXPIATION_TIME = 300;
 	
-	/**
-	 * @return  用户的登录状态
-	 * 如登录, 返回用户信息
-	 * 反之返回提示语
-	 *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
-	 *  所以下一句提醒的 user 可能为 null 的提示可以直接无视
-	 */
-	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
-	public Result getLoginStatus(HttpServletRequest request) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
-		// 这里排除未认证的情况
-		loginOrNotLogin(user);
-
-		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
-		if(!Objects.isNull(user.getPassword())) {
-			user.setPassword(null);
-		}
-
-		// 首先查看请求头中是否有 sessionId
-		String sessionId = HttpUtils.getSessionId(request);
-		// 如没有, 则通过 Shiro 尝试获取 sessionId
-		if(StringUtils.isBlank(sessionId)) {
-			sessionId = ShiroUtils.getSessionId();
-		}
-		// 获取请求头
-		String header = HttpUtils.getSessionHeader();
-
-		return Result.success().add("user", user).add(header, sessionId);
-	}
+//	/**
+//	 * @return  用户的登录状态
+//	 * 如登录, 返回用户信息
+//	 * 反之返回提示语
+//	 *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
+//	 *  所以下一句提醒的 user 可能为 null 的提示可以直接无视
+//	 */
+//	@RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
+//	public Result getLoginStatus(HttpServletRequest request) throws Exception{
+//		UserInformation user = ShiroUtils.getUserInformation();
+//		// 这里排除未认证的情况
+//		loginOrNotLogin(user);
+//
+//		user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+//		if(!Objects.isNull(user.getPassword())) {
+//			user.setPassword(null);
+//		}
+//
+//		// 首先查看请求头中是否有 sessionId
+//		String sessionId = HttpUtils.getSessionId(request);
+//		// 如没有, 则通过 Shiro 尝试获取 sessionId
+//		if(StringUtils.isBlank(sessionId)) {
+//			sessionId = ShiroUtils.getSessionId();
+//		}
+//		// 获取请求头
+//		String header = HttpUtils.getSessionHeader();
+//
+//		return Result.success().add("user", user).add(header, sessionId);
+//	}
 
 
 	/**
@@ -171,10 +162,8 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	验证码对应的 Base64 码
 	 */
-	@ResponseBody
 	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
-	@CrossOrigin
-	public Result getCode() throws Exception {
+	public Result getCode(HttpServletRequest request) throws Exception {
 		log.info("获取验证码开始");
 		String verifyCode = CodeUtils.generateVerifyCode(4);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -198,8 +187,6 @@ public class UserHandler extends ParentHandler {
 	 * 	邮箱验证码所对应的 token
 	 */
 	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
 	public Result sendEmailForApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
 			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(StringUtils.isBlank(email)) {
@@ -228,8 +215,6 @@ public class UserHandler extends ParentHandler {
 	 * @return json字符串
 	 */
 	@RequestMapping(value = "/applynumber", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
 	public Result applyforAccountNumber(@Valid UserInformation user,
 										@RequestParam String token,
 										@RequestParam String code)
@@ -284,9 +269,7 @@ public class UserHandler extends ParentHandler {
 	 * 	加密后的邮箱，以及解密所需的 token
 	 */
 	@RequestMapping(value = "/isexist", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
-	public Result getEmail(@RequestParam Integer uid) throws Exception{
+	public Result getEmail(@RequestParam Integer uid) throws Exception {
 		log.info("开始进行找回密码验证账号是否存在");
 		int i = userInformationService.countByUid(uid);
 		if(i != 0) {
@@ -311,8 +294,6 @@ public class UserHandler extends ParentHandler {
 	 * 	验证码所对应的 token
 	 */
 	@RequestMapping(value = "/getcodeforretrieve", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
 	public Result sendEmailForRetrieve(@RequestParam String token) throws Exception{
 		String email = (String) redisUtils.get(token);
 		if(Objects.isNull(email)) {
@@ -344,8 +325,6 @@ public class UserHandler extends ParentHandler {
 	 * 	是否修改成功
 	 */
 	@RequestMapping(value = "/retrieve", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
 	public Result retrieveThePassword(@RequestParam Integer uid,
 									  @RequestParam String password,
 									  @RequestParam String token,
@@ -382,10 +361,8 @@ public class UserHandler extends ParentHandler {
 	 * 	邮箱
 	 */
 	@RequestMapping(value = "/getmodify", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
-	public Result getModify() throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getModify(UserInformation user) throws Exception{
+		System.out.println(user);
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "修改密码开始");
 		MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
@@ -400,12 +377,10 @@ public class UserHandler extends ParentHandler {
 	 * 	验证码的 key
 	 */
 	@RequestMapping(value = "/getcodeformodify", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
-	public Result sendEmailForModify(@RequestParam String email) throws Exception{
+	public Result sendEmailForModify(@RequestParam String email, UserInformation user) throws Exception{
 		log.info("邮箱: " + email + "开始发送修改密码的验证码");
 		EmailUtils utils = new EmailUtils();
-		utils.sendEmailForModify(email, ShiroUtils.getUserInformation().getUsername());
+		utils.sendEmailForModify(email, user.getUsername());
 		String token = RandomUtils.getUUID();
 		String text = utils.getText();
 		redisUtils.set(token, text, CODE_EXPIATION_TIME);
@@ -421,8 +396,6 @@ public class UserHandler extends ParentHandler {
 	 * 	验证码是否正确
 	 */
 	@RequestMapping(value = "/modifybefore", method = RequestMethod.GET)
-	@ResponseBody
-	@CrossOrigin
 	public Result modifyBefore(@RequestParam String token, @RequestParam String code) throws Exception{
 		log.info("开始验证验证码是否正确");
 		String ss = (String) redisUtils.get(token);
@@ -445,10 +418,7 @@ public class UserHandler extends ParentHandler {
 	 * 	密码是否修改成功
 	 */
 	@RequestMapping(value = "/modify", method = RequestMethod.POST)
-	@CrossOrigin
-	@ResponseBody
-	public Result modifyForPassword(@RequestParam String password) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result modifyForPassword(@RequestParam String password, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		Integer uid = user.getUid();
 		log.info("账号: " + uid + "开始修改密码");
@@ -475,10 +445,7 @@ public class UserHandler extends ParentHandler {
 	 * 	是否关注成功
 	 */
 	@RequestMapping(value = "/like", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
-	public Result like(@RequestParam Integer uid) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result like(@RequestParam Integer uid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		Integer likeId = user.getUid();
 		log.info("用户: " + likeId + ", 关注: " + uid + "开始");
@@ -499,10 +466,7 @@ public class UserHandler extends ParentHandler {
 	 * 	是否取消成功
 	 */
 	@RequestMapping(value = "/dislike", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
-	public Result disLike(@RequestParam Integer uid) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result disLike(@RequestParam Integer uid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		Integer likeId = user.getUid();
 		log.info("用户: " + likeId + ", 取消关注: " + uid + "开始");
@@ -522,10 +486,7 @@ public class UserHandler extends ParentHandler {
 	 * 	是否关注
 	 */
 	@GetMapping("/likestatus")
-	@ResponseBody
-	@CrossOrigin
-	public Result getLikeStatus(@RequestParam Integer uid) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getLikeStatus(@RequestParam Integer uid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		Integer likeId = user.getUid();
 		log.info("判断用户是否已关注某用户");
@@ -542,10 +503,7 @@ public class UserHandler extends ParentHandler {
 	 * 	修改失败：返回原因
 	 */
 	@RequestMapping(value = "/changeavatar", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
-	public Result updateImage(@RequestParam("img")MultipartFile img) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result updateImage(@RequestParam("img")MultipartFile img, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 更换头像开始");
 		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + StringUtils.getSuffixName(img.getOriginalFilename());
@@ -574,34 +532,42 @@ public class UserHandler extends ParentHandler {
 	
 	/**
 	 * 修改用户信息
-	 * @param user 用户所需要修改的信息---
 	 * @return
 	 * 	是否修改成功
 	 */
 	@RequestMapping(value = "/changeinfor", method = RequestMethod.POST)
-	@ResponseBody
-	@CrossOrigin
-	public Result updateUserInformation(UserInformation user) throws Exception{
-		UserInformation userinfor = ShiroUtils.getUserInformation();
-		loginOrNotLogin(userinfor);
-		log.info("用户: " + userinfor.getUid() + " 修改用户信息");
-		log.info("原信息为: " + userinfor);
-		boolean b = userInformationService.updateUserInformation(userinfor.getUid(), user);
+	public Result updateUserInformation(@RequestBody Map<String, Object> users) throws Exception{
+		UserInformation oldUser = (UserInformation) users.get("oldUser");
+		UserInformation newUser = (UserInformation) users.get("newUser");
+		loginOrNotLogin(oldUser);
+		log.info("用户: " + oldUser.getUid() + " 修改用户信息");
+		log.info("原信息为: " + oldUser);
+		boolean b = userInformationService.updateUserInformation(oldUser.getUid(), newUser);
 		if(b) {
-			if(!StringUtils.isBlank(user.getUsername())) {
-				userinfor.setUsername(user.getUsername());
-			}
-			if(!StringUtils.isBlank(user.getClazz())) {
-				userinfor.setClazz(user.getClazz());
-			}
-			if(!StringUtils.isBlank(user.getCollege())) {
-				userinfor.setCollege(user.getCollege());
-			}
-			log.info("用户: " + userinfor.getUid() + " 修改信息成功, 修改后的信息为: " + userinfor);
-			return Result.success().add("user", userinfor);
+			replaceUserInformation(oldUser, newUser);
+			log.info("用户: " + oldUser.getUid() + " 修改信息成功, 修改后的信息为: " + oldUser);
+			return Result.success().add("user", oldUser);
 		}
-		log.warn("用户: " + userinfor.getUid() + "修改信息失败, 原因: 连接数据库失败");
+		log.warn("用户: " + oldUser.getUid() + "修改信息失败, 原因: 连接数据库失败");
 		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
+	}
+
+	/**
+	 * 用户信息更新
+	 * @param oldUser 旧的信息
+	 * @param newUser 新的信息
+	 *  <p>把新的信息覆盖到原信息上
+	 */
+	private void replaceUserInformation(UserInformation oldUser, UserInformation newUser) {
+		if(!StringUtils.isBlank(newUser.getUsername())) {
+			oldUser.setUsername(newUser.getUsername());
+		}
+		if(!StringUtils.isBlank(newUser.getClazz())) {
+			oldUser.setClazz(newUser.getClazz());
+		}
+		if(!StringUtils.isBlank(newUser.getCollege())) {
+			oldUser.setCollege(newUser.getCollege());
+		}
 	}
 	
 	
@@ -612,10 +578,8 @@ public class UserHandler extends ParentHandler {
 	 * 	对应页面的文章信息
 	 */
 	@RequestMapping(value = "/getoneselfblobs", method = RequestMethod.GET)
-	@CrossOrigin
-	@ResponseBody
-	public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getOneselfBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p,
+									   UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "获取自己的文章开始");
 		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(user.getUid(), p);
@@ -640,11 +604,9 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	对应页面的粉丝信息
 	 */
-	@CrossOrigin
 	@GetMapping("/getoneselffans")
-	@ResponseBody
-	public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getOneselfFans(@RequestParam(value = "p", defaultValue = "1") Integer p,
+								 UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
@@ -681,11 +643,9 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	对应页面的关注人信息
 	 */
-	@CrossOrigin
 	@GetMapping("/getoneselficons")
-	@ResponseBody
-	public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getOneselfIcons(@RequestParam(value = "p", defaultValue = "1") Integer p,
+								  UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取自己的关注人信息");
 		log.info("获取关注人信息");
@@ -721,13 +681,11 @@ public class UserHandler extends ParentHandler {
 	 * 	对应用户对应页面的文章信息
 	 */
 	@RequestMapping(value = "/getblobs", method = RequestMethod.GET)
-	@CrossOrigin
-	@ResponseBody
 	public Result getBlobsByUid(@RequestParam(value = "p", defaultValue = "1")Integer p, @RequestParam Integer uid)
 			throws Exception{
 		log.info("获取用户: " + uid + " 的文章开始");
 		List<WebInformation> weblist = webInformationService.selectWebInformationsByUid(uid, p);
-		List<Integer> webids = new ArrayList<Integer>();
+		List<Integer> webids = new ArrayList<>();
 		for (WebInformation web : weblist) {
 			webids.add(web.getId());
 		}
@@ -756,9 +714,7 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	对应用户对应页面的粉丝信息
 	 */
-	@CrossOrigin
 	@GetMapping("/getfans")
-	@ResponseBody
 	public Result getFans(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("用户: " + uid + " 获取自己的粉丝信息");
 		log.info("获取粉丝信息");
@@ -797,9 +753,7 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	对应页面对应用户的关注人信息
 	 */
-	@CrossOrigin
 	@GetMapping("/geticons")
-	@ResponseBody
 	public Result getIcons(@RequestParam(value = "p", defaultValue = "1") Integer p, @RequestParam Integer uid) throws Exception{
 		log.info("获取用户: " + uid + " 的关注人信息");
 		log.info("获取关注人信息");
@@ -833,10 +787,7 @@ public class UserHandler extends ParentHandler {
 	 * 	当前登录用户的邮箱（已加密）
 	 */
 	@RequestMapping("/loginemail")
-	@ResponseBody
-	@CrossOrigin
-	public Result getEmailByUid() throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getEmailByUid(UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("获取用户: " + user.getUid() + " 邮箱");
 		MyEmail myEmail = myEmailService.selectMyEmailByUid(user.getUid());
@@ -860,9 +811,7 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	是否通过校验
 	 */
-	@ResponseBody
 	@GetMapping("/datacheck")
-	@CrossOrigin
 	public Result dataCheck(@RequestParam String data, @RequestParam String type) {
 		boolean b;
 		switch (type) {
@@ -918,11 +867,9 @@ public class UserHandler extends ParentHandler {
 	 * @return
 	 * 	浏览记录
 	 */
-	@ResponseBody
 	@GetMapping("/getoneselfbrowsingrecord")
-	@CrossOrigin
-	public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getBrowsingRecord(@RequestParam(defaultValue = "1") Integer p,
+									UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("获取访问记录信息");
 		List<UserBrowsingRecord> userBrowsingRecords = userBrowsingRecordService.selectBrowsingRecordByUid(user.getUid(), p);
@@ -993,10 +940,7 @@ public class UserHandler extends ParentHandler {
 	 * 	通知信息
 	 */
 	@GetMapping("/getnotification")
-	@ResponseBody
-	@CrossOrigin
-	public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result getOneselfNotification(@RequestParam(defaultValue = "1") Integer p, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 获取通知开始");
 		log.info("获取通知");

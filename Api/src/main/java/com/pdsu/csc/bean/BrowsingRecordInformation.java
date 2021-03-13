@@ -13,6 +13,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("all")
 public class BrowsingRecordInformation implements Serializable {
 
     private static final long serialVersionUID = 1L;

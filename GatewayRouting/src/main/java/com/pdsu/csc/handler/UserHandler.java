@@ -2,23 +2,23 @@ package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
 import com.pdsu.csc.bean.UserInformation;
-import com.pdsu.csc.exception.web.user.UserException;
 import com.pdsu.csc.exception.web.user.UserNotLoginException;
+import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.RedisUtils;
 import com.pdsu.csc.utils.ShiroUtils;
 import com.pdsu.csc.utils.StringUtils;
-import lombok.NonNull;
 import lombok.extern.log4j.Log4j2;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.UsernamePasswordToken;
 import org.apache.shiro.subject.Subject;
-import org.apache.shiro.web.subject.WebSubject;
-import org.apache.shiro.web.util.WebUtils;
+import org.jetbrains.annotations.Contract;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Objects;
 
 /**
@@ -28,7 +28,7 @@ import java.util.Objects;
 @Log4j2
 @RestController
 @RequestMapping("/user")
-public class UserHandler implements AbstractHandler {
+public class UserHandler implements AbstractHandler, LoginHandler {
 
     /**
      * 记住我
@@ -38,19 +38,10 @@ public class UserHandler implements AbstractHandler {
     @Autowired
     private RedisUtils redisUtils;
 
-    /**
-     * 处理登录
-     * @param uid 账号
-     * @param password 密码
-     * @param hit cache获取数据的key
-     * @param code 输入的验证码
-     * @param flag  是否记住密码 默认为不记住
-     * @return
-     * 	如登录成功, 返回用户信息及其对应的 sessionId;
-     * 	如失败则返回失败原因
-     */
+    @Autowired
+    private SystemNotificationService systemNotificationService;
+
     @RequestMapping(value = "/login", method = RequestMethod.GET)
-    @CrossOrigin
     public Result login(@RequestParam String uid, @RequestParam String password,
                         @RequestParam String hit, @RequestParam String code,
                         @RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
@@ -79,6 +70,7 @@ public class UserHandler implements AbstractHandler {
         } else {
             token.setRememberMe(true);
         }
+
         /**
          *	开始登陆, 实际调用
          *	@see com.pdsu.csc.shiro.LoginRealm#doGetAuthenticationInfo
@@ -90,12 +82,56 @@ public class UserHandler implements AbstractHandler {
         uu.setPassword(null);
         log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
 
-        return Result.success()
-                .add("user", uu);
+        return Result.success().add("user", uu);
+    }
+
+    /**
+     * @return  用户的登录状态
+     * 如登录, 返回用户信息
+     * 反之返回提示语
+     *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
+     *  所以下一句提醒的 user 可能为 null 的提示可以直接无视
+     */
+    @RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
+    public Result getLoginStatus() throws Exception {
+
+        UserInformation user = ShiroUtils.getUserInformation();
+
+        // 这里排除未认证的情况
+        loginOrNotLogin(user);
+
+        // 用户提示信息
+        user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
+        if(!Objects.isNull(user.getPassword())) {
+            user.setPassword(null);
+        }
+
+        return Result.success().add("user", user);
+    }
+
+
+    @Override
+    @Contract("null -> fail")
+    public void loginOrNotLogin(UserInformation user) throws UserNotLoginException {
+        if(!ShiroUtils.isAuthorization()) {
+            if(Objects.isNull(user)) {
+                throw new UserNotLoginException(NOT_LOGIN);
+            }
+        }
     }
 
     @Override
-    public void loginOrNotLogin(UserInformation user) throws UserNotLoginException {
+    public void loginOrNotLogin(@NonNull HttpServletRequest request) throws UserNotLoginException {
+        if(HttpUtils.getSessionId(request) == null) {
+            loginOrNotLogin(ShiroUtils.getUserInformation());
+        }
     }
+
+    @Override
+    public Result logout(HttpServletRequest request, HttpServletResponse response) {
+        SecurityUtils.getSubject().logout();
+        return Result.success();
+    }
+
 
 }

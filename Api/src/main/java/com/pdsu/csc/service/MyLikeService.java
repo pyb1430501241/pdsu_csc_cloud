@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.MyLike;
+import com.pdsu.csc.bean.MyLikeExample;
 import com.pdsu.csc.exception.web.user.NotFoundUidAndLikeIdException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidAndLikeIdRepetitionException;
@@ -13,7 +14,7 @@ import java.util.List;
  * @author 半梦
  *
  */
-public interface MyLikeService {
+public interface MyLikeService extends TemplateService<MyLike, MyLikeExample> {
 
 	/**
 	 * 根据学号查询自己的关注个数
@@ -34,21 +35,9 @@ public interface MyLikeService {
 	public List<Integer> selectUidByLikeId(@NonNull Integer likeId)throws NotFoundUidException;
 
 	/**
-	 * 插入
-	 */
-	public boolean insert(@NonNull MyLike myLike) throws UidAndLikeIdRepetitionException;
-
-	/**
 	 * 根据学号查询自己关注人的学号
 	 */
 	public List<Integer> selectLikeIdByUid(@NonNull Integer uid) throws NotFoundUidException;
-
-	/**
-	 * 判断用户是否存在
-	 * @param uid
-	 * @return
-	 */
-	public boolean isByUid(@NonNull Integer uid);
 
 	/**
 	 * 根据 uid likeid 判断是否已关注

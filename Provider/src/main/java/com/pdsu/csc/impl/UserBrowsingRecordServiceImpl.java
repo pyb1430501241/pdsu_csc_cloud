@@ -7,6 +7,7 @@ import com.pdsu.csc.dao.UserBrowsingRecordMapper;
 import com.pdsu.csc.service.UserBrowsingRecordService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,15 +28,16 @@ public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService 
     }
 
     @Override
-    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid, Integer p) {
+    @NonNull
+    public List<UserBrowsingRecord> selectBrowsingRecordByUid(@NonNull Integer uid, @Nullable Integer p) {
         UserBrowsingRecordExample example = new UserBrowsingRecordExample();
         UserBrowsingRecordExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        example.setOrderByClause("createtime DESC");
+        example.setOrderByClause(splicing("createtime", ORDER_INCREMENTAL));
         if(p != null) {
             PageHelper.startPage(p,15);
         }
-        return userBrowsingRecordMapper.selectByExample(example);
+        return selectListByExample(example);
     }
 
     @Override
@@ -43,7 +45,29 @@ public class UserBrowsingRecordServiceImpl implements UserBrowsingRecordService 
         UserBrowsingRecordExample example = new UserBrowsingRecordExample();
         UserBrowsingRecordExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        long count = userBrowsingRecordMapper.countByExample(example);
-        return userBrowsingRecordMapper.deleteByExample(example) == count;
+        return userBrowsingRecordMapper.deleteByExample(example) == countByExample(example);
     }
+
+    @Override
+    public boolean deleteByExample(@Nullable UserBrowsingRecordExample example) {
+        return userBrowsingRecordMapper.deleteByExample(example) > 0;
+    }
+
+    @Override
+    public boolean updateByExample(@NonNull UserBrowsingRecord userBrowsingRecord,
+            @Nullable UserBrowsingRecordExample example) {
+        return userBrowsingRecordMapper.updateByExampleSelective(userBrowsingRecord, example) > 0;
+    }
+
+    @Override
+    @NonNull
+    public List<UserBrowsingRecord> selectListByExample(@Nullable UserBrowsingRecordExample example) {
+        return userBrowsingRecordMapper.selectByExample(example);
+    }
+
+    @Override
+    public long countByExample(UserBrowsingRecordExample example) {
+        return userBrowsingRecordMapper.countByExample(example);
+    }
+
 }

@@ -2,10 +2,11 @@ package com.pdsu.csc.impl;
 
 import com.pdsu.csc.bean.MyEmail;
 import com.pdsu.csc.bean.MyEmailExample;
-import com.pdsu.csc.zuulDao.MyEmailMapper;
+import com.pdsu.csc.dao.MyEmailMapper;
 import com.pdsu.csc.service.impl.AbstractMyEmailService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -27,8 +28,13 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 		MyEmailExample example = new MyEmailExample();
 		MyEmailExample.Criteria criteria = example.createCriteria();
 		criteria.andUidEqualTo(uid);
-		List<MyEmail> list = myEmailMapper.selectByExample(example);
-		return list.size() == 0 ? null : list.get(0);
+		return selectByExample(example);
+	}
+
+	@Override
+	@NonNull
+	public List<MyEmail> selectListByExample(@Nullable MyEmailExample example) {
+		return myEmailMapper.selectByExample(example);
 	}
 
 }

@@ -8,6 +8,8 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 import org.apache.shiro.subject.Subject;
 import org.apache.shiro.subject.support.DefaultSubjectContext;
 import org.apache.shiro.web.session.mgt.WebSessionKey;
+import org.jetbrains.annotations.Contract;
+import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
 import javax.servlet.http.HttpServletRequest;
@@ -23,6 +25,7 @@ import java.util.Objects;
 public abstract class ShiroUtils {
 
     @Nullable
+    @Contract(pure = true)
 	public static UserInformation getUserInformation() {
         Subject subject = SecurityUtils.getSubject();
         //取出身份信息
@@ -68,20 +71,27 @@ public abstract class ShiroUtils {
      * @param response
      * @return
      */
-    public static UserInformation getUserInformation(String sessionID, HttpServletRequest request, HttpServletResponse response) throws Exception{
-        SessionKey key = new WebSessionKey(sessionID,request,response);
-        Session se = SecurityUtils.getSecurityManager().getSession(key);
-        Object obj = se.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
-        SimplePrincipalCollection coll = (SimplePrincipalCollection) obj;
-        UserInformation userInformation = (UserInformation)coll.getPrimaryPrincipal();
-        if(!Objects.isNull(userInformation)) {
-        	UserInformation user = (UserInformation) se.getAttribute("user");
-            if(Objects.isNull(user)) {
-                se.setAttribute("user", userInformation);
+    @Nullable
+    @Contract("null -> null; !null -> !null")
+    public static UserInformation getUserInformation(@Nullable String sessionID, HttpServletRequest request, HttpServletResponse response) {
+        try {
+            SessionKey key = new WebSessionKey(sessionID, request, response);
+            Session se = SecurityUtils.getSecurityManager().getSession(key);
+            Object obj = se.getAttribute(DefaultSubjectContext.PRINCIPALS_SESSION_KEY);
+            SimplePrincipalCollection coll = (SimplePrincipalCollection) obj;
+            UserInformation userInformation = (UserInformation) coll.getPrimaryPrincipal();
+            if (!Objects.isNull(userInformation)) {
+                UserInformation user = (UserInformation) se.getAttribute("user");
+                if (Objects.isNull(user)) {
+                    se.setAttribute("user", userInformation);
+                }
+                return userInformation;
+            } else {
+                return null;
             }
-            return userInformation;
-        } else {
+        } catch (Exception e) {
             return null;
         }
     }
+
 }

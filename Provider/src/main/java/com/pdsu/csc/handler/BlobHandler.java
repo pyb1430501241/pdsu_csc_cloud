@@ -16,10 +16,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * 
@@ -118,7 +115,6 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/getwebindex", method = RequestMethod.GET)
-	@CrossOrigin
 	public Result getWebIndex(@RequestParam(value = "p", defaultValue = "1") Integer p
 			, @RequestParam(defaultValue = "0") Integer lid) throws Exception {
 		List<WebInformation> webList;
@@ -158,7 +154,7 @@ public class BlobHandler extends ParentHandler {
 		log.info("获取首页文章访问量");
 		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
 		log.info("获取首页文章收藏量");
-		List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
+		List<Integer> collectionList = myCollectionService.selectCollectionsByWebIds(webids);
 		List<BlobInformation> blobList = new ArrayList<>();
 		for (int i = 0; i < webList.size(); i++) {
 			BlobInformation blobInformation = new BlobInformation(
@@ -203,8 +199,8 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/{webid}", method = RequestMethod.GET)
-	@CrossOrigin
-	public Result toBlob(@PathVariable("webid")Integer id) throws Exception {
+	public Result toBlob(@PathVariable("webid")Integer id, UserInformation user) throws Exception {
+
 		log.info("开始获取博客页面信息");
 		WebInformation web = webInformationService.selectById(id);
 		Integer uid = web.getUid();
@@ -212,11 +208,10 @@ public class BlobHandler extends ParentHandler {
 			web.setWebDataString(obsoleteConversionNow(new String(web.getWebData(), DEFAULT_CHARACTER)));
 			web.setWebData(null);
 		}
-		UserInformation user = ShiroUtils.getUserInformation();
-		// 如果未登录, 默认访问人
-		if(Objects.isNull(user)) {
-			user = DEFAULT_VISTOR;
-		}
+//		// 如果未登录, 默认访问人
+//		if(Objects.isNull(user)) {
+//			user = DEFAULT_VISTOR;
+//		}
 		log.info("添加访问信息");
 		visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
 		log.info("添加用户浏览记录");
@@ -303,9 +298,7 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/collection", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result collection(@RequestParam Integer bid, @RequestParam Integer webid) throws Exception {
-		UserInformation user =ShiroUtils.getUserInformation();
+	public Result collection(@RequestParam Integer bid, @RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
 		boolean flag = myCollectionService.insert(new MyCollection(null, user.getUid(), webid, bid));
@@ -328,9 +321,7 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/decollection", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result deCollection(@RequestParam Integer webid) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result deCollection(@RequestParam Integer webid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
 		if(myCollectionService.delete(user.getUid(), webid)) {
@@ -348,10 +339,7 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@GetMapping("/collectionstatuts")
-	@ResponseBody
-	public Result collectionStatus(@RequestParam Integer webid) throws Exception {
-		System.out.println(webid);
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result collectionStatus(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("查询用户是否已收藏文章");
 		boolean b = myCollectionService.countByUidAndWebId(user.getUid(), webid);
@@ -361,18 +349,16 @@ public class BlobHandler extends ParentHandler {
 
 	/**
 	 * 处理投稿请求
-	 * @param web, labelList
-	 * @return
+	 * @param labelList
 	 */
 	@RequestMapping(value = "/contribution", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result insert(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList)
-			throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result insert(@RequestBody Map<String, Object> values, @RequestParam(required = false)Integer [] labelList) throws Exception {
+		UserInformation user = (UserInformation) values.get("user");
+		WebInformation web = (WebInformation) values.get("web");
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "发布文章开始");
 		if(!Objects.isNull(labelList)) {
-			if(labelList.size() > 5) {
+			if(labelList.length > 5) {
 				log.info("发布文章失败, 文章只可添加至多五个标签");
 				return Result.fail().add(EXCEPTION, "文章最多添加五个标签");
 			}
@@ -384,11 +370,10 @@ public class BlobHandler extends ParentHandler {
 		//设置文章投稿时间
 		web.setSubTime(DateUtils.getSimpleDateSecond());
 		//发布文章
-		int flag = webInformationService.insert(web);
-		if(flag > 0) {
+		if(webInformationService.insert(web)) {
 			if(!Objects.isNull(labelList)) {
 				log.info("开始插入文章标签");
-				webLabelControlService.insert(web.getId(), labelList);
+				webLabelControlService.insert(web.getId(), Arrays.asList(labelList));
 			}
 			log.info("用户: " + user.getUid() + "发布文章成功, 文章标题为: " + web.getTitle());
 			return Result.success().add("webid", web.getId());
@@ -403,9 +388,7 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result delete(@RequestParam Integer webid) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result delete(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
 		WebInformation webInformation = webInformationService.selectById(webid);
@@ -424,18 +407,17 @@ public class BlobHandler extends ParentHandler {
 	
 	/**
 	 * 更新文章
-	 * @param web  更新后的文章
 	 * @return
 	 */
 	@RequestMapping(value = "/update", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result update(@Valid WebInformation web, @RequestParam(required = false)List<Integer> labelList) throws Exception {
+	public Result update(@RequestBody Map<String, Object> values, @RequestParam(required = false)Integer [] labelList) throws Exception {
+		UserInformation user = (UserInformation) values.get("user");
+		WebInformation web = (WebInformation) values.get("web");
 		//获取当前登录用户的信息
-		UserInformation user = ShiroUtils.getUserInformation();
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
 		if(!Objects.isNull(labelList)) {
-			if(labelList.size() > 3) {
+			if(labelList.length > 3) {
 				log.info("发布文章失败, 文章只可添加至多三个标签");
 				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
 			}
@@ -447,7 +429,7 @@ public class BlobHandler extends ParentHandler {
 			if (!Objects.isNull(labelList)) {
 				log.info("开始插入文章标签");
 				webLabelControlService.deleteByWebId(web.getId());
-				webLabelControlService.insert(web.getId(), labelList);
+				webLabelControlService.insert(web.getId(), Arrays.asList(labelList));
 			}
 			return Result.success();
 		}
@@ -462,9 +444,8 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/comment", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result postComment(@RequestParam Integer webid, @RequestParam String content) throws Exception{
-		UserInformation user =ShiroUtils.getUserInformation();
+	public Result postComment(@RequestParam Integer webid, @RequestParam String content,
+							  UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
 		boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(),
@@ -492,12 +473,11 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/commentreply", method = RequestMethod.POST)
-	@CrossOrigin
 	public Result postCommentReply(@RequestParam Integer webid,
 								   @RequestParam Integer cid,
 								   @RequestParam Integer bid,
-								   @RequestParam String content) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+								   @RequestParam String content,
+								   UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
 		boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content,
@@ -523,7 +503,6 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
-	@CrossOrigin
 	public Result getAuthorByUid(HttpServletRequest request, @RequestParam Integer uid) throws Exception{
 		log.info("获取作者: " + uid + "信息开始");
 		UserInformation user = userInformationService.selectByUid(uid);
@@ -591,7 +570,6 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@GetMapping("/getcollection")
-	@CrossOrigin
 	public Result getCollectionByUid(@RequestParam Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p)
 			throws Exception {
 		log.info("获取用户: " + uid + " 收藏的文章");
@@ -607,7 +585,7 @@ public class BlobHandler extends ParentHandler {
 		log.info("获取文章访问量");
 		List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
 		log.info("获取文章收藏量");
-		List<Integer> collection = myCollectionService.selectCollectionssByWebIds(webids);
+		List<Integer> collection = myCollectionService.selectCollectionsByWebIds(webids);
 		log.info("获取作者信息");
 		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
 		log.info("获取点赞量");
@@ -636,9 +614,8 @@ public class BlobHandler extends ParentHandler {
 	 * 处理点赞请求
 	 */
 	@RequestMapping(value = "/thumbs", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid,
+						 UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
 		boolean b = webThumbsService.insert(new WebThumbs(user.getUid(), bid, webid));
@@ -659,12 +636,10 @@ public class BlobHandler extends ParentHandler {
 	 * 处理取消点赞请求
 	 */
 	@RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
-	@CrossOrigin
-	public Result dethumbs(@RequestParam Integer webid) throws Exception{
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result dethumbs(@RequestParam Integer webid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
 		log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
-		boolean b = webThumbsService.deletebyWebIdAndUid(webid, user.getUid());
+		boolean b = webThumbsService.deleteByWebIdAndUid(webid, user.getUid());
 		if(b) {
 			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
 			return Result.success();
@@ -679,9 +654,7 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
-	@CrossOrigin
-	public Result thumbsStatus(@RequestParam Integer webid) throws Exception {
-		UserInformation user = ShiroUtils.getUserInformation();
+	public Result thumbsStatus(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		log.info("获取用户是否点赞此篇文章");
 		boolean b = webThumbsService.countByWebIdAndUid(webid, user.getUid());
@@ -694,7 +667,6 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@PostMapping(value = "/blobimg")
-	@CrossOrigin
 	public Result postBlobImg(@RequestParam MultipartFile img) throws Exception {
 		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + imgSuffix;
 		log.info("用户博客页面上传图片, 图片名为: " + name);
@@ -712,7 +684,6 @@ public class BlobHandler extends ParentHandler {
 	 * 获取文章标签
 	 * @return
 	 */
-	@ResponseBody
 	@GetMapping("/getlabel")
 	public Result getLabel(@RequestParam(defaultValue = "1") Integer p) throws Exception{
 		log.info("获取所有标签");
@@ -727,7 +698,6 @@ public class BlobHandler extends ParentHandler {
 	 * @return
 	 */
 	@GetMapping("/getcontype")
-	@CrossOrigin
 	public Result getContype() throws Exception{
 		log.info("获取文章类型列表");
 		List<Contype> contypes = contypeService.selectContypes();

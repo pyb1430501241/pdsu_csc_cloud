@@ -6,6 +6,10 @@ import java.io.Serializable;
 
 /**
  * 账号状态
+ * <li>NORMAL, 账号状态正常
+ * <li>FROZEN, 账号状态冻结
+ * <li>BAN, 账号状态封禁
+ * <li>CANCELLED, 账号状态注销
  * @author Admin
  *
  */
@@ -30,6 +34,7 @@ public enum AccountStatus implements Serializable{
 	 * 账号注销
 	 */
 	CANCELLED(4, "注销"),
+
 	OTHER(999, "other");
 
 	private Integer id;

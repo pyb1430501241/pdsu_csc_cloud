@@ -3,10 +3,11 @@ package com.pdsu.csc.impl;
 import com.pdsu.csc.bean.SystemNotification;
 import com.pdsu.csc.bean.SystemNotificationExample;
 import com.pdsu.csc.handler.AbstractHandler;
-import com.pdsu.csc.zuulDao.SystemNotificationMapper;
+import com.pdsu.csc.dao.SystemNotificationMapper;
 import com.pdsu.csc.service.impl.AbstractSystemNotificationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -26,8 +27,8 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         SystemNotificationExample example = new SystemNotificationExample();
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
-        example.setOrderByClause("createtime DESC");
-        return systemNotificationMapper.selectByExample(example);
+        example.setOrderByClause(splicing("createtime", ORDER_INCREMENTAL));
+        return selectListByExample(example);
     }
 
     @Override
@@ -36,7 +37,18 @@ public class SystemNotificationServiceImpl extends AbstractSystemNotificationSer
         SystemNotificationExample.Criteria criteria = example.createCriteria();
         criteria.andUidEqualTo(uid);
         criteria.andUnreadEqualTo(AbstractHandler.SYSTEM_NOTIFICATION_UNREAD);
-        return (int) systemNotificationMapper.countByExample(example);
+        return (int)countByExample(example);
+    }
+
+    @Override
+    public long countByExample(@Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.countByExample(example);
+    }
+
+    @Override
+    @NonNull
+    public List<SystemNotification> selectListByExample(@Nullable SystemNotificationExample example) {
+        return systemNotificationMapper.selectByExample(example);
     }
 
 }

@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.UserInformation;
+import com.pdsu.csc.bean.UserInformationExample;
 import com.pdsu.csc.exception.web.DeleteInforException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UidRepetitionException;
@@ -14,15 +15,8 @@ import java.util.List;
  * @author 半梦
  *
  */
-public interface UserInformationService {
-
-	/**
-	 * 增加用户
-	 * @param information
-	 * @return
-	 * @throws UidRepetitionException
-	 */
-	public boolean insert(@NonNull UserInformation information) throws UidRepetitionException;
+public interface UserInformationService extends
+		TemplateService<UserInformation, UserInformationExample>, UserService {
 
 	/**
 	 * 根据学号删除用户

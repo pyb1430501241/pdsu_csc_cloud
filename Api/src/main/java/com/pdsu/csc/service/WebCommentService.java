@@ -1,6 +1,7 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.WebComment;
+import com.pdsu.csc.bean.WebCommentExample;
 import com.pdsu.csc.exception.web.blob.NotFoundBlobIdException;
 import org.springframework.lang.NonNull;
 
@@ -11,25 +12,12 @@ import java.util.List;
  * @author 半梦
  *
  */
-public interface WebCommentService {
-
-	/**
-	 * 插入评论
-	 * @param webComment
-	 * @return
-	 */
-	public boolean insert(@NonNull WebComment webComment) throws NotFoundBlobIdException;
-	
-	/**
-	 * 查询博客是否存在
-	 * @param webid
-	 * @return
-	 */
-	public boolean countByWebid(@NonNull Integer webid);
+public interface WebCommentService extends
+		TemplateService<WebComment, WebCommentExample>, CommentService{
 
 	/**
 	 * 根据 webid 获取文章评论
-	 * @param id
+	 * @param webid
 	 * @return
 	 */
 	public List<WebComment> selectCommentsByWebId(@NonNull Integer webid) throws NotFoundBlobIdException;

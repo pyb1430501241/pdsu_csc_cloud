@@ -1,7 +1,9 @@
 package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.MyEmail;
+import com.pdsu.csc.bean.MyEmailExample;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
+import com.pdsu.csc.exception.web.user.UserException;
 import com.pdsu.csc.exception.web.user.email.EmailRepetitionException;
 import com.pdsu.csc.exception.web.user.email.NotFoundEmailException;
 import org.springframework.lang.NonNull;
@@ -11,11 +13,10 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  *
  */
-public interface MyEmailService {
+public interface MyEmailService extends TemplateService<MyEmail, MyEmailExample> {
 
 	/**
 	 * 查询邮箱是否存在
-	 * 返回值为0时代表邮箱不存在
 	 * @param email
 	 * @return
 	 */
@@ -34,21 +35,5 @@ public interface MyEmailService {
 	 * @return
 	 */
 	public MyEmail selectMyEmailByUid(@NonNull Integer uid);
-
-	/**
-	 * 插入
-	 * @param myEmail
-	 * @return
-	 * @throws EmailRepetitionException
-	 * @throws NotFoundUidException
-	 */
-	public boolean insert(@NonNull MyEmail myEmail) throws EmailRepetitionException, NotFoundUidException;
-	
-	/**
-	 * 查询用户是否存在
-	 * @param uid
-	 * @return
-	 */
-	public boolean countByUid(@NonNull Integer uid);
 
 }

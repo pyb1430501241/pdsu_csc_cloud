@@ -27,12 +27,12 @@ public class LoggingAspect {
     public void before(HttpServletRequest request) {
         String sessionId = HttpUtils.getSessionId(request);
         log.info("当前用户 SessionId为: "
-                + (StringUtils.isBlank(sessionId) ? "用户未登录或通过rememberMe认证" : sessionId)
+                + (StringUtils.isBlank(sessionId) ? "用户未登录" : sessionId)
                 + ", IP地址为: " + HttpUtils.getIpAddr(request));
     }
 
-    @AfterThrowing(value = "execution(public * com.pdsu.csc.handler..*(..))&&args(.., request)", throwing = "ex")
-    public void afterThrowing(JoinPoint joinPoint, Exception ex, HttpServletRequest request) {
+    @AfterThrowing(value = "execution(public * com.pdsu.csc.service..*(..))", throwing = "ex")
+    public void afterThrowing(JoinPoint joinPoint, Exception ex) {
         String str = joinPoint.getTarget().getClass().getName() + "."
                 + ((MethodSignature)joinPoint.getSignature()).getMethod().getName();
         log.error("执行方法 " + str + " 出现异常, 异常信息为: " + ex + ", 由 Feign 降级返回相应信息");

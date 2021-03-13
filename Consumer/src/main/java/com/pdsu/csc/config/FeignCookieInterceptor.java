@@ -37,6 +37,7 @@ public class FeignCookieInterceptor {
         // feign 在转发请求时会默认创建一个新的 Request, 所以需要将需要的 Header 添加到新的 Request 请求头里
         return requestTemplate -> {
             HttpServletRequest request = getHttpServletRequest();
+
             if(request == null) {
                 return;
             }

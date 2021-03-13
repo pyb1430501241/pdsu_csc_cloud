@@ -93,7 +93,7 @@ public class IndexHandler extends ParentHandler {
         log.info("获取首页文章访问量");
         List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
         log.info("获取首页文章收藏量");
-        List<Integer> collectionList = myCollectionService.selectCollectionssByWebIds(webids);
+        List<Integer> collectionList = myCollectionService.selectCollectionsByWebIds(webids);
         List<BlobInformation> blobList = new ArrayList<BlobInformation>();
         for (int i = 0; i < webList.size(); i++) {
             BlobInformation blobInformation = new BlobInformation(
