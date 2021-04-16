@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ControllerAdvice
 @ResponseBody
 @SuppressWarnings("all")
-public class ExceptionHandler extends AuthenticatedStorageHandler{
+public class ExceptionHandler extends AuthenticatedStorageHandler {
 
     private static final Logger log = LoggerFactory.getLogger("异常处理日志");
 

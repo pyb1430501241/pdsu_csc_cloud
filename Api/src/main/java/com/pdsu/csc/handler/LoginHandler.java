@@ -1,10 +1,6 @@
 package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.Result;
-import com.pdsu.csc.bean.UserInformation;
-import com.pdsu.csc.exception.web.user.UserNotLoginException;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,17 +10,8 @@ import javax.servlet.http.HttpServletResponse;
  * @author 半梦
  * @create 2020-07-13 13:52
  */
-public interface LoginHandler {
-
-    /**
-     * 判断用户是否登录, 如未登录抛出异常
-     */
-    void loginOrNotLogin(@Nullable UserInformation user) throws UserNotLoginException;
-
-    /**
-     * 根据请求头判断是否登录
-     */
-    void loginOrNotLogin(@NonNull HttpServletRequest request) throws UserNotLoginException;
+@SuppressWarnings("all")
+public interface LoginHandler extends AuthenticationHandler {
 
     /**
      * 处理登录
@@ -37,17 +24,21 @@ public interface LoginHandler {
      * 	如登录成功, 返回用户信息及其对应的 sessionId;
      * 	如失败则返回失败原因
      */
-    default Result login(@RequestParam String uid, @RequestParam String password,
+    Result login(@RequestParam String uid, @RequestParam String password,
                         @RequestParam String hit, @RequestParam String code,
-                        @RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
-        return Result.fail();
-    }
+                        @RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception;
+
+    /**
+     * @return  用户的登录状态
+     * 如登录, 返回用户信息
+     * 反之返回提示语
+     *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
+     */
+    Result getLoginStatus() throws Exception;
 
     /**
      * 退出登录
      */
-    default Result logout(HttpServletRequest request, HttpServletResponse response) {
-        return Result.fail();
-    }
+    Result logout(HttpServletRequest request, HttpServletResponse response);
 
 }

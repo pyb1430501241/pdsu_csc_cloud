@@ -1,6 +1,5 @@
 package com.pdsu.csc.handler;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.*;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
 import java.io.InputStream;
 import java.util.*;
 
@@ -28,7 +26,7 @@ import java.util.*;
 @RequestMapping("/blob")
 @SuppressWarnings({"unchecked"})
 @Log4j2
-public class BlobHandler extends ParentHandler {
+public class BlobHandler extends InitHandler {
 
 	/**
 	 * 博客相关逻辑处理
@@ -119,15 +117,15 @@ public class BlobHandler extends ParentHandler {
 			, @RequestParam(defaultValue = "0") Integer lid) throws Exception {
 		List<WebInformation> webList;
 		if (lid.equals(0)) {
-			log.info("获取首页数据");
+			log.debug("获取首页数据");
 			webList = webInformationService.selectWebInformationOrderByTimetest(p);
 		} else {
-			log.info("按标签获取首页数据");
+			log.debug("按标签获取首页数据");
 			List<Integer> wids = webLabelControlService.selectWebIdsByLid(lid);
 			webList = webInformationService.selectWebInformationsByIds(wids, true, p);
 		}
 		if(webList == null || webList.size() == 0) {
-			log.info("首页没有数据");
+			log.warn("首页没有数据");
 			return Result.accepted().add(EXCEPTION, "暂无此类标签的文章");
 		}
 		List<Integer> uids = new ArrayList<Integer>();
@@ -136,9 +134,9 @@ public class BlobHandler extends ParentHandler {
 			uids.add(w.getUid());
 			webids.add(w.getId());
 		}
-		log.info("获取博客作者信息");
+		log.debug("获取博客作者信息");
 		List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
-		log.info("获取博客作者头像");
+		log.debug("获取博客作者头像");
 		List<MyImage> imgPaths = myImageService.selectImagePathByUids(uids);
 		for(UserInformation user : userList) {
 			UserInformation t  = user;
@@ -149,11 +147,11 @@ public class BlobHandler extends ParentHandler {
 				}
 			}
 		}
-		log.info("获取首页文章点赞量");
+		log.debug("获取首页文章点赞量");
 		List<Integer> thumbsList = webThumbsService.selectThumbssForWebId(webids);
-		log.info("获取首页文章访问量");
+		log.debug("获取首页文章访问量");
 		List<Integer> visitList = visitInformationService.selectVisitsByWebIds(webids);
-		log.info("获取首页文章收藏量");
+		log.debug("获取首页文章收藏量");
 		List<Integer> collectionList = myCollectionService.selectCollectionsByWebIds(webids);
 		List<BlobInformation> blobList = new ArrayList<>();
 		for (int i = 0; i < webList.size(); i++) {
@@ -201,7 +199,7 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/{webid}", method = RequestMethod.GET)
 	public Result toBlob(@PathVariable("webid")Integer id, UserInformation user) throws Exception {
 
-		log.info("开始获取博客页面信息");
+		log.debug("开始获取博客页面信息");
 		WebInformation web = webInformationService.selectById(id);
 		Integer uid = web.getUid();
 		if(!Objects.isNull(web.getWebData())) {
@@ -212,21 +210,21 @@ public class BlobHandler extends ParentHandler {
 //		if(Objects.isNull(user)) {
 //			user = DEFAULT_VISTOR;
 //		}
-		log.info("添加访问信息");
+		log.debug("添加访问信息");
 		visitInformationService.insert(new VisitInformation(null, user.getUid(), uid, web.getId()));
-		log.info("添加用户浏览记录");
+		log.debug("添加用户浏览记录");
 		if(!Objects.isNull(user.getUsername())) {
 			userBrowsingRecordService.insert(new UserBrowsingRecord(user.getUid(), web.getId(), BLOB
 				, DateUtils.getSimpleDateSecond()));
 		}
-		log.info("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
-		log.info("获取网页访问量");
+		log.debug("用户: " + user.getUid() + ", 访问了文章: " + web.getId() + ", 作者为: " + uid);
+		log.debug("获取网页访问量");
 		Integer visits = visitInformationService.selectvisitByWebId(web.getId());
-		log.info("获取文章点赞数");
+		log.debug("获取文章点赞数");
 		Integer thubms = webThumbsService.selectThumbsForWebId(web.getId());
-		log.info("获取文章收藏量");
+		log.debug("获取文章收藏量");
 		Integer collections = myCollectionService.selectCollectionsByWebId(web.getId());
-		log.info("获取文章评论");
+		log.debug("获取文章评论");
 		List<WebComment> commentList = webCommentService.selectCommentsByWebId(id);
 		List<WebCommentReply> commentReplyList = webCommentReplyService.selectCommentReplysByWebId(id);
 		List<Integer> uids = new ArrayList<>();
@@ -236,9 +234,9 @@ public class BlobHandler extends ParentHandler {
 		for(WebCommentReply reply : commentReplyList) {
 			uids.add(reply.getUid());
 		}
-		log.info("获取评论者信息");
+		log.debug("获取评论者信息");
 		List<UserInformation> userList = userInformationService.selectUsersByUids(uids);
-		log.info("获取评论者头像信息");
+		log.debug("获取评论者头像信息");
 		List<MyImage> imageList = myImageService.selectImagePathByUids(uids);
 		for(MyImage img : imageList) {
 			for (UserInformation us : userList) {
@@ -280,7 +278,7 @@ public class BlobHandler extends ParentHandler {
 			}
 			b.setCommentReplyList(webCommentReplyList);
 		}
-		log.info("获取文章标签");
+		log.debug("获取文章标签");
 		List<Integer> labelids = webLabelControlService.selectLabelIdByWebId(id);
 		List<WebLabel> webLabels = webLabelService.selectByLabelIds(labelids, 1);
 		return Result.success().add("web", web)
@@ -300,10 +298,10 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/collection", method = RequestMethod.POST)
 	public Result collection(@RequestParam Integer bid, @RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
+		log.debug("用户: " + user.getUid() + ", 收藏博客: " + webid + ", 作者为: " + bid + ", 开始");
 		boolean flag = myCollectionService.insert(new MyCollection(null, user.getUid(), webid, bid));
 		if(flag) {
-			log.info("用户: " + user.getUid() + ", 收藏 " + webid + " 成功");
+			log.debug("用户: " + user.getUid() + ", 收藏 " + webid + " 成功");
 			WebInformation w = webInformationService.selectById(webid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
 					bid, SystemMessageUtils.getCollectionString(user.getUsername(), w.getTitle()), user.getUid(),
@@ -323,9 +321,9 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/decollection", method = RequestMethod.POST)
 	public Result deCollection(@RequestParam Integer webid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
+		log.debug("用户: " + user.getUid() + ", 取消收藏博客: " + webid + "开始");
 		if(myCollectionService.delete(user.getUid(), webid)) {
-			log.info("取消收藏成功");
+			log.debug("取消收藏成功");
 			return Result.success();
 		}else {
 			log.warn("取消收藏失败, 原因: 连接服务器失败");
@@ -341,9 +339,9 @@ public class BlobHandler extends ParentHandler {
 	@GetMapping("/collectionstatuts")
 	public Result collectionStatus(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
-		log.info("查询用户是否已收藏文章");
+		log.debug("查询用户是否已收藏文章");
 		boolean b = myCollectionService.countByUidAndWebId(user.getUid(), webid);
-		log.info("查询成功");
+		log.debug("查询成功");
 		return Result.success().add("collectionStatus", b);
 	}
 
@@ -356,7 +354,7 @@ public class BlobHandler extends ParentHandler {
 		UserInformation user = (UserInformation) values.get("user");
 		WebInformation web = (WebInformation) values.get("web");
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + "发布文章开始");
+		log.debug("用户: " + user.getUid() + "发布文章开始");
 		if(!Objects.isNull(labelList)) {
 			if(labelList.length > 5) {
 				log.info("发布文章失败, 文章只可添加至多五个标签");
@@ -372,10 +370,10 @@ public class BlobHandler extends ParentHandler {
 		//发布文章
 		if(webInformationService.insert(web)) {
 			if(!Objects.isNull(labelList)) {
-				log.info("开始插入文章标签");
+				log.debug("开始插入文章标签");
 				webLabelControlService.insert(web.getId(), Arrays.asList(labelList));
 			}
-			log.info("用户: " + user.getUid() + "发布文章成功, 文章标题为: " + web.getTitle());
+			log.debug("用户: " + user.getUid() + "发布文章成功, 文章标题为: " + web.getTitle());
 			return Result.success().add("webid", web.getId());
 		}
 		log.warn("用户: " + user.getUid() + "发布文章失败, 原因: 连接数据库失败");
@@ -390,15 +388,15 @@ public class BlobHandler extends ParentHandler {
 	@RequestMapping(value = "/delete", method = RequestMethod.POST)
 	public Result delete(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
-		log.info("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
+		log.debug("开始删除文章, 文章ID为: " + webid + " 文章作者为: " + user.getUid());
 		WebInformation webInformation = webInformationService.selectById(webid);
 		if(!user.getUid().equals(webInformation.getUid())) {
-			log.info("用户: " + user.getUid() + " 无权删除文章: " + webid);
+			log.debug("用户: " + user.getUid() + " 无权删除文章: " + webid);
 			return Result.fail().add(EXCEPTION, INSUFFICIENT_PERMISSION);
 		}
 		boolean b = webInformationService.deleteById(webid);
 		if(b) {
-			log.info("删除文章成功, 文章ID为: " + webid);
+			log.debug("删除文章成功, 文章ID为: " + webid);
 			return Result.success();
 		}
 		log.warn("删除文章失败, 连接数据库失败");
@@ -415,25 +413,25 @@ public class BlobHandler extends ParentHandler {
 		WebInformation web = (WebInformation) values.get("web");
 		//获取当前登录用户的信息
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
+		log.debug("用户: " + user.getUid() + ", 开始更新文章: " + web.getId());
 		if(!Objects.isNull(labelList)) {
-			if(labelList.length > 3) {
-				log.info("发布文章失败, 文章只可添加至多三个标签");
-				return Result.fail().add(EXCEPTION, "文章最多添加三个标签");
+			if(labelList.length > 5) {
+				log.debug("发布文章失败, 文章只可添加至多五个标签");
+				return Result.fail().add(EXCEPTION, "文章最多添加五个标签");
 			}
 		}
 		web.setWebData(web.getWebDataString().getBytes());
 		boolean b = webInformationService.updateByWebId(web);
 		if(b) {
-			log.info("更新文章成功");
+			log.debug("更新文章成功");
 			if (!Objects.isNull(labelList)) {
-				log.info("开始插入文章标签");
+				log.debug("开始插入文章标签");
 				webLabelControlService.deleteByWebId(web.getId());
 				webLabelControlService.insert(web.getId(), Arrays.asList(labelList));
 			}
 			return Result.success();
 		}
-		log.info("更新文章失败");
+		log.warn("更新文章失败");
 		return Result.fail().add(EXCEPTION, NETWORK_BUSY);
 	}
 	
@@ -447,11 +445,11 @@ public class BlobHandler extends ParentHandler {
 	public Result postComment(@RequestParam Integer webid, @RequestParam String content,
 							  UserInformation user) throws Exception{
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
+		log.debug("用户: " + user.getUid() + "在博客: " + webid + "发布评论, 内容为: " + content);
 		boolean b = webCommentService.insert(new WebComment(null, webid, user.getUid(),
 				content, 0, DateUtils.getSimpleDateSecond(), 0));
 		if(b) {
-			log.info("用户发布评论成功");
+			log.debug("用户发布评论成功");
 			WebInformation u = webInformationService.selectById(webid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
 					u.getUid(), SystemMessageUtils.getCommentString(user.getUsername(), u.getTitle(), content),
@@ -479,11 +477,11 @@ public class BlobHandler extends ParentHandler {
 								   @RequestParam String content,
 								   UserInformation user) throws Exception {
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
+		log.debug("用户: " + user.getUid() + " 回复评论: " + cid + "被回复人: " + bid + ", 内容为:" + content);
 		boolean b = webCommentReplyService.insert(new WebCommentReply(webid, cid, user.getUid(), bid, content,
 					0, DateUtils.getSimpleDateSecond()));
 		if(b) {
-			log.info("用户回复评论成功");
+			log.debug("用户回复评论成功");
 			WebComment c = webCommentService.selectCommentById(cid);
 			systemNotificationService.insert(Arrays.asList(new SystemNotification(
 					bid, SystemMessageUtils.getCommentReplyString(user.getUsername(), c.getContent(), content),
@@ -504,12 +502,12 @@ public class BlobHandler extends ParentHandler {
 	 */
 	@RequestMapping(value = "/getauthor", method = RequestMethod.GET)
 	public Result getAuthorByUid(HttpServletRequest request, @RequestParam Integer uid) throws Exception{
-		log.info("获取作者: " + uid + "信息开始");
+		log.debug("获取作者: " + uid + "信息开始");
 		UserInformation user = userInformationService.selectByUid(uid);
 		Author author = new Author();
 		author.setUid(user.getUid());
 		author.setUsername(user.getUsername());
-		log.info("获取作者其余文章");
+		log.debug("获取作者其余文章");
 		List<WebInformation> webList = webInformationService.selectWebInformationsByUid(uid, null);
 		List<WebInformation> webs = new ArrayList<WebInformation>();
 		List<Integer> webids = new ArrayList<>();
@@ -521,47 +519,39 @@ public class BlobHandler extends ParentHandler {
 			webids.add(webInformation.getId());
 			i++;
 		}
-		log.info("获取作者头像信息");
+		log.debug("获取作者头像信息");
 		String imgpath = myImageService.selectImagePathByUid(uid).getImagePath();
 		author.setImgpath(imgpath);
-		log.info("获取作者粉丝数");
+		log.debug("获取作者粉丝数");
 		Integer fans = (int) myLikeService.countByLikeId(uid);
 		author.setFans(fans);
-		log.info("获取作者文章被点赞数");
+		log.debug("获取作者文章被点赞数");
 		Integer thumbs = webThumbsService.countThumbsByUid(uid);
 		author.setThumbs(thumbs);
-		log.info("获取作者文章总评论数");
+		log.debug("获取作者文章总评论数");
 		Integer comment = webCommentService.countByUid(uid);
 		Integer commentReply = webCommentReplyService.countByWebsAndUid(webids);
 		author.setComment(comment + commentReply);
-		log.info("获取作者文章总访问量");
+		log.debug("获取作者文章总访问量");
 		Integer visits = visitInformationService.selectVisitsByVid(uid);
 		author.setVisits(visits);
-		log.info("获取作者文章总收藏量");
+		log.debug("获取作者文章总收藏量");
 		Integer collection = myCollectionService.countCollectionByUid(uid);
 		author.setCollection(collection);
-		log.info("获取作者原创数量");
+		log.debug("获取作者原创数量");
 		Integer original = webInformationService.countOriginalByUidAndContype(uid, 1);
 		author.setOriginal(original);
-		log.info("获取作者总关注数量");
+		log.debug("获取作者总关注数量");
 		Integer attention = (int) myLikeService.countByUid(uid);
 		author.setAttention(attention);
-		log.info("获取作者文件总数量");
+		log.debug("获取作者文件总数量");
 		Integer files = webFileService.countByUid(uid);
 		author.setFiles(files);
-		log.info("获取作者文件被下载量");
+		log.debug("获取作者文件被下载量");
 		Integer downloads = fileDownloadService.countByBid(uid);
 		author.setDownloads(downloads);
-		log.info("获取作者信息成功");
-		Result result = Result.success().add("author", author).add("webList", webs);
-		if(!ObjectUtils.isEmpty(HttpUtils.getSessionId(WebUtils.toHttp(request)))) {
-			boolean b = true;
-			if(!ShiroUtils.getUserInformation().getUid().equals(uid)) {
-				b = myLikeService.countByUidAndLikeId(ShiroUtils.getUserInformation().getUid(), uid);
-			}
-			result.add("islike", b);
-		}
-		return result;
+		log.debug("获取作者信息成功");
+		return Result.success().add("author", author).add("webList", webs);
 	}
 	
 	/**

@@ -34,7 +34,7 @@ import java.util.Objects;
 @RestController
 @RequestMapping("/admin")
 @Log4j2
-public class AdminHandler extends ParentHandler{
+public class AdminHandler extends InitHandler {
 
 	/**
 	 * 权限

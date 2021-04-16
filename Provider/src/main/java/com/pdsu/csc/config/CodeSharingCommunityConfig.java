@@ -91,6 +91,17 @@ public class CodeSharingCommunityConfig {
 //    }
 
     /**
+     * $.axios({
+     *     method : "POST",
+     *     url : "/login",
+     *     param : "xxxx",
+     *     success : function(result) {
+     *        result.data.at
+     *     }
+     * });
+     */
+
+    /**
      * Hystrix
      */
     @Bean

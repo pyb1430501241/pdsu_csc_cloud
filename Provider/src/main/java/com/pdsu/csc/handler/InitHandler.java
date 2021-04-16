@@ -20,7 +20,7 @@ import java.util.Objects;
  * 该类用于提供子类一些常用的常量, 错误提示
  */
 @SuppressWarnings("all")
-public abstract class ParentHandler implements AbstractHandler, LoginHandler {
+public abstract class InitHandler implements AbstractHandler, AuthenticationHandler {
 
     /**
      * 日志
@@ -134,9 +134,11 @@ public abstract class ParentHandler implements AbstractHandler, LoginHandler {
         public static void initSystem() {
             InitSystem initSystem = new InitSystem(new PropertiesDefinition());
             try {
-                initSystem.reader("properties/csc.properties");
-                initSystem.initParameters();
-                initSystem.mkdirs();
+                synchronized (initSystem) {
+                    initSystem.reader("properties/csc.properties");
+                    initSystem.initParameters();
+                    initSystem.mkdirs();
+                }
             } catch (IOException e) {
                 log.warn("系统初始化异常...使用默认参数..." + e);
             }

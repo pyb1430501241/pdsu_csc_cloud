@@ -6,10 +6,7 @@ import com.netflix.zuul.exception.ZuulException;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.bean.ZuulStatus;
 import com.pdsu.csc.shiro.WebSessionManager;
-import com.pdsu.csc.utils.DateUtils;
-import com.pdsu.csc.utils.HttpUtils;
-import com.pdsu.csc.utils.RedisUtils;
-import com.pdsu.csc.utils.ShiroUtils;
+import com.pdsu.csc.utils.*;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
@@ -59,7 +56,7 @@ public class StatusFilter extends ZuulFilter {
         String sessionId = (String) ((WebSessionManager)manager.getSessionManager())
                 .getSessionId(request, response);
 
-        if(sessionId == null) {
+        if(StringUtils.isBlank(sessionId)) {
             return null;
         }
 

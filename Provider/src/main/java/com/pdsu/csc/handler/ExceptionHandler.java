@@ -35,7 +35,7 @@ import java.io.UnsupportedEncodingException;
 @ControllerAdvice
 @ResponseBody
 @SuppressWarnings("all")
-public class ExceptionHandler extends ParentHandler {
+public class ExceptionHandler extends InitHandler {
 
     private static final Logger log = LoggerFactory.getLogger("异常处理日志");
 

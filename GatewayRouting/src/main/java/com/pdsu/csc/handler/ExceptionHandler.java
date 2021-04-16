@@ -51,7 +51,7 @@ public class ExceptionHandler implements AbstractHandler {
      */
     @org.springframework.web.bind.annotation.ExceptionHandler(UserNotLoginException.class)
     public Result processUserNotLoginException(UserNotLoginException e) {
-        log.info("使用某些功能时出现未知错误, 原因: " + e.getMessage());
+        log.error("使用某些功能时出现未知错误, 原因: " + e.getMessage());
         return Result.fail().add(EXCEPTION, NOT_LOGIN);
     }
 

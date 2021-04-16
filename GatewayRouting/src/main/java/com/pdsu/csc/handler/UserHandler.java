@@ -45,8 +45,8 @@ public class UserHandler implements AbstractHandler, LoginHandler {
     public Result login(@RequestParam String uid, @RequestParam String password,
                         @RequestParam String hit, @RequestParam String code,
                         @RequestParam(value = "flag", defaultValue = "0")Integer flag) throws Exception {
-        log.info("账号: " + uid + "登录开始");
-        log.info("参数为: " + StringUtils.toString(uid, password, hit, code, flag));
+        log.debug("账号: " + uid + "登录开始");
+        log.debug("参数为: " + StringUtils.toString(uid, password, hit, code, flag));
         String ss = (String) redisUtils.get(hit);
 
         if(Objects.isNull(ss)) {
@@ -54,7 +54,7 @@ public class UserHandler implements AbstractHandler, LoginHandler {
         }
 
         //从缓存中获取验证码
-        log.info("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
+        log.debug("比对验证码中..." + " 用户输入验证码为: " + code + ", 服务器端储存的验证码为: " + ss);
         if(!StringUtils.CompareIgnoreCase(ss, code)) {
             log.info(CODE_ERROR);
             return Result.fail().add(EXCEPTION, CODE_ERROR);
@@ -80,7 +80,7 @@ public class UserHandler implements AbstractHandler, LoginHandler {
         UserInformation uu = (UserInformation) subject.getPrincipal();
         // 密码置为空
         uu.setPassword(null);
-        log.info("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
+        log.debug("账号: " + uid + "登录成功, " + HttpUtils.getSessionHeader() + "为: " + subject.getSession().getId());
 
         return Result.success().add("user", uu);
     }
@@ -90,7 +90,6 @@ public class UserHandler implements AbstractHandler, LoginHandler {
      * 如登录, 返回用户信息
      * 反之返回提示语
      *  loginOrNotLogin(user) 通过异常的方式避免了 user 为 null
-     *  所以下一句提醒的 user 可能为 null 的提示可以直接无视
      */
     @RequestMapping(value = "/loginstatus", method = RequestMethod.GET)
     public Result getLoginStatus() throws Exception {

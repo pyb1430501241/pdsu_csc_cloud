@@ -4,7 +4,6 @@ jenkins真难配，害
 
 package com.pdsu.csc.handler;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.FileDownloadService;
@@ -13,14 +12,9 @@ import com.pdsu.csc.service.WebFileService;
 import com.pdsu.csc.utils.*;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.io.input.ReaderInputStream;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-
-import feign.Response;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
@@ -37,7 +31,7 @@ import java.util.Objects;
 @RequestMapping("/file")
 @Log4j2
 @SuppressWarnings("unchecked")
-public class FileHandler extends ParentHandler {
+public class FileHandler extends InitHandler {
 	
 	/**
 	 * 文件操作相关

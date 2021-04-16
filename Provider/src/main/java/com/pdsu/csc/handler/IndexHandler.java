@@ -1,13 +1,10 @@
 package com.pdsu.csc.handler;
 
-import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.pdsu.csc.bean.*;
 import com.pdsu.csc.service.*;
 import com.pdsu.csc.utils.SortUtils;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,7 +19,7 @@ import java.util.List;
 @RestController
 @CrossOrigin
 @Log4j2
-public class IndexHandler extends ParentHandler {
+public class IndexHandler extends InitHandler {
 
     /**
      * 博客相关

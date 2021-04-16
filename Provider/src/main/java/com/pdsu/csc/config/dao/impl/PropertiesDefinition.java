@@ -2,9 +2,8 @@ package com.pdsu.csc.config.dao.impl;
 
 import com.pdsu.csc.bean.HandlerValueEnum;
 import com.pdsu.csc.config.dao.InitDao;
-import com.pdsu.csc.handler.ParentHandler;
+import com.pdsu.csc.handler.InitHandler;
 import com.pdsu.csc.utils.StringUtils;
-import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,7 +27,7 @@ public class PropertiesDefinition implements InitDao {
 
     @Override
     public void reader(String filepath) throws IOException {
-        ClassLoader classLoader = ParentHandler.class.getClassLoader();
+        ClassLoader classLoader = InitHandler.class.getClassLoader();
         InputStream in = classLoader.getResourceAsStream(filepath);
         properties.load(in);
         Enumeration enumeration = properties.propertyNames();
@@ -48,20 +47,20 @@ public class PropertiesDefinition implements InitDao {
             log.info("系统初始化...正在初始化参数: " + key + ", 其值为: " + value);
             switch (HandlerValueEnum.getByKey(key)) {
                 case IMG_SUFFIX:
-                    ParentHandler.imgSuffix = value;
-                    ParentHandler.imgSuffixExceptPoint = StringUtils.getSuffixNameExceptPoint(value);
+                    InitHandler.imgSuffix = value;
+                    InitHandler.imgSuffixExceptPoint = StringUtils.getSuffixNameExceptPoint(value);
                     break;
                 case FILE_FILEPATH:
-                    ParentHandler.fileFilePath = value;
+                    InitHandler.fileFilePath = value;
                     break;
                 case USER_IMG_FILEPATH:
-                    ParentHandler.userImgFilePath = value;
+                    InitHandler.userImgFilePath = value;
                     break;
                 case BLOB_IMG_FILEPATH:
-                    ParentHandler.blobImgFilePath = value;
+                    InitHandler.blobImgFilePath = value;
                     break;
                 case USER_IMG_NAME:
-                    ParentHandler.userImgName = value;
+                    InitHandler.userImgName = value;
                     break;
                 default:
             }
@@ -70,18 +69,18 @@ public class PropertiesDefinition implements InitDao {
 
     @Override
     public void mkdirs() {
-        File file = new File(ParentHandler.userImgFilePath);
-        log.info("系统初始化...创建目录: " + ParentHandler.userImgFilePath);
+        File file = new File(InitHandler.userImgFilePath);
+        log.info("系统初始化...创建目录: " + InitHandler.userImgFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }
-        file = new File(ParentHandler.blobImgFilePath);
-        log.info("系统初始化...创建目录: " + ParentHandler.blobImgFilePath);
+        file = new File(InitHandler.blobImgFilePath);
+        log.info("系统初始化...创建目录: " + InitHandler.blobImgFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }
-        file = new File(ParentHandler.fileFilePath);
-        log.info("系统初始化...创建目录: " + ParentHandler.fileFilePath);
+        file = new File(InitHandler.fileFilePath);
+        log.info("系统初始化...创建目录: " + InitHandler.fileFilePath);
         if(!file.exists()) {
             file.mkdirs();
         }

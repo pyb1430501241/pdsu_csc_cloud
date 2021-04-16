@@ -16,7 +16,7 @@ public final class StringUtils {
      * 如为 null 或长度为0 返回 true
      */
     public static boolean isBlank(@Nullable String str) {
-        return str == null || str.length() == 0;
+        return str == null || str.trim().length() == 0;
     }
 
     /**

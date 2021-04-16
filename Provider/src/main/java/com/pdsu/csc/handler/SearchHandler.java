@@ -4,9 +4,6 @@ import com.pdsu.csc.bean.*;
 import com.pdsu.csc.es.service.EsService;
 import com.pdsu.csc.utils.StringUtils;
 import lombok.extern.log4j.Log4j2;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -35,7 +32,7 @@ import java.util.List;
  */
 @RestController
 @Log4j2
-public class SearchHandler extends ParentHandler {
+public class SearchHandler extends InitHandler {
 	
 	@Resource(name = "esUserService")
 	private EsService<EsUserInformation> esUserService;

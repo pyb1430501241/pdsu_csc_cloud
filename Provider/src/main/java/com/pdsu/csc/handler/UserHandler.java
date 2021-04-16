@@ -45,7 +45,7 @@ import java.util.*;
 @RequestMapping("/user")
 @Log4j2
 @SuppressWarnings({"unchecked", "null"})
-public class UserHandler extends ParentHandler {
+public class UserHandler extends InitHandler {
 
 	/**
 	 * 用户信息相关
@@ -96,9 +96,15 @@ public class UserHandler extends ParentHandler {
 	 * 管理
 	 */
 	private UserRoleService userRoleService;
-	
+
+	/**
+	 * redis 工具
+	 */
 	private RedisUtils redisUtils;
 
+	/**
+	 * 验证码过期时间
+	 */
 	private static final Integer CODE_EXPIATION_TIME = 300;
 	
 //	/**

@@ -17,6 +17,7 @@ import java.io.Serializable;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@SuppressWarnings("all")
 public class UserInformation implements Serializable, Cloneable {
 
 	private static final long serialVersionUID = 1L;

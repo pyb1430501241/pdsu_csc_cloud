@@ -7,9 +7,13 @@ import com.pdsu.csc.exception.web.user.UserNotLoginException;
 import com.pdsu.csc.service.ProviderService;
 import com.pdsu.csc.utils.HttpUtils;
 import com.pdsu.csc.utils.RedisUtils;
+import com.pdsu.csc.utils.ShiroUtils;
+import com.pdsu.csc.utils.StringUtils;
 import lombok.extern.log4j.Log4j2;
+import org.apache.shiro.web.util.WebUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.util.ObjectUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -171,7 +175,16 @@ public class BlobHandler extends AuthenticatedStorageHandler {
      */
     @RequestMapping(value = "/getauthor", method = RequestMethod.GET)
     public Result getAuthorByUid(@RequestParam Integer uid, HttpServletRequest request) {
-        return providerService.getAuthorByUid(uid);
+        Result result = providerService.getAuthorByUid(uid);
+        if(!StringUtils.isBlank(HttpUtils.getSessionId(request))) {
+            boolean b = true;
+            UserInformation userInformation = compulsionGet(HttpUtils.getSessionId(WebUtils.toHttp(request)));
+            if(!userInformation.getUid().equals(uid)) {
+                b = false;
+            }
+            result.add("islike", b);
+        }
+        return result;
     }
 
     /**

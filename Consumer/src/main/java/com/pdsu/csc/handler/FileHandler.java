@@ -18,7 +18,7 @@ import javax.servlet.http.HttpServletResponse;
  */
 @RestController
 @RequestMapping("/file")
-public class FileHandler extends AuthenticatedStorageHandler{
+public class FileHandler extends AuthenticatedStorageHandler {
 
     @Autowired
     private ProviderService providerService;

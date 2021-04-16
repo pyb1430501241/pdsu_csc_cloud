@@ -16,7 +16,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @create 2021-02-21 22:09
  */
 public abstract class AuthenticatedStorageHandler
-        implements AbstractHandler, LoginHandler {
+        implements AbstractHandler, AuthenticationHandler {
 
     /**
      * 用来存储已经通过认证的
