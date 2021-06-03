@@ -23,7 +23,7 @@ public class Result{
 
 	public static Result success() {
 		Result result = new Result();
-		result.add("msg", "心有所想, 日复一日, 必有精进.");
+		result.add("msg", "success");
 		result.add("code", 200);
 		return result;
 	}

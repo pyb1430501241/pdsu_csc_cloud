@@ -2,6 +2,7 @@ package com.pdsu.csc.service;
 
 import com.pdsu.csc.bean.MyEmail;
 import com.pdsu.csc.bean.MyEmailExample;
+import com.pdsu.csc.exception.CodeSharingCommunityException;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UserException;
 import com.pdsu.csc.exception.web.user.email.EmailRepetitionException;
@@ -14,6 +15,12 @@ import org.springframework.lang.NonNull;
  *
  */
 public interface MyEmailService extends TemplateService<MyEmail, MyEmailExample> {
+
+	/**
+	 *  插入邮箱对象
+	 */
+	@Override
+	boolean insert(MyEmail myEmail) throws CodeSharingCommunityException;
 
 	/**
 	 * 查询邮箱是否存在

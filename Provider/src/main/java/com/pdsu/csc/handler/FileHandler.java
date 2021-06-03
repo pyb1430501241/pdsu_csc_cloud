@@ -57,19 +57,19 @@ public class FileHandler extends InitHandler {
 	 */
 	@RequestMapping(value = "/upload", method = RequestMethod.POST)
 	public Result upload(@RequestParam("file")MultipartFile file, @RequestParam String title,
-						 @RequestParam String description, UserInformation user) throws Exception{
+						 @RequestParam String description, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
 		Integer uid = user.getUid();
-		log.info("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
+		log.debug("用户: " + uid + " 上传文件: " + title + " 开始" + ", 描述为:" + description);
 		byte [] s = file.getBytes();
 		String name = HashUtils.getFileNameForHash(title) + StringUtils.getSuffixName(file.getOriginalFilename());
-		log.info("文件名为: " + name);
+		log.debug("文件名为: " + name);
 		FileUtils.writeByteArrayToFile(new File(fileFilePath + name), s);
-		log.info("文件写入成功, 开始在服务器保存地址");
+		log.debug("文件写入成功, 开始在服务器保存地址");
 		WebFile webFile = new WebFile(uid, title, description, name, DateUtils.getSimpleDateSecond());
 		boolean b = webFileService.insert(webFile);
 		if(b) {
-			log.info("上传成功");
+			log.debug("上传成功");
 			return Result.success().add("fileid", webFile.getId());
 		}
 		log.error("上传失败");
@@ -89,8 +89,8 @@ public class FileHandler extends InitHandler {
 		InputStream in = null;
 		loginOrNotLogin(user);
 		try {
-			log.info("开始下载文件, 下载人 UID 为: " + user.getUid());
-			log.info("查询文件是否存在");
+			log.debug("开始下载文件, 下载人 UID 为: " + user.getUid());
+			log.debug("查询文件是否存在");
 			WebFile webfile = webFileService.selectFileByUidAndTitle(uid, title);
 			String filePath = webfile.getFilePath();
 			String url = fileFilePath + filePath;
@@ -104,7 +104,7 @@ public class FileHandler extends InitHandler {
 			out.write(bytes);
 			out.flush();
 			fileDownloadService.insert(new FileDownload(webfile.getId(), uid, user.getUid()));
-			log.info("下载成功");
+			log.debug("下载成功");
 		} finally {
 			if(!Objects.isNull(out)) {
 				try {
@@ -131,7 +131,7 @@ public class FileHandler extends InitHandler {
 	 */
 	@GetMapping("/getfileindex")
 	public Result getFileIndex(@RequestParam(defaultValue = "1") Integer p) throws Exception{
-		log.info("获取首页文件");
+		log.debug("获取首页文件");
 		List<WebFile> list = webFileService.selectFilesOrderByTime(p);
 		List<Integer> uids = new ArrayList<Integer>();
 		List<Integer> fileids = new ArrayList<Integer>();
@@ -139,9 +139,9 @@ public class FileHandler extends InitHandler {
 			uids.add(file.getUid());
 			fileids.add(file.getId());
 		}
-		log.info("获取作者信息");
+		log.debug("获取作者信息");
 		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-		log.info("获取文件下载量");
+		log.debug("获取文件下载量");
 		List<Integer> downloads = fileDownloadService.selectDownloadsByFileIds(fileids);
 		List<FileInformation> files = new ArrayList<FileInformation>();
 		for (int i = 0; i < list.size(); i++) {
@@ -150,7 +150,7 @@ public class FileHandler extends InitHandler {
 			fileInformation.setDownloads(downloads.get(i));
 			for (UserInformation user : users) {
 				UserInformation u = user;
-				user.setPassword(null);
+				u.setPassword(null);
 				if(user.getUid().equals(list.get(i).getUid())) {
 					fileInformation.setUser(user);
 					break;
@@ -170,4 +170,5 @@ public class FileHandler extends InitHandler {
 		this.fileDownloadService = fileDownloadService;
 		this.userInformationService = userInformationService;
 	}
+
 }

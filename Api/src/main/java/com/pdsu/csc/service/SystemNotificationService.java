@@ -21,6 +21,7 @@ public interface SystemNotificationService extends
      */
     public boolean insert(@NonNull List<SystemNotification> list);
 
+
     /**
      * 获取用户通知
      * @param uid

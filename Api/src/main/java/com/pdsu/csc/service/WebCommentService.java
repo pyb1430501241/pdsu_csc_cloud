@@ -13,7 +13,7 @@ import java.util.List;
  *
  */
 public interface WebCommentService extends
-		TemplateService<WebComment, WebCommentExample>, CommentService{
+		TemplateService<WebComment, WebCommentExample>, CommentService {
 
 	/**
 	 * 根据 webid 获取文章评论

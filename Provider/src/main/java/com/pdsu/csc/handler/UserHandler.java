@@ -170,7 +170,7 @@ public class UserHandler extends InitHandler {
 	 */
 	@RequestMapping(value = "/getcodeforlogin", method = RequestMethod.GET)
 	public Result getCode(HttpServletRequest request) throws Exception {
-		log.info("获取验证码开始");
+		log.debug("获取验证码开始");
 		String verifyCode = CodeUtils.generateVerifyCode(4);
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		CodeUtils.outputImage(100, 30, out, verifyCode);
@@ -178,7 +178,7 @@ public class UserHandler extends InitHandler {
 		String src = "data:image/png;base64," + base64;
 		String token = RandomUtils.getUUID();
 		redisUtils.set(token, verifyCode, CODE_EXPIATION_TIME);
-		log.info("获取成功, 验证码为: " + verifyCode);
+		log.debug("获取成功, 验证码为: " + verifyCode);
 		return Result.success()
 				.add("token", token)
 				.add("img", src)
@@ -194,7 +194,7 @@ public class UserHandler extends InitHandler {
 	 */
 	@RequestMapping(value = "/getcodeforapply", method = RequestMethod.GET)
 	public Result sendEmailForApply(@RequestParam("email")String email, @RequestParam("name")String name) throws Exception{
-			log.info("邮箱: " + email + "开始申请账号, 发送验证码");
+			log.debug("邮箱: " + email + "开始申请账号, 发送验证码");
 			if(StringUtils.isBlank(email)) {
 				return Result.fail().add(EXCEPTION, EMAIL_NOT_NULL);
 			}
@@ -225,7 +225,7 @@ public class UserHandler extends InitHandler {
 										@RequestParam String token,
 										@RequestParam String code)
 			throws Exception {
-		log.info("申请账号: " + user.getUid() + "开始");
+		log.debug("申请账号: " + user.getUid() + "开始");
 		//验证验证码
 		String ss = (String) redisUtils.get(token);
 		if(Objects.isNull(ss)) {

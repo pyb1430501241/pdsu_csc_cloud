@@ -49,7 +49,7 @@ public class UserInformation implements Serializable, Cloneable {
 
     private Integer systemNotifications;
 
-	public UserInformation createUserInformationByThis() {
+	public UserInformation copy() {
 		try {
 			return (UserInformation) clone();
 		} catch (CloneNotSupportedException e) {

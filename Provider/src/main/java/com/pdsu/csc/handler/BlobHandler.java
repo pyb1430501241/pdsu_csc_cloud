@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import javax.servlet.http.HttpServletRequest;
 import java.io.InputStream;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * 
@@ -562,7 +563,7 @@ public class BlobHandler extends InitHandler {
 	@GetMapping("/getcollection")
 	public Result getCollectionByUid(@RequestParam Integer uid, @RequestParam(value = "p", defaultValue = "1")Integer p)
 			throws Exception {
-		log.info("获取用户: " + uid + " 收藏的文章");
+		log.debug("获取用户: " + uid + " 收藏的文章");
 		List<MyCollection> collections = myCollectionService.selectWebIdsByUid(uid, p);
 		List<Integer> webids = new ArrayList<>();
 		List<Integer> uids = new ArrayList<>();
@@ -570,18 +571,18 @@ public class BlobHandler extends InitHandler {
 			webids.add(collection.getWid());
 			uids.add(collection.getBid());
 		}
-		log.info("获取文章信息");
+		log.debug("获取文章信息");
 		List<WebInformation> webs = webInformationService.selectWebInformationsByIds(webids, false, p);
-		log.info("获取文章访问量");
+		log.debug("获取文章访问量");
 		List<Integer> visits = visitInformationService.selectVisitsByWebIds(webids);
-		log.info("获取文章收藏量");
+		log.debug("获取文章收藏量");
 		List<Integer> collection = myCollectionService.selectCollectionsByWebIds(webids);
-		log.info("获取作者信息");
+		log.debug("获取作者信息");
 		List<UserInformation> users = userInformationService.selectUsersByUids(uids);
-		log.info("获取点赞量");
+		log.debug("获取点赞量");
 		List<Integer> thumbs = webThumbsService.selectThumbssForWebId(webids);
 		List<BlobInformation> blobInformations = new ArrayList<BlobInformation>();
-		for (Integer i = 0; i < webs.size(); i++) {
+		for (int i = 0; i < webs.size(); i++) {
 			BlobInformation blob = new BlobInformation();
 			blob.setWeb(webs.get(i));
 			blob.setVisit(visits.get(i));
@@ -596,7 +597,7 @@ public class BlobHandler extends InitHandler {
 			blobInformations.add(blob);
 		}
 		PageInfo<MyCollection> bloList = new PageInfo<>(collections);
-		log.info("获取成功");
+		log.debug("获取成功");
 		return Result.success().add("blobList", blobInformations).add(HAS_NEXT_PAGE, bloList.isHasNextPage());
 	}
 	
@@ -607,15 +608,15 @@ public class BlobHandler extends InitHandler {
 	public Result thumbs(@RequestParam Integer webid, @RequestParam Integer bid,
 						 UserInformation user) throws Exception{
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
+		log.debug("用户: " + user.getUid() + "点赞文章: " + webid + "作者: " + bid);
 		boolean b = webThumbsService.insert(new WebThumbs(user.getUid(), bid, webid));
 		if(b) {
-			log.info("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
+			log.debug("用户: " + user.getUid() + "点赞文章: " + webid + " 成功");
 			WebInformation w = webInformationService.selectById(webid);
-			systemNotificationService.insert(Arrays.asList(new SystemNotification(
+			systemNotificationService.insert(new SystemNotification(
 					bid, SystemMessageUtils.getThumbsString(user.getUsername(), w.getTitle()),
 					user.getUid(), SYSTEM_NOTIFICATION_UNREAD, DateUtils.getSimpleDateSecond()
-			)));
+			));
 			return Result.success();
 		}
 		log.warn("用户点赞文章失败, 连接数据库失败");
@@ -628,10 +629,10 @@ public class BlobHandler extends InitHandler {
 	@RequestMapping(value = "/dethumbs", method = RequestMethod.POST)
 	public Result dethumbs(@RequestParam Integer webid, UserInformation user) throws Exception{
 		loginOrNotLogin(user);
-		log.info("用户: " + user.getUid() + "取消点赞文章: " + webid);
+		log.debug("用户: " + user.getUid() + "取消点赞文章: " + webid);
 		boolean b = webThumbsService.deleteByWebIdAndUid(webid, user.getUid());
 		if(b) {
-			log.info("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
+			log.debug("用户: " + user.getUid() + "取消点赞文章: " + webid + " 成功");
 			return Result.success();
 		}
 		log.warn("用户取消点赞文章失败, 连接数据库失败");
@@ -646,7 +647,7 @@ public class BlobHandler extends InitHandler {
 	@RequestMapping(value = "/thumbsstatus", method = RequestMethod.GET)
 	public Result thumbsStatus(@RequestParam Integer webid, UserInformation user) throws Exception {
 		loginOrNotLogin(user);
-		log.info("获取用户是否点赞此篇文章");
+		log.debug("获取用户是否点赞此篇文章");
 		boolean b = webThumbsService.countByWebIdAndUid(webid, user.getUid());
 		return Result.success().add("thumbsStatus", b);
 	}
@@ -659,14 +660,15 @@ public class BlobHandler extends InitHandler {
 	@PostMapping(value = "/blobimg")
 	public Result postBlobImg(@RequestParam MultipartFile img) throws Exception {
 		String name = HashUtils.getFileNameForHash(RandomUtils.getUUID()) + imgSuffix;
-		log.info("用户博客页面上传图片, 图片名为: " + name);
+		log.debug("用户博客页面上传图片, 图片名为: " + name);
 		InputStream input = img.getInputStream();
 		Thumbnails.of(input)
 		.scale(1f)
 		.outputQuality(0.8f)
 		.outputFormat(imgSuffixExceptPoint)
 		.toFile(blobImgFilePath + name);
-		log.info("上传并压缩成功");
+		input.close();
+		log.debug("上传并压缩成功");
 		return Result.success().add("img", name);
 	}
 	
@@ -676,10 +678,10 @@ public class BlobHandler extends InitHandler {
 	 */
 	@GetMapping("/getlabel")
 	public Result getLabel(@RequestParam(defaultValue = "1") Integer p) throws Exception{
-		log.info("获取所有标签");
+		log.debug("获取所有标签");
 		List<WebLabel> label = webLabelService.selectLabel(p);
 		PageInfo<WebLabel> labs = new PageInfo<>(label);
-		log.info("获取标签成功");
+		log.debug("获取标签成功");
 		return Result.success().add("labelList", labs);
 	}
 	
@@ -689,9 +691,9 @@ public class BlobHandler extends InitHandler {
 	 */
 	@GetMapping("/getcontype")
 	public Result getContype() throws Exception{
-		log.info("获取文章类型列表");
+		log.debug("获取文章类型列表");
 		List<Contype> contypes = contypeService.selectContypes();
-		log.info("获取文章类型列表成功");
+		log.debug("获取文章类型列表成功");
 		return Result.success().add("contypeList", contypes);
 	}
 

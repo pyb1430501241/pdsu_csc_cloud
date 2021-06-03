@@ -27,7 +27,7 @@ public class WebLabelServiceImpl implements WebLabelService {
 	private WebLabelMapper webLabelMapper;
 	
 	@Override
-	public List<WebLabel> selectLabel(Integer p) {
+	public List<WebLabel> selectLabel(@Nullable Integer p) {
 		if(p != null) {
 			PageHelper.startPage(p, 16);
 		}

@@ -2,6 +2,7 @@ package com.pdsu.csc.handler;
 
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.exception.web.user.UserNotLoginException;
+import org.jetbrains.annotations.Contract;
 import org.springframework.lang.NonNull;
 import org.springframework.lang.Nullable;
 
@@ -17,6 +18,7 @@ public interface AuthenticationHandler {
     /**
      * 判断用户是否登录, 如未登录抛出异常
      */
+    @Contract("null -> fail")
     void loginOrNotLogin(@Nullable UserInformation user) throws UserNotLoginException;
 
     /**

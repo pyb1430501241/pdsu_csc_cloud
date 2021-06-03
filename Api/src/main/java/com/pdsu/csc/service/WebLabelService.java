@@ -5,6 +5,7 @@ import java.util.List;
 import com.pdsu.csc.bean.WebLabel;
 import com.pdsu.csc.bean.WebLabelExample;
 import org.springframework.lang.NonNull;
+import org.springframework.lang.Nullable;
 
 /**
  * @author 半梦
@@ -15,7 +16,7 @@ public interface WebLabelService extends TemplateService<WebLabel, WebLabelExamp
 	 * 获取所有标签
 	 * @return
 	 */
-	public List<WebLabel> selectLabel(Integer p);
+	public List<WebLabel> selectLabel(@Nullable Integer p);
 
 	/**
 	 * 获取对应的标签信息

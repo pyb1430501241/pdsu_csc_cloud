@@ -50,12 +50,12 @@ public class SearchHandler extends InitHandler {
 	 */
 	@RequestMapping(value = "/search", method = RequestMethod.GET)
 	public Result searchByText(@RequestParam(value = "p")String text, @RequestParam(required = false) String type) throws Exception{
-		log.info("用户查询: " + text + " 开始");
+		log.debug("用户查询: " + text + " 开始");
 		if(StringUtils.isBlank(type)) {
 			List<EsUserInformation> users = esUserService.queryByText(text);
 			List<EsBlobInformation> blobs = esBlobService.queryByText(text);
 			List<EsFileInformation> files = esFileService.queryByText(text);
-			log.info("查询成功");
+			log.debug("查询成功");
 			return Result.success().add("authorList", users).add("blobList", blobs)
 					.add("fileList", files);
 		}

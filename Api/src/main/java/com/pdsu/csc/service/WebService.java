@@ -3,7 +3,7 @@ package com.pdsu.csc.service;
 import org.springframework.lang.NonNull;
 
 /**
- * 所有网页信息相关均需要实现的接口, 意在对所有网页相关操作提供一些信息
+ * 所有网页信息相关均需要实现的接口
  * @author 半梦
  * @create 2021-03-12 19:17
  */

@@ -37,5 +37,4 @@ public class MyEmailServiceImpl extends AbstractMyEmailService {
 		return myEmailMapper.selectByExample(example);
 	}
 
-
 }

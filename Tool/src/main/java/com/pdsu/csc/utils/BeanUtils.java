@@ -1,7 +1,5 @@
 package com.pdsu.csc.utils;
 
-import com.pdsu.csc.bean.EsBlobInformation;
-import org.springframework.beans.factory.support.RootBeanDefinition;
 import org.springframework.context.support.AbstractApplicationContext;
 import org.springframework.lang.NonNull;
 
@@ -9,6 +7,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 /**
  * @author 半梦
@@ -117,6 +116,10 @@ public abstract class BeanUtils {
         Field declaredField = clazz.getDeclaredField(key);
         declaredField.setAccessible(true);
         declaredField.set(bean, value);
+    }
+
+    public static <T> void modifyBean(T bean, Consumer<T> c) {
+        c.accept(bean);
     }
 
 }

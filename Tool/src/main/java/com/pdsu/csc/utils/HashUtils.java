@@ -1,6 +1,8 @@
 package com.pdsu.csc.utils;
 
+import com.pdsu.csc.bean.EncryptConfig;
 import org.apache.shiro.crypto.hash.SimpleHash;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 
 /**
@@ -9,6 +11,7 @@ import org.springframework.lang.NonNull;
  *
  */
 public abstract class HashUtils {
+
 
 	/**
 	 * 根据账号密码去加密密码

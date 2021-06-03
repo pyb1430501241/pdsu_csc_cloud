@@ -46,8 +46,9 @@ public class EsBlobServiceImpl implements EsService<EsBlobInformation> {
 		SearchSourceBuilder builder = new SearchSourceBuilder();
 		builder.query(bool);
 		builder.highlighter(highlightBuilder);
-		
+
 		SearchRequest request = new SearchRequest();
+
 		
 		request.indices(EsIndex.BLOB.getName());
 		request.source(builder);

@@ -4,11 +4,13 @@ import com.pdsu.csc.bean.AccountStatus;
 import com.pdsu.csc.bean.UserInformation;
 import com.pdsu.csc.exception.web.user.NotFoundUidException;
 import com.pdsu.csc.exception.web.user.UserAbnormalException;
+import com.pdsu.csc.handler.AbstractHandler;
 import com.pdsu.csc.service.MyEmailService;
 import com.pdsu.csc.service.MyImageService;
 import com.pdsu.csc.service.SystemNotificationService;
 import com.pdsu.csc.service.UserInformationService;
 import com.pdsu.csc.utils.StringUtils;
+import lombok.extern.log4j.Log4j2;
 import org.apache.shiro.authc.*;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -21,6 +23,7 @@ import org.springframework.lang.NonNull;
  * @author 半梦
  * @create 2021-02-20 20:35
  */
+@Log4j2
 public class LoginRealm extends AuthorizingRealm {
 
     @Autowired
@@ -60,11 +63,11 @@ public class LoginRealm extends AuthorizingRealm {
     }
 
     private UserInformation getUserInformation(@NonNull Integer uid) {
-        if(userInformationService.countByUid(uid) == 0) {
+        if(!userInformationService.isExistByUid(uid)) {
             throw new UnknownAccountException("账号不存在");
         }
         UserInformation user = userInformationService.selectByUid(uid);
-        UserInformation userInformation = user.createUserInformationByThis();
+        UserInformation userInformation = user.copy();
         if(userInformation == null) {
             throw new UserAbnormalException("未知错误, 请稍候重试");
         }
@@ -80,7 +83,7 @@ public class LoginRealm extends AuthorizingRealm {
             case CANCELLED:
                 throw new UserAbnormalException("账号已被注销");
             case OTHER:
-                throw new UserAbnormalException("未知错误, 请稍候重试");
+                throw new UserAbnormalException(AbstractHandler.DEFAULT_ERROR_PROMPT);
         }
     }
 
@@ -88,7 +91,8 @@ public class LoginRealm extends AuthorizingRealm {
         try {
             user.setImgpath(myImageService.selectImagePathByUid(user.getUid()).getImagePath());
         } catch (NotFoundUidException e) {
-            throw new UserAbnormalException("未知错误, 请稍候重试");
+            log.error(e.getMessage(), e);
+            throw new UserAbnormalException(AbstractHandler.DEFAULT_ERROR_PROMPT);
         }
         user.setSystemNotifications(systemNotificationService.countSystemNotificationByUidAndUnRead(user.getUid()));
         user.setEmail(StringUtils.getAsteriskForString(myEmailService.selectMyEmailByUid(user.getUid()).getEmail()));

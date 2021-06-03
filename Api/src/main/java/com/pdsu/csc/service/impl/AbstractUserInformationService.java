@@ -17,7 +17,8 @@ import java.util.List;
  * @create 2021-02-20 16:35
  * UserInformationService 接口的默认实现类，是为了子类继承时无需实现所有方法
  */
-public abstract class AbstractUserInformationService implements UserInformationService {
+public abstract class AbstractUserInformationService
+        implements UserInformationService {
 
     @Override
     public boolean insert(@NonNull UserInformation information) throws UidRepetitionException {
